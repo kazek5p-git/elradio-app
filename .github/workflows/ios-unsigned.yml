@@ -1,0 +1,66 @@
+name: iOS Unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate iOS project
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build unsigned app
+        run: |
+          set -euo pipefail
+          WORKSPACE="$(find ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
+          if [ -z "$WORKSPACE" ]; then
+            echo "No xcworkspace generated under ios/"
+            exit 1
+          fi
+          SCHEME="$(xcodebuild -list -json -workspace "$WORKSPACE" | ruby -rjson -e 'puts JSON.parse(STDIN.read)["workspace"]["schemes"].first')"
+          if [ -z "$SCHEME" ]; then
+            echo "No Xcode scheme found"
+            exit 1
+          fi
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          APP_PATH="$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app product found"
+            exit 1
+          fi
+          rm -rf Payload dist
+          mkdir -p Payload dist
+          cp -R "$APP_PATH" Payload/
+          ditto -c -k --sequesterRsrc --keepParent Payload dist/EL-Radio-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EL-Radio-unsigned-ipa
+          path: dist/EL-Radio-unsigned.ipa
