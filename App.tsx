@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Slider from '@react-native-community/slider';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as MailComposer from 'expo-mail-composer';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
+  type AccessibilityActionEvent,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
@@ -27,10 +27,49 @@ import { WebView } from 'react-native-webview';
 import { getNameDaysForDate } from './src/nameDays';
 
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
-const FACEBOOK_URL = 'https://www.facebook.com/people/EL-Radio/61584365428208/';
-const FACEBOOK_FEED_URL = 'https://m.facebook.com/people/EL-Radio/61584365428208/';
+const FACEBOOK_PAGE_ID = '61584365428208';
+const FACEBOOK_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
+const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
+  FACEBOOK_URL,
+)}&tabs=timeline&width=500&height=900&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`;
 const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
 const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
+const FACEBOOK_FEED_SCRIPT = `
+  (function () {
+    var attempts = 0;
+
+    function showPostsFirst() {
+      attempts += 1;
+      var closeButtons = document.querySelectorAll(
+        '[aria-label="Close"], [aria-label="Zamknij"], [aria-label*="Zamkn"], [role="button"][aria-label*="close"], [role="button"][aria-label*="Close"]'
+      );
+      closeButtons.forEach(function (button) {
+        try {
+          button.click();
+        } catch (error) {}
+      });
+
+      document.querySelectorAll('[role="dialog"], [aria-modal="true"]').forEach(function (dialog) {
+        dialog.remove();
+      });
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+
+      var firstPost = document.querySelector('[role="article"], article, div[data-ft]');
+      if (firstPost) {
+        firstPost.scrollIntoView({ block: 'start' });
+      }
+
+      if (attempts < 18) {
+        setTimeout(showPostsFirst, 600);
+      }
+    }
+
+    showPostsFirst();
+  })();
+  true;
+`;
+const VOLUME_STEP = 0.05;
 
 type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
@@ -41,6 +80,7 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [feedReady, setFeedReady] = useState(false);
+  const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const todayNameDays = getNameDaysForDate(new Date());
 
   useEffect(() => {
@@ -75,6 +115,33 @@ export default function App() {
     }
 
     setPlaybackState(status.isPlaying ? 'playing' : 'paused');
+  };
+
+  const clampVolume = (nextVolume: number) => Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
+
+  const setPlayerVolume = (nextVolume: number) => {
+    setVolume(clampVolume(nextVolume));
+  };
+
+  const adjustVolume = (delta: number) => {
+    setVolume((currentVolume) => clampVolume(currentVolume + delta));
+  };
+
+  const handleVolumeAccessibilityAction = (event: AccessibilityActionEvent) => {
+    switch (event.nativeEvent.actionName) {
+      case 'increment':
+        adjustVolume(VOLUME_STEP);
+        break;
+      case 'decrement':
+        adjustVolume(-VOLUME_STEP);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleVolumeTrackPress = (locationX: number) => {
+    setPlayerVolume(locationX / volumeTrackWidth);
   };
 
   const ensureSound = async () => {
@@ -176,7 +243,6 @@ export default function App() {
   const isPlaying = playbackState === 'playing';
   const isLoading = playbackState === 'loading';
   const playLabel = isPlaying ? 'Wstrzymaj' : 'Odtwarzaj';
-  const playHint = isPlaying ? 'Zatrzymuje odtwarzanie EL Radio' : 'Uruchamia odtwarzanie EL Radio';
   const volumePercent = Math.round(volume * 100);
 
   return (
@@ -192,8 +258,8 @@ export default function App() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.playerBand}>
-            <View style={styles.brandRow} accessible accessibilityRole="header">
-              <MaterialCommunityIcons name="radio-tower" size={32} color="#0C5C4A" />
+            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="EL Radio z Łodzi">
+              <Icon name="radio-tower" size={32} color="#0C5C4A" />
               <View>
                 <Text style={styles.brandTitle}>EL Radio</Text>
                 <Text style={styles.brandSubtitle}>Radio z Łodzi</Text>
@@ -203,7 +269,6 @@ export default function App() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={playLabel}
-              accessibilityHint={playHint}
               disabled={isLoading}
               onPress={togglePlayback}
               style={({ pressed }) => [
@@ -215,11 +280,7 @@ export default function App() {
               {isLoading ? (
                 <ActivityIndicator size="large" color="#FFFFFF" />
               ) : (
-                <MaterialCommunityIcons
-                  name={isPlaying ? 'pause-circle' : 'play-circle'}
-                  size={58}
-                  color="#FFFFFF"
-                />
+                <Icon name={isPlaying ? 'pause-circle' : 'play-circle'} size={58} color="#FFFFFF" />
               )}
               <Text style={styles.playButtonText}>{playLabel}</Text>
             </Pressable>
@@ -233,28 +294,61 @@ export default function App() {
             </Text>
 
             <View style={styles.volumePanel}>
-              <View style={styles.volumeHeader}>
-                <MaterialCommunityIcons name="volume-high" size={24} color="#1F2933" />
-                <Text style={styles.volumeLabel}>Głośność {volumePercent}%</Text>
-              </View>
-              <Slider
-                accessibilityLabel="Głośność odtwarzacza"
+              <View
+                accessible
+                accessibilityRole="adjustable"
+                accessibilityLabel="Głośność"
                 accessibilityValue={{ min: 0, max: 100, now: volumePercent, text: `${volumePercent} procent` }}
-                minimumValue={0}
-                maximumValue={1}
-                value={volume}
-                step={0.01}
-                minimumTrackTintColor="#0C8C72"
-                maximumTrackTintColor="#BFD3CC"
-                thumbTintColor="#E25D3F"
-                onValueChange={setVolume}
-              />
+                accessibilityActions={[
+                  { name: 'increment', label: 'Głośniej' },
+                  { name: 'decrement', label: 'Ciszej' },
+                ]}
+                onAccessibilityAction={handleVolumeAccessibilityAction}
+                style={styles.volumeHeader}
+              >
+                <Icon name="volume-high" size={24} color="#1F2933" />
+                <Text style={styles.volumeLabel}>Głośność</Text>
+                <Text style={styles.volumeValue}>{volumePercent}%</Text>
+              </View>
+              <View style={styles.volumeControls}>
+                <Pressable
+                  accessible={false}
+                  focusable={false}
+                  importantForAccessibility="no-hide-descendants"
+                  onPress={() => adjustVolume(-VOLUME_STEP)}
+                  style={({ pressed }) => [styles.volumeStepButton, pressed && styles.secondaryButtonPressed]}
+                >
+                  <Icon name="minus" size={24} color="#0C5C4A" />
+                </Pressable>
+                <Pressable
+                  accessible={false}
+                  focusable={false}
+                  importantForAccessibility="no-hide-descendants"
+                  onLayout={(event) => setVolumeTrackWidth(Math.max(1, event.nativeEvent.layout.width))}
+                  onPress={(event) => handleVolumeTrackPress(event.nativeEvent.locationX)}
+                  style={styles.volumeTrackTouch}
+                >
+                  <View style={styles.volumeTrack}>
+                    <View style={[styles.volumeTrackFill, { width: `${volumePercent}%` }]} />
+                    <View style={[styles.volumeThumb, { left: `${volumePercent}%` }]} />
+                  </View>
+                </Pressable>
+                <Pressable
+                  accessible={false}
+                  focusable={false}
+                  importantForAccessibility="no-hide-descendants"
+                  onPress={() => adjustVolume(VOLUME_STEP)}
+                  style={({ pressed }) => [styles.volumeStepButton, pressed && styles.secondaryButtonPressed]}
+                >
+                  <Icon name="plus" size={24} color="#0C5C4A" />
+                </Pressable>
+              </View>
             </View>
           </View>
 
           <View
             accessibilityRole="text"
-            accessibilityLabel="Słuchaj nas w Łodzi na częstotliwości 90.8"
+            accessibilityLabel="Słuchaj nas w Łodzi na częstotliwości 90 i 8"
             style={styles.frequencyBand}
           >
             <Text style={styles.frequencyCaption}>Słuchaj nas w Łodzi na częstotliwości</Text>
@@ -265,7 +359,16 @@ export default function App() {
             <Text accessibilityLiveRegion="polite" style={styles.nameDayDate}>
               {todayNameDays.label}
             </Text>
-            <Text style={styles.nameDayNames}>{todayNameDays.names.join(', ')}</Text>
+            <View
+              accessible
+              accessibilityLabel={`Imieniny ${todayNameDays.label}: ${todayNameDays.names.join(' ')}`}
+            >
+              {todayNameDays.names.map((name) => (
+                <Text key={name} style={styles.nameDayNames}>
+                  {name}
+                </Text>
+              ))}
+            </View>
           </Section>
 
           <Section icon="facebook" title="Aktualności z Facebooka">
@@ -285,6 +388,8 @@ export default function App() {
                 sharedCookiesEnabled
                 thirdPartyCookiesEnabled
                 setSupportMultipleWindows={false}
+                injectedJavaScript={FACEBOOK_FEED_SCRIPT}
+                injectedJavaScriptBeforeContentLoaded={FACEBOOK_FEED_SCRIPT}
                 onLoadEnd={() => setFeedReady(true)}
                 onError={() => setFeedReady(true)}
                 style={styles.feed}
@@ -292,11 +397,11 @@ export default function App() {
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Zaobserwuj lub polub EL Radio na Facebooku"
+              accessibilityLabel="Facebook EL Radio"
               onPress={openFacebook}
               style={({ pressed }) => [styles.secondaryButton, pressed && styles.secondaryButtonPressed]}
             >
-              <MaterialCommunityIcons name="facebook" size={22} color="#0C5C4A" />
+              <Icon name="facebook" size={22} color="#0C5C4A" />
               <Text style={styles.secondaryButtonText}>Zaobserwuj lub polub</Text>
             </Pressable>
           </Section>
@@ -304,7 +409,6 @@ export default function App() {
           <Section icon="email-fast-outline" title="Napisz do nas">
             <TextInput
               accessibilityLabel="Treść wiadomości do EL Radio"
-              accessibilityHint="Wpisz treść, a aplikacja przygotuje wiadomość do wysłania"
               multiline
               textAlignVertical="top"
               value={message}
@@ -319,32 +423,34 @@ export default function App() {
               onPress={sendMessage}
               style={({ pressed }) => [styles.primarySmallButton, pressed && styles.primarySmallButtonPressed]}
             >
-              <MaterialCommunityIcons name="send" size={20} color="#FFFFFF" />
+              <Icon name="send" size={20} color="#FFFFFF" />
               <Text style={styles.primarySmallButtonText}>Wyślij wiadomość</Text>
             </Pressable>
           </Section>
 
-          <Section icon="refresh" title="Aktualizacje">
+          <View style={styles.aboutBand}>
+            <Text style={styles.aboutTitle}>O nas</Text>
+            <Text style={styles.aboutText}>EL RADIO SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ</Text>
+            <Text style={styles.aboutText}>Księży Młyn 14 90-345 Łódź</Text>
+            <Text style={styles.aboutText}>e-mail: BIURO@ELRADIO.PL</Text>
+            <Pressable accessibilityRole="link" onPress={openWebsite} style={styles.websiteButton}>
+              <Text style={styles.websiteText}>https://elradio.pl</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.updateFooter}>
             <Text accessibilityLiveRegion="polite" style={styles.updateStatus}>
               {updateStatus}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Sprawdź stronę najnowszego wydania aplikacji"
+              accessibilityLabel="Aktualizacja aplikacji"
+              accessibilityValue={{ text: updateStatus }}
               onPress={openReleases}
-              style={({ pressed }) => [styles.linkButton, pressed && styles.secondaryButtonPressed]}
+              style={({ pressed }) => [styles.updateButton, pressed && styles.secondaryButtonPressed]}
             >
-              <Text style={styles.linkButtonText}>Najnowsze wydanie aplikacji</Text>
-            </Pressable>
-          </Section>
-
-          <View accessibilityRole="summary" style={styles.aboutBand}>
-            <Text style={styles.aboutTitle}>O nas</Text>
-            <Text style={styles.aboutText}>EL RADIO SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ</Text>
-            <Text style={styles.aboutText}>Księży Młyn 14, 90-345 Łódź</Text>
-            <Text style={styles.aboutText}>e-mail: BIURO@ELRADIO.PL</Text>
-            <Pressable accessibilityRole="link" onPress={openWebsite} style={styles.websiteButton}>
-              <Text style={styles.websiteText}>https://elradio.pl</Text>
+              <Icon name="refresh" size={19} color="#0C5C4A" />
+              <Text style={styles.updateButtonText}>Aktualizacja aplikacji</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -362,12 +468,31 @@ type SectionProps = {
 function Section({ icon, title, children }: SectionProps) {
   return (
     <View style={styles.section}>
-      <View style={styles.sectionTitleRow} accessible accessibilityRole="header">
-        <MaterialCommunityIcons name={icon} size={25} color="#0C5C4A" />
+      <View style={styles.sectionTitleRow} accessible accessibilityRole="header" accessibilityLabel={title}>
+        <Icon name={icon} size={25} color="#0C5C4A" />
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>
       {children}
     </View>
+  );
+}
+
+type IconProps = {
+  name: keyof typeof MaterialCommunityIcons.glyphMap;
+  size: number;
+  color: string;
+};
+
+function Icon({ name, size, color }: IconProps) {
+  return (
+    <MaterialCommunityIcons
+      name={name}
+      size={size}
+      color={color}
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
   );
 }
 
@@ -453,12 +578,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 4,
+    minHeight: 44,
   },
   volumeLabel: {
     color: '#1F2933',
     fontSize: 17,
     fontWeight: '700',
+  },
+  volumeValue: {
+    color: '#0C5C4A',
+    fontSize: 18,
+    fontWeight: '900',
+    marginLeft: 'auto',
+  },
+  volumeControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 4,
+  },
+  volumeStepButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#F6F8F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  volumeTrackTouch: {
+    flex: 1,
+    height: 44,
+    justifyContent: 'center',
+  },
+  volumeTrack: {
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#DDEAE5',
+    overflow: 'visible',
+  },
+  volumeTrackFill: {
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#0C8C72',
+  },
+  volumeThumb: {
+    position: 'absolute',
+    top: -13,
+    width: 31,
+    height: 31,
+    marginLeft: -15,
+    borderRadius: 16,
+    backgroundColor: '#E25D3F',
   },
   frequencyBand: {
     backgroundColor: '#1F2933',
@@ -586,24 +758,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
   },
-  updateStatus: {
-    color: '#31473F',
-    fontSize: 16,
-    lineHeight: 23,
-    fontWeight: '700',
-  },
-  linkButton: {
-    alignSelf: 'flex-start',
-    minHeight: 44,
-    marginTop: 10,
-    justifyContent: 'center',
-  },
-  linkButtonText: {
-    color: '#0C5C4A',
-    fontSize: 16,
-    fontWeight: '800',
-    textDecorationLine: 'underline',
-  },
   aboutBand: {
     backgroundColor: '#17212B',
     paddingHorizontal: 20,
@@ -630,6 +784,39 @@ const styles = StyleSheet.create({
   websiteText: {
     color: '#F6C95C',
     fontSize: 16,
+    fontWeight: '800',
+  },
+  updateFooter: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 6,
+    backgroundColor: '#F6F8F7',
+  },
+  updateStatus: {
+    color: '#52645F',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+    maxWidth: 260,
+    textAlign: 'right',
+    marginBottom: 6,
+  },
+  updateButton: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 12,
+  },
+  updateButtonText: {
+    color: '#0C5C4A',
+    fontSize: 14,
     fontWeight: '800',
   },
 });

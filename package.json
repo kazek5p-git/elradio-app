@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@react-native-community/slider": "5.0.1",
     "expo": "~54.0.33",
     "expo-av": "~16.0.8",
     "expo-mail-composer": "~15.0.8",
