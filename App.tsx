@@ -81,7 +81,9 @@ export default function App() {
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [feedReady, setFeedReady] = useState(false);
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
-  const todayNameDays = getNameDaysForDate(new Date());
+  const today = new Date();
+  const todayNameDays = getNameDaysForDate(today);
+  const todayLabel = `${todayNameDays.label} ${today.getFullYear()}`;
 
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -347,13 +349,10 @@ export default function App() {
             <Text style={styles.frequencyValue}>90.8</Text>
           </View>
 
-          <Section icon="calendar-heart" title="Imieniny">
-            <Text accessibilityLiveRegion="polite" style={styles.nameDayDate}>
-              {todayNameDays.label}
-            </Text>
+          <Section icon="calendar-heart" title={`Dziś jest: ${todayLabel}`}>
             <View
               accessible
-              accessibilityLabel={`Imieniny ${todayNameDays.label}: ${todayNameDays.names.join(' ')}`}
+              accessibilityLabel={`Imieniny: ${todayNameDays.names.join(' ')}`}
             >
               {todayNameDays.names.map((name) => (
                 <Text key={name} style={styles.nameDayNames}>
@@ -653,12 +652,6 @@ const styles = StyleSheet.create({
     color: '#17212B',
     fontSize: 22,
     fontWeight: '800',
-  },
-  nameDayDate: {
-    color: '#52645F',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 5,
   },
   nameDayNames: {
     color: '#17212B',
