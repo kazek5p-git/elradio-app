@@ -28,10 +28,7 @@ import { getNameDaysForDate } from './src/nameDays';
 
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
 const FACEBOOK_URL = 'https://www.facebook.com/people/EL-Radio/61584365428208/';
-const FACEBOOK_PLUGIN_URL =
-  'https://www.facebook.com/plugins/page.php?href=' +
-  encodeURIComponent(FACEBOOK_URL) +
-  '&tabs=timeline&width=500&height=560&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true';
+const FACEBOOK_FEED_URL = 'https://m.facebook.com/people/EL-Radio/61584365428208/';
 const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
 const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
 
@@ -281,10 +278,13 @@ export default function App() {
               )}
               <WebView
                 accessibilityLabel="Aktualne posty EL Radio z Facebooka"
-                source={{ uri: FACEBOOK_PLUGIN_URL }}
+                source={{ uri: FACEBOOK_FEED_URL }}
                 originWhitelist={['https://*']}
                 javaScriptEnabled
                 domStorageEnabled
+                sharedCookiesEnabled
+                thirdPartyCookiesEnabled
+                setSupportMultipleWindows={false}
                 onLoadEnd={() => setFeedReady(true)}
                 onError={() => setFeedReady(true)}
                 style={styles.feed}
