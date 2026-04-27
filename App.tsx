@@ -258,11 +258,11 @@ export default function App() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.playerBand}>
-            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="EL Radio z Łodzi">
+            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="EL Radio Łódź 90 i 8">
               <Icon name="radio-tower" size={32} color="#0C5C4A" />
               <View>
                 <Text style={styles.brandTitle}>EL Radio</Text>
-                <Text style={styles.brandSubtitle}>Radio z Łodzi</Text>
+                <Text style={styles.brandSubtitle}>Łódź 90.8</Text>
               </View>
             </View>
 
@@ -284,14 +284,6 @@ export default function App() {
               )}
               <Text style={styles.playButtonText}>{playLabel}</Text>
             </Pressable>
-
-            <Text accessibilityLiveRegion="polite" style={styles.playbackStatus}>
-              {playbackState === 'error'
-                ? 'Radio chwilowo niedostępne'
-                : isPlaying
-                  ? 'Odtwarzanie trwa'
-                  : 'Gotowe do odtwarzania'}
-            </Text>
 
             <View style={styles.volumePanel}>
               <View
@@ -558,13 +550,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 32,
     fontWeight: '800',
-  },
-  playbackStatus: {
-    color: '#31473F',
-    fontSize: 17,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: 14,
   },
   volumePanel: {
     marginTop: 18,
