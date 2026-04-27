@@ -34,11 +34,18 @@ jobs:
             echo "No xcworkspace generated under ios/"
             exit 1
           fi
-          SCHEME="$(xcodebuild -list -json -workspace "$WORKSPACE" | ruby -rjson -e 'puts JSON.parse(STDIN.read)["workspace"]["schemes"].first')"
+          SCHEME_PATH="$(find ios -path '*/xcshareddata/xcschemes/*.xcscheme' ! -path '*/Pods/*' -print -quit)"
+          if [ -z "$SCHEME_PATH" ]; then
+            echo "No app xcscheme found"
+            exit 1
+          fi
+          SCHEME="$(basename "$SCHEME_PATH" .xcscheme)"
           if [ -z "$SCHEME" ]; then
             echo "No Xcode scheme found"
             exit 1
           fi
+          echo "Using workspace: $WORKSPACE"
+          echo "Using scheme: $SCHEME"
           xcodebuild \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -49,7 +56,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build
-          APP_PATH="$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
+          APP_PATH="$(find build -path '*Release-iphoneos/*.app' -print -quit)"
           if [ -z "$APP_PATH" ]; then
             echo "No .app product found"
             exit 1
