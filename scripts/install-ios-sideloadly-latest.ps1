@@ -21,6 +21,22 @@ if ([string]::IsNullOrWhiteSpace($IpaPath)) {
   New-Item -ItemType Directory -Force -Path $buildRoot | Out-Null
   New-Item -ItemType Directory -Force -Path $latestRoot | Out-Null
 
+  $releaseIpa = Join-Path $latestRoot "EL-Radio-unsigned.ipa"
+  $releaseOutput = & gh release download "latest-build" -R $Repo -p "EL-Radio-unsigned.ipa" -D $latestRoot --clobber 2>&1
+  if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $releaseIpa)) {
+    $IpaPath = $releaseIpa
+    Write-Host "SOURCE: GitHub release latest-build"
+  } else {
+    Write-Host "Release download unavailable; falling back to workflow artifact lookup."
+    if (-not [string]::IsNullOrWhiteSpace(($releaseOutput | Out-String).Trim())) {
+      Write-Host ($releaseOutput | Out-String)
+    }
+  }
+}
+
+if ([string]::IsNullOrWhiteSpace($IpaPath)) {
+  $buildRoot = Join-Path $repoRoot "Builds\Unsigned"
+  $latestRoot = Join-Path $buildRoot "latest"
   $runJson = gh run list `
     -R $Repo `
     --workflow "iOS Unsigned IPA" `

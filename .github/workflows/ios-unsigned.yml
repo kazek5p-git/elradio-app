@@ -66,8 +66,11 @@ jobs:
           cp -R "$APP_PATH" Payload/
           ditto -c -k --sequesterRsrc --keepParent Payload dist/EL-Radio-unsigned.ipa
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: EL-Radio-unsigned-ipa
-          path: dist/EL-Radio-unsigned.ipa
+      - name: Upload rolling release IPA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="latest-build"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "EL Radio latest build" --notes "Rolling private build for sideload installation." --prerelease || true
+          gh release upload "$TAG" dist/EL-Radio-unsigned.ipa --clobber
