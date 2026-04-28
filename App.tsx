@@ -440,16 +440,7 @@ export default function App() {
     }
   };
 
-  const sendMessage = async () => {
-    const trimmed = message.trim();
-    if (!trimmed) {
-      Alert.alert('Wpisz treść wiadomości', 'Pole wiadomości nie może być puste.');
-      return;
-    }
-
-    const subject = 'Wiadomość z aplikacji EL Radio';
-    const body = `${trimmed}\n\n--\nWysłano z aplikacji EL Radio`;
-
+  const openMailComposer = async (subject: string, body: string) => {
     try {
       const available = await MailComposer.isAvailableAsync();
       if (available) {
@@ -463,10 +454,44 @@ export default function App() {
           `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
         );
       }
-      setMessage('');
+      return true;
     } catch {
       Alert.alert('Nie można otworzyć poczty', 'Spróbuj wysłać wiadomość później.');
+      return false;
     }
+  };
+
+  const sendMessage = async () => {
+    const trimmed = message.trim();
+    if (!trimmed) {
+      Alert.alert('Wpisz treść wiadomości', 'Pole wiadomości nie może być puste.');
+      return;
+    }
+
+    const subject = 'Wiadomość z aplikacji EL Radio';
+    const body = `${trimmed}\n\n--\nWysłano z aplikacji EL Radio`;
+    const sent = await openMailComposer(subject, body);
+    if (sent) {
+      setMessage('');
+    }
+  };
+
+  const sendProblemReport = async () => {
+    const subject = 'Problem z aplikacją El Radio';
+    const body = [
+      'Opisz problem:',
+      '',
+      '',
+      '--',
+      'Dane diagnostyczne:',
+      `System: ${Platform.OS} ${Platform.Version}`,
+      `Stan odtwarzania: ${connectionStatus}`,
+      `Głośność: ${volumePercent}%`,
+      `Data: ${new Date().toISOString()}`,
+      'Aplikacja: El Radio Łódź 90,8',
+    ].join('\n');
+
+    await openMailComposer(subject, body);
   };
 
   const openFacebook = async () => {
@@ -724,10 +749,20 @@ export default function App() {
               <Icon name="send" size={20} color="#FFFFFF" />
               <Text style={styles.primarySmallButtonText}>Wyślij wiadomość</Text>
             </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Zgłoś problem z aplikacją"
+              onPress={sendProblemReport}
+              style={({ pressed }) => [styles.reportButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="bug-outline" size={20} color="#0C5C4A" />
+              <Text style={styles.reportButtonText}>Zgłoś problem</Text>
+            </Pressable>
           </Section>
 
           <View style={styles.aboutBand}>
             <Text style={styles.aboutTitle}>O nas</Text>
+            <Text style={styles.aboutText}>El Radio Łódź 90,8</Text>
             <Text style={styles.aboutText}>EL RADIO SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ</Text>
             <Text style={styles.aboutText}>Księży Młyn 14 90-345 Łódź</Text>
             <Text style={styles.aboutText}>e-mail: BIURO@ELRADIO.PL</Text>
@@ -1087,6 +1122,24 @@ const styles = StyleSheet.create({
   primarySmallButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
+    fontWeight: '800',
+  },
+  reportButton: {
+    minHeight: 48,
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+  },
+  reportButtonText: {
+    color: '#0C5C4A',
+    fontSize: 16,
     fontWeight: '800',
   },
   aboutBand: {
