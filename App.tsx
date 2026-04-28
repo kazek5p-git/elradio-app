@@ -231,7 +231,11 @@ type FacebookPayload = {
 
 export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryAttemptRef = useRef(0);
+  const userWantsPlaybackRef = useRef(false);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
+  const [connectionStatus, setConnectionStatus] = useState('Radio nie gra.');
   const [volume, setVolume] = useState(0.86);
   const [message, setMessage] = useState('');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
@@ -256,6 +260,7 @@ export default function App() {
     checkForOtaUpdate();
 
     return () => {
+      clearRetryTimer();
       soundRef.current?.unloadAsync();
       soundRef.current = null;
     };
@@ -265,15 +270,48 @@ export default function App() {
     soundRef.current?.setVolumeAsync(volume).catch(() => undefined);
   }, [volume]);
 
+  const clearRetryTimer = () => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  };
+
+  const unloadCurrentSound = async () => {
+    const sound = soundRef.current;
+    soundRef.current = null;
+    await sound?.unloadAsync().catch(() => undefined);
+  };
+
   const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     if (!status.isLoaded) {
       if (status.error) {
         setPlaybackState('error');
+        void unloadCurrentSound();
+        if (userWantsPlaybackRef.current) {
+          scheduleReconnect();
+        } else {
+          setConnectionStatus('Nie udało się odtworzyć radia.');
+        }
       }
       return;
     }
 
-    setPlaybackState(status.isPlaying ? 'playing' : 'paused');
+    if (status.isPlaying) {
+      retryAttemptRef.current = 0;
+      setPlaybackState('playing');
+      setConnectionStatus('Odtwarzanie El Radio.');
+      return;
+    }
+
+    if (status.isBuffering) {
+      setPlaybackState('loading');
+      setConnectionStatus('Łączenie ze streamem...');
+      return;
+    }
+
+    setPlaybackState(userWantsPlaybackRef.current ? 'loading' : 'paused');
+    setConnectionStatus(userWantsPlaybackRef.current ? 'Czekam na stream...' : 'Radio jest wstrzymane.');
   };
 
   const clampVolume = (nextVolume: number) => Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
@@ -311,6 +349,7 @@ export default function App() {
     }
 
     setPlaybackState('loading');
+    setConnectionStatus('Łączenie ze streamem...');
     const { sound } = await Audio.Sound.createAsync(
       { uri: STREAM_URL, headers: STREAM_HEADERS },
       {
@@ -323,21 +362,62 @@ export default function App() {
     return sound;
   };
 
-  const togglePlayback = async () => {
-    try {
-      const sound = await ensureSound();
-      const status = await sound.getStatusAsync();
-      if (status.isLoaded && status.isPlaying) {
-        await sound.pauseAsync();
-        setPlaybackState('paused');
-      } else {
-        await sound.playAsync();
-        setPlaybackState('playing');
-      }
-    } catch {
-      setPlaybackState('error');
-      Alert.alert('Nie można odtworzyć radia', 'Sprawdź internet i spróbuj ponownie.');
+  const scheduleReconnect = () => {
+    if (!userWantsPlaybackRef.current) {
+      return;
     }
+
+    const delay = RETRY_DELAYS_MS[Math.min(retryAttemptRef.current, RETRY_DELAYS_MS.length - 1)];
+    retryAttemptRef.current += 1;
+    clearRetryTimer();
+    setPlaybackState('loading');
+    setConnectionStatus(`Połączenie przerwane. Ponawiam za ${Math.round(delay / 1000)} sekund.`);
+    retryTimerRef.current = setTimeout(() => {
+      retryTimerRef.current = null;
+      void startPlayback(true);
+    }, delay);
+  };
+
+  const startPlayback = async (isRetry = false) => {
+    try {
+      clearRetryTimer();
+      userWantsPlaybackRef.current = true;
+      setPlaybackState('loading');
+      setConnectionStatus(isRetry ? 'Ponawiam połączenie ze streamem...' : 'Łączenie ze streamem...');
+      const sound = await ensureSound();
+      await sound.playAsync();
+      retryAttemptRef.current = 0;
+      setPlaybackState('playing');
+      setConnectionStatus('Odtwarzanie El Radio.');
+    } catch {
+      await unloadCurrentSound();
+      setPlaybackState('error');
+      scheduleReconnect();
+    }
+  };
+
+  const pausePlayback = async () => {
+    userWantsPlaybackRef.current = false;
+    retryAttemptRef.current = 0;
+    clearRetryTimer();
+
+    try {
+      await soundRef.current?.pauseAsync();
+    } catch {
+      // Playback may already be unavailable; the visible state is enough here.
+    } finally {
+      setPlaybackState('paused');
+      setConnectionStatus('Radio jest wstrzymane.');
+    }
+  };
+
+  const togglePlayback = async () => {
+    if (isPlaying) {
+      await pausePlayback();
+      return;
+    }
+
+    await startPlayback();
   };
 
   const checkForOtaUpdate = async () => {
@@ -474,6 +554,19 @@ export default function App() {
               )}
               <Text style={styles.playButtonText}>{playLabel}</Text>
             </Pressable>
+            <View
+              accessible
+              accessibilityLiveRegion="polite"
+              accessibilityLabel={connectionStatus}
+              style={styles.playbackStatusRow}
+            >
+              <Icon
+                name={isPlaying ? 'radio-tower' : isLoading ? 'sync' : playbackState === 'error' ? 'wifi-alert' : 'radio'}
+                size={20}
+                color={isPlaying ? '#0C5C4A' : playbackState === 'error' ? '#E25D3F' : '#476058'}
+              />
+              <Text style={styles.playbackStatusText}>{connectionStatus}</Text>
+            </View>
 
             <View style={styles.volumePanel}>
               <View
@@ -768,6 +861,25 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 32,
     fontWeight: '800',
+  },
+  playbackStatusRow: {
+    minHeight: 38,
+    marginTop: 12,
+    borderRadius: 8,
+    backgroundColor: '#F4F7F5',
+    borderColor: '#CEE0D8',
+    borderWidth: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  playbackStatusText: {
+    color: '#31473F',
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '700',
+    flex: 1,
   },
   volumePanel: {
     marginTop: 18,
