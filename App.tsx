@@ -23,7 +23,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { getNameDaysForDate } from './src/nameDays';
 
@@ -39,9 +39,12 @@ const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${enco
 )}&tabs=timeline&width=500&height=900&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`;
 const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
 const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
-const FACEBOOK_FEED_SCRIPT = `
+const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
+const MAX_FACEBOOK_POSTS = 4;
+const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
     var attempts = 0;
+    var maxPosts = 4;
 
     function setCompactViewport() {
       var viewport = document.querySelector('meta[name="viewport"]');
@@ -53,7 +56,7 @@ const FACEBOOK_FEED_SCRIPT = `
       viewport.setAttribute('content', 'width=500, initial-scale=1, maximum-scale=1, user-scalable=no');
     }
 
-    function installCompactStyle() {
+    function installExtractorStyle() {
       if (document.getElementById('elradio-compact-facebook')) {
         return;
       }
@@ -61,156 +64,170 @@ const FACEBOOK_FEED_SCRIPT = `
       var style = document.createElement('style');
       style.id = 'elradio-compact-facebook';
       style.textContent = [
-        'html, body { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow-x: hidden !important; overflow-y: auto !important; -webkit-text-size-adjust: 80% !important; }',
-        'body, body * { max-width: 100% !important; box-sizing: border-box !important; font-size: 13px !important; line-height: 1.22 !important; }',
-        'div, span, p, a { white-space: normal !important; overflow-wrap: anywhere !important; word-break: break-word !important; }',
-        'img, video, iframe { max-width: 100% !important; height: auto !important; }',
-        '[role="article"], article { margin: 0 0 8px 0 !important; padding: 6px 8px !important; border-bottom: 1px solid #e5e7eb !important; }',
-        '[role="article"], article, div[data-ft] { overflow: hidden !important; }',
-        '[role="article"] div, article div { margin-top: 2px !important; margin-bottom: 2px !important; }',
         'button, form, a[role="button"], [role="button"], .pluginConnectButton, .UFILikeLink, .UFICommentLink, .UFIShareLink, ._42ft { display: none !important; }',
-        '[aria-label*="Skomentuj"], [aria-label*="Comment"], [aria-label*="Komentarz"] { display: none !important; }',
-        '[aria-label*="Lubię to"], [aria-label*="Like"], [aria-label*="Komentarz"], [aria-label*="Comment"], [aria-label*="Udostępnij"], [aria-label*="Share"], [aria-label*="Wyślij"], [aria-label*="Send"], [aria-label*="Follow"], [aria-label*="Obserwuj"] { display: none !important; }'
+        '[aria-label*="Skomentuj"], [aria-label*="Comment"], [aria-label*="Komentarz"], [aria-label*="Lubię to"], [aria-label*="Like"], [aria-label*="Udostępnij"], [aria-label*="Share"], [aria-label*="Wyślij"], [aria-label*="Send"], [aria-label*="Follow"], [aria-label*="Obserwuj"] { display: none !important; }'
       ].join('\\n');
       document.head.appendChild(style);
     }
 
-    function compactRepeatedLinks() {
-      var seen = {};
-      var noiseLabels = /^(el radio|elradio 90[,.]8 fm|elradio\\.pl|lubię to|like|komentarz|comment|udostępnij|share|wyślij|send|obserwuj|follow|zaloguj się|log in|znajdź nas na facebooku)$/i;
-
-      document.querySelectorAll('a').forEach(function (link) {
-        var text = (link.textContent || '').replace(/\\s+/g, ' ').trim();
-        var href = (link.getAttribute('href') || '').split('?')[0];
-        var key = (text.toLowerCase() + '|' + href).trim();
-
-        if (!text && !link.querySelector('img')) {
-          link.remove();
-          return;
-        }
-
-        if (!text && link.querySelector('img')) {
-          link.replaceWith.apply(link, Array.prototype.slice.call(link.childNodes));
-          return;
-        }
-
-        if (noiseLabels.test(text)) {
-          link.remove();
-          return;
-        }
-
-        if (seen[key]) {
-          link.remove();
-          return;
-        }
-
-        seen[key] = true;
-        link.removeAttribute('href');
-        link.removeAttribute('role');
-        link.removeAttribute('aria-label');
-        link.setAttribute('tabindex', '-1');
-        link.style.pointerEvents = 'none';
-      });
-
-      document.querySelectorAll('br').forEach(function (lineBreak) {
-        lineBreak.remove();
-      });
+    function normalizeText(value) {
+      return (value || '').replace(/\\s+/g, ' ').trim();
     }
 
-    function removeRepeatedStationLabels() {
-      var noiseText = /^(elradio 90[,.]8 fm|el radio 90[,.]8 fm|skomentuj|komentarz|comment|znajdź nas na facebooku|\\d+\\s*(obserwujących|obserwujący)|\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu|w niedzielę|w sobotę)$/i;
+    function cleanPostText(value) {
+      var text = normalizeText(value)
+        .replace(/https?:\\/\\/\\S+/gi, ' ')
+        .replace(/www\\.\\S+/gi, ' ')
+        .replace(/ELRadio 90[,.]8 FM/gi, ' ')
+        .replace(/El Radio 90[,.]8 FM/gi, ' ')
+        .replace(/\\bELRadio\\b/gi, ' ')
+        .replace(/\\d*\\s*(Skomentuj|Komentarz|Comment|Udostępnij|Share|Lubię to|Like|Wyślij|Send)\\s*/gi, ' ')
+        .replace(/\\b(Lubię to|Like|Skomentuj|Komentarz|Comment|Udostępnij|Share|Wyślij|Send|Obserwuj|Follow|Zaloguj się|Log in)\\b/gi, ' ')
+        .replace(/\\d+\\s*(obserwujących|obserwujący)/gi, ' ')
+        .replace(/\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu/gi, ' ')
+        .replace(/\\b(w niedzielę|w sobotę)\\b/gi, ' ');
 
-      document.querySelectorAll('a, span, strong, h1, h2, h3, h4, div').forEach(function (element) {
-        var text = (element.textContent || '').replace(/\\s+/g, ' ').trim();
-        if (text && text.length < 48 && noiseText.test(text)) {
-          if (/^(skomentuj|komentarz|comment)$/i.test(text) && element.parentElement) {
-            element.parentElement.remove();
-            return;
-          }
-          element.remove();
+      text = normalizeText(text);
+      if (text.length > 420) {
+        text = normalizeText(text.slice(0, 420).replace(/\\s+\\S*$/, '')) + '...';
+      }
+      return text;
+    }
+
+    function findPostImage(root) {
+      var images = Array.prototype.slice.call(root.querySelectorAll('img'));
+      for (var i = 0; i < images.length; i += 1) {
+        var image = images[i];
+        var src = image.currentSrc || image.src || image.getAttribute('data-src') || image.getAttribute('src') || '';
+        var rect = image.getBoundingClientRect();
+        var width = image.naturalWidth || image.width || rect.width || 0;
+        var height = image.naturalHeight || image.height || rect.height || 0;
+
+        if (!src || /^data:/i.test(src)) {
+          continue;
         }
-      });
-
-      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-      var textNodes = [];
-      while (walker.nextNode()) {
-        var nodeText = (walker.currentNode.nodeValue || '').replace(/\\s+/g, ' ').trim();
-        if (nodeText && nodeText.length < 48 && noiseText.test(nodeText)) {
-          textNodes.push(walker.currentNode);
+        if ((width >= 140 || rect.width >= 140) && (height >= 100 || rect.height >= 100)) {
+          return src;
         }
       }
-      textNodes.forEach(function (node) {
-        var parent = node.parentElement;
-        if (parent && parent.childNodes.length <= 1) {
-          parent.remove();
-          return;
-        }
-        node.nodeValue = '';
+      return '';
+    }
+
+    function findPostNodes() {
+      var nodes = Array.prototype.slice.call(document.querySelectorAll('[role="article"], article, div[data-ft]'));
+      if (nodes.length) {
+        return nodes;
+      }
+      return Array.prototype.slice.call(document.querySelectorAll('div')).filter(function (element) {
+        var text = cleanPostText(element.textContent || '');
+        return text.length >= 40 && !!findPostImage(element);
       });
     }
 
-    function compactLargeMedia() {
-      document.querySelectorAll('img').forEach(function (image) {
-        var rect = image.getBoundingClientRect();
-        var width = image.naturalWidth || image.width || 0;
-        var height = image.naturalHeight || image.height || 0;
+    function extractPosts() {
+      var posts = [];
+      var seen = {};
+      var seenImages = {};
+      var seenText = {};
+      var nodes = findPostNodes();
 
-        if (rect.width < 140 && rect.height < 140) {
-          if (width >= 140 || height >= 140) {
-            image.remove();
-          }
+      nodes.forEach(function (node) {
+        if (posts.length >= maxPosts) {
           return;
         }
+        var text = cleanPostText(node.textContent || '');
+        var imageUrl = findPostImage(node);
+        var imageKey = imageUrl ? imageUrl.split('?')[0] : '';
+        var textKey = text.slice(0, 110).toLowerCase();
+        var key = (text.slice(0, 90) + '|' + imageUrl).toLowerCase();
 
-        image.style.display = 'block';
-        image.style.width = '100%';
-        image.style.maxHeight = '210px';
-        image.style.objectFit = 'cover';
+        if (text.length < 24 && !imageUrl) {
+          return;
+        }
+        if (seen[key]) {
+          return;
+        }
+        if (textKey && seenText[textKey]) {
+          return;
+        }
+        if (imageKey && seenImages[imageKey]) {
+          return;
+        }
+        seen[key] = true;
+        if (textKey) {
+          seenText[textKey] = true;
+        }
+        if (imageKey) {
+          seenImages[imageKey] = true;
+        }
+        posts.push({
+          id: String(posts.length + 1) + '-' + Math.abs(key.split('').reduce(function (hash, char) {
+            return ((hash << 5) - hash) + char.charCodeAt(0);
+          }, 0)),
+          text: text,
+          imageUrl: imageUrl
+        });
       });
+
+      return posts;
     }
 
-    function showPostsFirst() {
-      attempts += 1;
+    function sendPosts(force) {
+      var posts = extractPosts();
+      if (!posts.length && !force) {
+        return false;
+      }
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'elradio-facebook-posts',
+          posts: posts
+        }));
+      }
+      return posts.length > 0;
+    }
+
+    function prepare() {
       setCompactViewport();
-      installCompactStyle();
-      var closeButtons = document.querySelectorAll(
-        '[aria-label="Close"], [aria-label="Zamknij"], [aria-label*="Zamkn"], [role="button"][aria-label*="close"], [role="button"][aria-label*="Close"]'
-      );
-      closeButtons.forEach(function (button) {
-        try {
-          button.click();
-        } catch (error) {}
-      });
+      installExtractorStyle();
 
       document.querySelectorAll('[role="dialog"], [aria-modal="true"]').forEach(function (dialog) {
         dialog.remove();
       });
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.overflow = 'auto';
+      document.querySelectorAll('a').forEach(function (link) {
+        var text = normalizeText(link.textContent || '');
+        if (!text && link.querySelector('img')) {
+          link.replaceWith.apply(link, Array.prototype.slice.call(link.childNodes));
+        }
+      });
+    }
 
-      var firstPost = document.querySelector('[role="article"], article, div[data-ft]');
-      if (firstPost) {
-        firstPost.scrollIntoView({ block: 'start' });
-      }
-
-      compactRepeatedLinks();
-      removeRepeatedStationLabels();
-      compactLargeMedia();
-      document.documentElement.scrollLeft = 0;
-      document.body.scrollLeft = 0;
-
-      if (attempts < 18) {
-        setTimeout(showPostsFirst, 600);
+    function collect() {
+      attempts += 1;
+      prepare();
+      if (!sendPosts(attempts >= 20) && attempts < 20) {
+        setTimeout(collect, 650);
       }
     }
 
-    showPostsFirst();
+    collect();
   })();
   true;
 `;
 const VOLUME_STEP = 0.05;
 
 type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
+type FacebookFeedState = 'loading' | 'ready' | 'error';
+
+type FacebookPost = {
+  id: string;
+  text: string;
+  imageUrl?: string;
+};
+
+type FacebookPayload = {
+  type?: string;
+  posts?: FacebookPost[];
+};
 
 export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -218,7 +235,8 @@ export default function App() {
   const [volume, setVolume] = useState(0.86);
   const [message, setMessage] = useState('');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
-  const [feedReady, setFeedReady] = useState(false);
+  const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
+  const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const today = new Date();
   const todayNameDays = getNameDaysForDate(today);
@@ -383,6 +401,29 @@ export default function App() {
     await WebBrowser.openBrowserAsync(APP_RELEASES_URL);
   };
 
+  const handleFacebookMessage = (event: WebViewMessageEvent) => {
+    try {
+      const payload = JSON.parse(event.nativeEvent.data) as FacebookPayload;
+      if (payload.type !== 'elradio-facebook-posts') {
+        return;
+      }
+
+      const posts = (payload.posts ?? [])
+        .filter((post) => post.text || post.imageUrl)
+        .slice(0, MAX_FACEBOOK_POSTS)
+        .map((post, index) => ({
+          id: post.id || `${index + 1}-${post.text.slice(0, 24)}`,
+          text: post.text,
+          imageUrl: post.imageUrl,
+        }));
+
+      setFacebookPosts(posts);
+      setFacebookFeedState(posts.length ? 'ready' : 'error');
+    } catch {
+      setFacebookFeedState('error');
+    }
+  };
+
   const isPlaying = playbackState === 'playing';
   const isLoading = playbackState === 'loading';
   const playLabel = isPlaying ? 'Wstrzymaj' : 'Odtwarzaj';
@@ -506,15 +547,44 @@ export default function App() {
           </Section>
 
           <Section icon="facebook" title="Aktualności z Facebooka">
-            <View style={styles.feedShell}>
-              {!feedReady && (
-                <View style={styles.feedLoading}>
+            <View style={styles.newsList}>
+              {facebookFeedState === 'loading' && (
+                <View style={styles.facebookStatusCard}>
                   <ActivityIndicator color="#0C8C72" />
-                  <Text style={styles.feedLoadingText}>Ładuję posty...</Text>
+                  <Text style={styles.facebookStatusText}>Ładuję posty z Facebooka...</Text>
                 </View>
               )}
+              {facebookFeedState === 'error' && (
+                <View style={styles.facebookStatusCard}>
+                  <Icon name="alert-circle-outline" size={24} color="#E25D3F" />
+                  <Text style={styles.facebookStatusText}>
+                    Nie udało się pobrać postów. Otwórz profil EL Radio na Facebooku.
+                  </Text>
+                </View>
+              )}
+              {facebookPosts.map((post) => (
+                <View
+                  key={post.id}
+                  accessible
+                  accessibilityLabel={`Post z Facebooka. ${post.text || 'Zdjęcie z profilu EL Radio.'}`}
+                  style={styles.facebookPostCard}
+                >
+                  {post.imageUrl ? (
+                    <Image
+                      source={{ uri: post.imageUrl }}
+                      style={styles.facebookPostImage}
+                      resizeMode="cover"
+                      accessible={false}
+                      accessibilityIgnoresInvertColors
+                    />
+                  ) : null}
+                  {post.text ? <Text style={styles.facebookPostText}>{post.text}</Text> : null}
+                </View>
+              ))}
               <WebView
-                accessibilityLabel="Aktualne posty EL Radio z Facebooka"
+                accessible={false}
+                focusable={false}
+                importantForAccessibility="no-hide-descendants"
                 source={{ uri: FACEBOOK_FEED_URL }}
                 originWhitelist={['https://*']}
                 javaScriptEnabled
@@ -523,11 +593,11 @@ export default function App() {
                 thirdPartyCookiesEnabled
                 setSupportMultipleWindows={false}
                 textZoom={82}
-                injectedJavaScript={FACEBOOK_FEED_SCRIPT}
-                injectedJavaScriptBeforeContentLoaded={FACEBOOK_FEED_SCRIPT}
-                onLoadEnd={() => setFeedReady(true)}
-                onError={() => setFeedReady(true)}
-                style={styles.feed}
+                injectedJavaScript={FACEBOOK_EXTRACT_SCRIPT}
+                injectedJavaScriptBeforeContentLoaded={FACEBOOK_EXTRACT_SCRIPT}
+                onMessage={handleFacebookMessage}
+                onError={() => setFacebookFeedState('error')}
+                style={styles.facebookLoader}
               />
             </View>
             <Pressable
@@ -808,29 +878,51 @@ const styles = StyleSheet.create({
     lineHeight: 32,
     fontWeight: '800',
   },
-  feedShell: {
-    height: 470,
+  newsList: {
+    gap: 12,
+  },
+  facebookStatusCard: {
+    minHeight: 92,
+    borderRadius: 8,
+    borderColor: '#D4E4DD',
+    borderWidth: 1,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  facebookStatusText: {
+    color: '#31473F',
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  facebookPostCard: {
     overflow: 'hidden',
     borderRadius: 8,
     borderColor: '#D4E4DD',
     borderWidth: 1,
     backgroundColor: '#FFFFFF',
   },
-  feed: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
+  facebookPostImage: {
+    width: '100%',
+    height: 205,
+    backgroundColor: '#DCE6E1',
   },
-  feedLoading: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 2,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
+  facebookPostText: {
+    color: '#1F2933',
+    fontSize: 16,
+    lineHeight: 23,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
   },
-  feedLoadingText: {
-    color: '#31473F',
-    fontWeight: '700',
+  facebookLoader: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
   },
   secondaryButton: {
     minHeight: 52,
