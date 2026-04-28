@@ -50,28 +50,6 @@ static BOOL EXElRadioIsStream(NSURL *url, NSDictionary *headers)
     [userAgent isEqualToString:EXElRadioStreamUserAgent];
 }
 
-static AVMutableMetadataItem *EXElRadioMetadataItem(NSString *identifier, NSString *value)
-{
-  AVMutableMetadataItem *item = [AVMutableMetadataItem metadataItem];
-  item.identifier = identifier;
-  item.value = value;
-  item.extendedLanguageTag = @"pl";
-  return item;
-}
-
-static void EXElRadioApplyExternalMetadata(AVPlayerItem *item, NSURL *url, NSDictionary *headers)
-{
-  if (!item || !EXElRadioIsStream(url, headers)) {
-    return;
-  }
-
-  item.externalMetadata = @[
-    EXElRadioMetadataItem(AVMetadataCommonIdentifierTitle, EXElRadioNowPlayingTitle),
-    EXElRadioMetadataItem(AVMetadataCommonIdentifierArtist, EXElRadioNowPlayingArtist),
-    EXElRadioMetadataItem(AVMetadataCommonIdentifierAlbumName, EXElRadioNowPlayingAlbum),
-  ];
-}
-
 static void EXElRadioUpdateNowPlayingInfo(NSURL *url, NSDictionary *headers, BOOL isPlaying)
 {
   if (!EXElRadioIsStream(url, headers)) {
@@ -87,20 +65,6 @@ static void EXElRadioUpdateNowPlayingInfo(NSURL *url, NSDictionary *headers, BOO
   };
 }`,
     'now playing helper',
-  );
-
-  source = replaceOnce(
-    source,
-    `    AVPlayerItem *firstplayerItem = [AVPlayerItem playerItemWithAsset:avAsset];
-    AVPlayerItem *secondPlayerItem = [AVPlayerItem playerItemWithAsset:avAsset];
-    AVPlayerItem *thirdPlayerItem = [AVPlayerItem playerItemWithAsset:avAsset];`,
-    `    AVPlayerItem *firstplayerItem = [AVPlayerItem playerItemWithAsset:avAsset];
-    AVPlayerItem *secondPlayerItem = [AVPlayerItem playerItemWithAsset:avAsset];
-    AVPlayerItem *thirdPlayerItem = [AVPlayerItem playerItemWithAsset:avAsset];
-    EXElRadioApplyExternalMetadata(firstplayerItem, self.url, self.headers);
-    EXElRadioApplyExternalMetadata(secondPlayerItem, self.url, self.headers);
-    EXElRadioApplyExternalMetadata(thirdPlayerItem, self.url, self.headers);`,
-    'player item metadata',
   );
 
   source = replaceOnce(
