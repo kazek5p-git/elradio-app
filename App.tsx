@@ -41,6 +41,7 @@ const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
 const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
 const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
+const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
 const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
     var attempts = 0;
@@ -629,6 +630,11 @@ export default function App() {
                   style={styles.volumeTrackTouch}
                 >
                   <View style={styles.volumeTrack}>
+                    <View pointerEvents="none" style={styles.volumeTicks}>
+                      {VOLUME_TICKS.map((tick) => (
+                        <View key={tick} style={styles.volumeTick} />
+                      ))}
+                    </View>
                     <View style={[styles.volumeTrackFill, { width: `${volumePercent}%` }]} />
                     <View style={[styles.volumeThumb, { left: `${volumePercent}%` }]} />
                   </View>
@@ -918,11 +924,16 @@ const styles = StyleSheet.create({
   },
   volumePanel: {
     marginTop: 18,
-    padding: 14,
+    padding: 16,
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
-    borderColor: '#D4E4DD',
+    borderColor: '#BFD3CC',
     borderWidth: 1,
+    shadowColor: '#0A4F40',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
   volumeHeader: {
     flexDirection: 'row',
@@ -944,43 +955,74 @@ const styles = StyleSheet.create({
   volumeControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 4,
+    gap: 12,
+    marginTop: 8,
   },
   volumeStepButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#AFC9BF',
-    backgroundColor: '#F6F8F7',
+    backgroundColor: '#F4F7F5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   volumeTrackTouch: {
     flex: 1,
-    height: 44,
+    height: 52,
     justifyContent: 'center',
   },
   volumeTrack: {
-    height: 5,
+    height: 13,
     borderRadius: 999,
-    backgroundColor: '#DDEAE5',
+    backgroundColor: '#E6EFEA',
+    borderColor: '#C5D8D0',
+    borderWidth: 1,
     overflow: 'visible',
+    justifyContent: 'center',
   },
   volumeTrackFill: {
-    height: 5,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    height: 11,
     borderRadius: 999,
-    backgroundColor: '#0C8C72',
+    backgroundColor: '#F6C95C',
+  },
+  volumeTicks: {
+    position: 'absolute',
+    left: 7,
+    right: 7,
+    top: -6,
+    bottom: -6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  volumeTick: {
+    width: 2,
+    height: 21,
+    borderRadius: 2,
+    backgroundColor: '#7B928A',
+    opacity: 0.45,
   },
   volumeThumb: {
     position: 'absolute',
     top: -13,
-    width: 31,
-    height: 31,
-    marginLeft: -15,
-    borderRadius: 16,
-    backgroundColor: '#E25D3F',
+    width: 37,
+    height: 37,
+    marginLeft: -18,
+    borderRadius: 19,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    backgroundColor: '#0C8C72',
+    shadowColor: '#0A4F40',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
+    elevation: 4,
   },
   frequencyBand: {
     backgroundColor: '#1F2933',
