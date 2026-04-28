@@ -10,6 +10,7 @@ import {
   type AccessibilityActionEvent,
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -27,6 +28,10 @@ import { WebView } from 'react-native-webview';
 import { getNameDaysForDate } from './src/nameDays';
 
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
+const STREAM_HEADERS = {
+  'Icy-MetaData': '1',
+  'User-Agent': 'El Radio app',
+};
 const FACEBOOK_PAGE_ID = '61584365428208';
 const FACEBOOK_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
 const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
@@ -38,8 +43,109 @@ const FACEBOOK_FEED_SCRIPT = `
   (function () {
     var attempts = 0;
 
+    function setCompactViewport() {
+      var viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) {
+        viewport = document.createElement('meta');
+        viewport.setAttribute('name', 'viewport');
+        document.head.appendChild(viewport);
+      }
+      viewport.setAttribute('content', 'width=500, initial-scale=1, maximum-scale=1, user-scalable=no');
+    }
+
+    function installCompactStyle() {
+      if (document.getElementById('elradio-compact-facebook')) {
+        return;
+      }
+
+      var style = document.createElement('style');
+      style.id = 'elradio-compact-facebook';
+      style.textContent = [
+        'html, body { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow-x: hidden !important; overflow-y: auto !important; -webkit-text-size-adjust: 80% !important; }',
+        'body, body * { max-width: 100% !important; box-sizing: border-box !important; font-size: 13px !important; line-height: 1.22 !important; }',
+        'div, span, p, a { white-space: normal !important; overflow-wrap: anywhere !important; word-break: break-word !important; }',
+        'img, video, iframe { max-width: 100% !important; height: auto !important; }',
+        '[role="article"], article { margin: 0 0 8px 0 !important; padding: 6px 8px !important; border-bottom: 1px solid #e5e7eb !important; }',
+        '[role="article"], article, div[data-ft] { overflow: hidden !important; }',
+        '[role="article"] div, article div { margin-top: 2px !important; margin-bottom: 2px !important; }',
+        'button, form, a[role="button"], [role="button"], .pluginConnectButton, .UFILikeLink, .UFICommentLink, .UFIShareLink, ._42ft { display: none !important; }',
+        '[aria-label*="Skomentuj"], [aria-label*="Comment"], [aria-label*="Komentarz"] { display: none !important; }',
+        '[aria-label*="Lubię to"], [aria-label*="Like"], [aria-label*="Komentarz"], [aria-label*="Comment"], [aria-label*="Udostępnij"], [aria-label*="Share"], [aria-label*="Wyślij"], [aria-label*="Send"], [aria-label*="Follow"], [aria-label*="Obserwuj"] { display: none !important; }'
+      ].join('\\n');
+      document.head.appendChild(style);
+    }
+
+    function compactRepeatedLinks() {
+      var seen = {};
+      var noiseLabels = /^(el radio|elradio 90[,.]8 fm|elradio\\.pl|lubię to|like|komentarz|comment|udostępnij|share|wyślij|send|obserwuj|follow|zaloguj się|log in)$/i;
+
+      document.querySelectorAll('a').forEach(function (link) {
+        var text = (link.textContent || '').replace(/\\s+/g, ' ').trim();
+        var href = (link.getAttribute('href') || '').split('?')[0];
+        var key = (text.toLowerCase() + '|' + href).trim();
+
+        if (!text && !link.querySelector('img')) {
+          link.remove();
+          return;
+        }
+
+        if (noiseLabels.test(text)) {
+          link.remove();
+          return;
+        }
+
+        if (seen[key]) {
+          link.remove();
+          return;
+        }
+
+        seen[key] = true;
+      });
+
+      document.querySelectorAll('br').forEach(function (lineBreak) {
+        lineBreak.remove();
+      });
+    }
+
+    function removeRepeatedStationLabels() {
+      var noiseText = /^(elradio 90[,.]8 fm|el radio 90[,.]8 fm|skomentuj|komentarz|comment|\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu|w niedzielę)$/i;
+
+      document.querySelectorAll('a, span, strong, h1, h2, h3, h4, div').forEach(function (element) {
+        var text = (element.textContent || '').replace(/\\s+/g, ' ').trim();
+        if (text && text.length < 48 && noiseText.test(text)) {
+          if (/^(skomentuj|komentarz|comment)$/i.test(text) && element.parentElement) {
+            element.parentElement.remove();
+            return;
+          }
+          element.remove();
+        }
+      });
+    }
+
+    function compactLargeMedia() {
+      document.querySelectorAll('img').forEach(function (image) {
+        var rect = image.getBoundingClientRect();
+        var width = image.naturalWidth || image.width || 0;
+        var height = image.naturalHeight || image.height || 0;
+
+        if (rect.width < 140 && rect.height < 140) {
+          if (width >= 140 || height >= 140) {
+            image.remove();
+          }
+          return;
+        }
+
+        image.style.display = 'block';
+        image.style.width = '100%';
+        image.style.maxHeight = '210px';
+        image.style.objectFit = 'cover';
+      });
+    }
+
     function showPostsFirst() {
       attempts += 1;
+      setCompactViewport();
+      installCompactStyle();
       var closeButtons = document.querySelectorAll(
         '[aria-label="Close"], [aria-label="Zamknij"], [aria-label*="Zamkn"], [role="button"][aria-label*="close"], [role="button"][aria-label*="Close"]'
       );
@@ -59,6 +165,12 @@ const FACEBOOK_FEED_SCRIPT = `
       if (firstPost) {
         firstPost.scrollIntoView({ block: 'start' });
       }
+
+      compactRepeatedLinks();
+      removeRepeatedStationLabels();
+      compactLargeMedia();
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
 
       if (attempts < 18) {
         setTimeout(showPostsFirst, 600);
@@ -153,7 +265,7 @@ export default function App() {
 
     setPlaybackState('loading');
     const { sound } = await Audio.Sound.createAsync(
-      { uri: STREAM_URL },
+      { uri: STREAM_URL, headers: STREAM_HEADERS },
       {
         shouldPlay: false,
         volume,
@@ -260,11 +372,17 @@ export default function App() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.playerBand}>
-            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="EL Radio Łódź 90 i 8">
-              <Icon name="radio-tower" size={32} color="#0C5C4A" />
+            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="El Radio app Łódź">
+              <Image
+                source={require('./assets/elradio-logo.png')}
+                style={styles.brandLogo}
+                resizeMode="contain"
+                accessible={false}
+                accessibilityIgnoresInvertColors
+              />
               <View>
-                <Text style={styles.brandTitle}>EL Radio</Text>
-                <Text style={styles.brandSubtitle}>Łódź 90.8</Text>
+                <Text style={styles.brandTitle}>El Radio app</Text>
+                <Text style={styles.brandSubtitle}>Łódź</Text>
               </View>
             </View>
 
@@ -379,6 +497,7 @@ export default function App() {
                 sharedCookiesEnabled
                 thirdPartyCookiesEnabled
                 setSupportMultipleWindows={false}
+                textZoom={82}
                 injectedJavaScript={FACEBOOK_FEED_SCRIPT}
                 injectedJavaScriptBeforeContentLoaded={FACEBOOK_FEED_SCRIPT}
                 onLoadEnd={() => setFeedReady(true)}
@@ -509,12 +628,17 @@ const styles = StyleSheet.create({
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 11,
     marginBottom: 18,
+  },
+  brandLogo: {
+    width: 112,
+    height: 42,
   },
   brandTitle: {
     color: '#17212B',
-    fontSize: 28,
+    fontSize: 25,
+    lineHeight: 29,
     fontWeight: '800',
   },
   brandSubtitle: {
