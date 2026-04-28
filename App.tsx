@@ -1,4 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as MailComposer from 'expo-mail-composer';
 import { StatusBar } from 'expo-status-bar';
@@ -19,6 +21,7 @@ import {
   ScrollView,
   StyleSheet,
   StatusBar as RNStatusBar,
+  Switch,
   Text,
   TextInput,
   View,
@@ -27,6 +30,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { getNameDaysForDate } from './src/nameDays';
 
+const APP_DISPLAY_NAME = 'El Radio Łódź 90,8';
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
 const STREAM_HEADERS = {
   'Icy-MetaData': '1',
@@ -42,6 +46,13 @@ const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/la
 const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
 const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
+const SETTINGS_STORAGE_KEY = '@elradio/settings/v1';
+const DEFAULT_START_VOLUME = 0.86;
+const PRIVACY_TEXT =
+  'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia, podpis i kontakt zwrotny są zapisywane tylko lokalnie na tym urządzeniu.\n\n' +
+  'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
+  'Wiadomości i zgłoszenia problemu są wysyłane przez aplikację pocztową wybraną w systemie. Aplikacja nie wysyła ich samodzielnie na żaden dodatkowy serwer.\n\n' +
+  'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz „Zgłoś problem” i wyślesz wiadomość.';
 const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
     var attempts = 0;
@@ -89,10 +100,21 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         .replace(/\\b(w niedzielę|w sobotę)\\b/gi, ' ');
 
       text = normalizeText(text);
+      if (/@context|schema\\.org|SocialMediaPosting|interactionStatistic|dateCreated|dateModified/.test(text)) {
+        return '';
+      }
       if (text.length > 420) {
         text = normalizeText(text.slice(0, 420).replace(/\\s+\\S*$/, '')) + '...';
       }
       return text;
+    }
+
+    function getReadableText(root) {
+      var clone = root.cloneNode(true);
+      clone.querySelectorAll('script, style, noscript, svg, button, form, [role="button"]').forEach(function (element) {
+        element.remove();
+      });
+      return normalizeText(clone.innerText || clone.textContent || '');
     }
 
     function findPostImage(root) {
@@ -120,7 +142,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         return nodes;
       }
       return Array.prototype.slice.call(document.querySelectorAll('div')).filter(function (element) {
-        var text = cleanPostText(element.textContent || '');
+        var text = cleanPostText(getReadableText(element));
         return text.length >= 40 && !!findPostImage(element);
       });
     }
@@ -136,7 +158,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         if (posts.length >= maxPosts) {
           return;
         }
-        var text = cleanPostText(node.textContent || '');
+        var text = cleanPostText(getReadableText(node));
         var imageUrl = findPostImage(node);
         var imageKey = imageUrl ? imageUrl.split('?')[0] : '';
         var textKey = text.slice(0, 110).toLowerCase();
@@ -218,6 +240,41 @@ const VOLUME_STEP = 0.05;
 
 type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 type FacebookFeedState = 'loading' | 'ready' | 'error';
+type NetworkMode = 'wifiAndCellular' | 'wifiOnly';
+
+type AppSettings = {
+  networkMode: NetworkMode;
+  autoPlayOnLaunch: boolean;
+  startVolume: number;
+  messageSignature: string;
+  replyContact: string;
+};
+
+const DEFAULT_SETTINGS: AppSettings = {
+  networkMode: 'wifiAndCellular',
+  autoPlayOnLaunch: false,
+  startVolume: DEFAULT_START_VOLUME,
+  messageSignature: '',
+  replyContact: '',
+};
+
+function clampVolumeValue(nextVolume: number) {
+  if (!Number.isFinite(nextVolume)) {
+    return DEFAULT_START_VOLUME;
+  }
+  return Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
+}
+
+function normalizeStoredSettings(value: unknown): AppSettings {
+  const stored = value && typeof value === 'object' ? (value as Partial<AppSettings>) : {};
+  return {
+    networkMode: stored.networkMode === 'wifiOnly' ? 'wifiOnly' : 'wifiAndCellular',
+    autoPlayOnLaunch: stored.autoPlayOnLaunch === true,
+    startVolume: clampVolumeValue(typeof stored.startVolume === 'number' ? stored.startVolume : DEFAULT_START_VOLUME),
+    messageSignature: typeof stored.messageSignature === 'string' ? stored.messageSignature : '',
+    replyContact: typeof stored.replyContact === 'string' ? stored.replyContact : '',
+  };
+}
 
 type FacebookPost = {
   id: string;
@@ -235,17 +292,45 @@ export default function App() {
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryAttemptRef = useRef(0);
   const userWantsPlaybackRef = useRef(false);
+  const autoPlayedOnLaunchRef = useRef(false);
+  const networkBlockAlertShownRef = useRef(false);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [connectionStatus, setConnectionStatus] = useState('Radio nie gra.');
-  const [volume, setVolume] = useState(0.86);
+  const [volume, setVolume] = useState(DEFAULT_START_VOLUME);
   const [message, setMessage] = useState('');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const today = new Date();
   const todayNameDays = getNameDaysForDate(today);
   const todayLabel = `${todayNameDays.label} ${today.getFullYear()}`;
+
+  const loadSettings = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (stored) {
+        const nextSettings = normalizeStoredSettings(JSON.parse(stored));
+        setSettings(nextSettings);
+        setVolume(nextSettings.startVolume);
+      }
+    } catch {
+      // Defaults are safe if stored settings cannot be read.
+    } finally {
+      setSettingsLoaded(true);
+    }
+  };
+
+  const updateSettings = (updates: Partial<AppSettings>) => {
+    setSettings((currentSettings) => {
+      const nextSettings = normalizeStoredSettings({ ...currentSettings, ...updates });
+      AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings)).catch(() => undefined);
+      return nextSettings;
+    });
+  };
 
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -258,6 +343,7 @@ export default function App() {
       setPlaybackState('error');
     });
 
+    void loadSettings();
     checkForOtaUpdate();
 
     return () => {
@@ -315,14 +401,18 @@ export default function App() {
     setConnectionStatus(userWantsPlaybackRef.current ? 'Czekam na stream...' : 'Radio jest wstrzymane.');
   };
 
-  const clampVolume = (nextVolume: number) => Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
-
   const setPlayerVolume = (nextVolume: number) => {
-    setVolume(clampVolume(nextVolume));
+    setVolume(clampVolumeValue(nextVolume));
   };
 
   const adjustVolume = (delta: number) => {
-    setVolume((currentVolume) => clampVolume(currentVolume + delta));
+    setVolume((currentVolume) => clampVolumeValue(currentVolume + delta));
+  };
+
+  const adjustStartVolume = (delta: number) => {
+    const nextVolume = clampVolumeValue(settings.startVolume + delta);
+    setVolume(nextVolume);
+    updateSettings({ startVolume: nextVolume });
   };
 
   const handleVolumeAccessibilityAction = (event: AccessibilityActionEvent) => {
@@ -379,8 +469,36 @@ export default function App() {
     }, delay);
   };
 
+  const shouldBlockPlaybackForNetwork = async (showAlert = true) => {
+    if (settings.networkMode !== 'wifiOnly') {
+      return false;
+    }
+
+    const networkState = await NetInfo.fetch();
+    const blocksPlayback = networkState.type === 'cellular' || networkState.isConnected === false;
+    if (!blocksPlayback) {
+      return false;
+    }
+
+    userWantsPlaybackRef.current = false;
+    clearRetryTimer();
+    setPlaybackState('paused');
+    setConnectionStatus('Odtwarzanie zatrzymane. W ustawieniach wybrano tylko Wi-Fi.');
+    if (showAlert) {
+      Alert.alert(
+        'Odtwarzanie tylko przez Wi-Fi',
+        'Aplikacja nie włączy streamu przez dane komórkowe. Połącz się z Wi-Fi albo zmień ustawienie transmisji danych.',
+      );
+    }
+    return true;
+  };
+
   const startPlayback = async (isRetry = false) => {
     try {
+      if (await shouldBlockPlaybackForNetwork(!isRetry)) {
+        return;
+      }
+
       clearRetryTimer();
       userWantsPlaybackRef.current = true;
       setPlaybackState('loading');
@@ -420,6 +538,42 @@ export default function App() {
 
     await startPlayback();
   };
+
+  useEffect(() => {
+    if (!settingsLoaded || autoPlayedOnLaunchRef.current || !settings.autoPlayOnLaunch) {
+      return;
+    }
+
+    autoPlayedOnLaunchRef.current = true;
+    void startPlayback();
+  }, [settingsLoaded, settings.autoPlayOnLaunch]);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((networkState) => {
+      if (networkState.type !== 'cellular') {
+        networkBlockAlertShownRef.current = false;
+      }
+
+      if (
+        settings.networkMode === 'wifiOnly' &&
+        networkState.type === 'cellular' &&
+        userWantsPlaybackRef.current
+      ) {
+        if (!networkBlockAlertShownRef.current) {
+          networkBlockAlertShownRef.current = true;
+          Alert.alert(
+            'Przełączono na dane komórkowe',
+            'Odtwarzanie zostało zatrzymane, bo w ustawieniach wybrano tylko Wi-Fi.',
+          );
+        }
+        void pausePlayback().then(() => {
+          setConnectionStatus('Odtwarzanie zatrzymane. W ustawieniach wybrano tylko Wi-Fi.');
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, [settings.networkMode]);
 
   const checkForOtaUpdate = async () => {
     if (__DEV__) {
@@ -470,7 +624,15 @@ export default function App() {
     }
 
     const subject = 'Wiadomość z aplikacji EL Radio';
-    const body = `${trimmed}\n\n--\nWysłano z aplikacji EL Radio`;
+    const signature = settings.messageSignature.trim() || 'Wysłano z aplikacji EL Radio';
+    const replyContact = settings.replyContact.trim();
+    const body = [
+      trimmed,
+      '',
+      '--',
+      replyContact ? `Kontakt zwrotny: ${replyContact}` : '',
+      signature,
+    ].filter(Boolean).join('\n');
     const sent = await openMailComposer(subject, body);
     if (sent) {
       setMessage('');
@@ -489,7 +651,7 @@ export default function App() {
       `Stan odtwarzania: ${connectionStatus}`,
       `Głośność: ${volumePercent}%`,
       `Data: ${new Date().toISOString()}`,
-      'Aplikacja: El Radio Łódź 90,8',
+      `Aplikacja: ${APP_DISPLAY_NAME}`,
     ].join('\n');
 
     await openMailComposer(subject, body);
@@ -530,10 +692,20 @@ export default function App() {
     }
   };
 
+  const toggleSettingsPanel = () => {
+    if (settingsOpen) {
+      setSettingsOpen(false);
+      return;
+    }
+
+    setSettingsOpen(true);
+  };
+
   const isPlaying = playbackState === 'playing';
   const isLoading = playbackState === 'loading';
   const playLabel = isPlaying ? 'Wstrzymaj' : 'Odtwarzaj';
   const volumePercent = Math.round(volume * 100);
+  const startVolumePercent = Math.round(settings.startVolume * 100);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -548,7 +720,7 @@ export default function App() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.playerBand}>
-            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel="El Radio app Łódź">
+            <View style={styles.brandRow} accessible accessibilityRole="header" accessibilityLabel={APP_DISPLAY_NAME}>
               <Image
                 source={require('./assets/elradio-logo.png')}
                 style={styles.brandLogo}
@@ -556,9 +728,8 @@ export default function App() {
                 accessible={false}
                 accessibilityIgnoresInvertColors
               />
-              <View>
-                <Text style={styles.brandTitle}>El Radio app</Text>
-                <Text style={styles.brandSubtitle}>Łódź</Text>
+              <View style={styles.brandText}>
+                <Text style={styles.brandTitle}>{APP_DISPLAY_NAME}</Text>
               </View>
             </View>
 
@@ -777,19 +948,149 @@ export default function App() {
             </Pressable>
           </View>
 
-          <View style={styles.updateFooter}>
-            <Text accessibilityLiveRegion="polite" style={styles.updateStatus}>
-              {updateStatus}
-            </Text>
+          <View style={styles.settingsFooter}>
+            {settingsOpen ? (
+              <View style={styles.settingsPanel}>
+                <View style={styles.settingsTitleRow} accessible accessibilityRole="header" accessibilityLabel="Ustawienia">
+                  <Icon name="cog" size={24} color="#0C5C4A" />
+                  <Text style={styles.settingsTitle}>Ustawienia</Text>
+                </View>
+
+                <View style={styles.settingGroup}>
+                  <Text style={styles.settingGroupTitle}>Dane i sieć</Text>
+                  <Text style={styles.settingDescription}>
+                    Stream radia i zdjęcia z Facebooka pobierają dane z internetu. Włącz tylko Wi-Fi, jeśli nie chcesz
+                    odtwarzać przez dane komórkowe.
+                  </Text>
+                  <SettingsSwitchRow
+                    label="Tylko Wi-Fi"
+                    description="Na wykrytych danych komórkowych radio nie wystartuje."
+                    value={settings.networkMode === 'wifiOnly'}
+                    onValueChange={(value) => updateSettings({ networkMode: value ? 'wifiOnly' : 'wifiAndCellular' })}
+                  />
+                </View>
+
+                <View style={styles.settingGroup}>
+                  <Text style={styles.settingGroupTitle}>Start aplikacji</Text>
+                  <SettingsSwitchRow
+                    label="Włącz odtwarzanie po uruchomieniu"
+                    description="Po otwarciu aplikacji radio uruchomi się automatycznie."
+                    value={settings.autoPlayOnLaunch}
+                    onValueChange={(value) => updateSettings({ autoPlayOnLaunch: value })}
+                  />
+                  <View
+                    accessible
+                    accessibilityRole="adjustable"
+                    accessibilityLabel="Głośność startowa"
+                    accessibilityValue={{ min: 0, max: 100, now: startVolumePercent, text: `${startVolumePercent} procent` }}
+                    accessibilityActions={[
+                      { name: 'increment', label: 'Głośniej' },
+                      { name: 'decrement', label: 'Ciszej' },
+                    ]}
+                    onAccessibilityAction={(event) => {
+                      if (event.nativeEvent.actionName === 'increment') {
+                        adjustStartVolume(VOLUME_STEP);
+                      }
+                      if (event.nativeEvent.actionName === 'decrement') {
+                        adjustStartVolume(-VOLUME_STEP);
+                      }
+                    }}
+                    style={styles.startVolumeBox}
+                  >
+                    <Text style={styles.settingLabel}>Głośność startowa</Text>
+                    <View style={styles.startVolumeControls}>
+                      <Pressable
+                        accessible={false}
+                        focusable={false}
+                        importantForAccessibility="no-hide-descendants"
+                        onPress={() => adjustStartVolume(-VOLUME_STEP)}
+                        style={({ pressed }) => [styles.settingsStepButton, pressed && styles.secondaryButtonPressed]}
+                      >
+                        <Icon name="minus" size={22} color="#0C5C4A" />
+                      </Pressable>
+                      <Text style={styles.startVolumeValue}>{startVolumePercent}%</Text>
+                      <Pressable
+                        accessible={false}
+                        focusable={false}
+                        importantForAccessibility="no-hide-descendants"
+                        onPress={() => adjustStartVolume(VOLUME_STEP)}
+                        style={({ pressed }) => [styles.settingsStepButton, pressed && styles.secondaryButtonPressed]}
+                      >
+                        <Icon name="plus" size={22} color="#0C5C4A" />
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.settingGroup}>
+                  <Text style={styles.settingGroupTitle}>Wiadomości</Text>
+                  <Text style={styles.settingInputLabel}>Podpis</Text>
+                  <TextInput
+                    accessibilityLabel="Podpis do wiadomości"
+                    value={settings.messageSignature}
+                    onChangeText={(value) => updateSettings({ messageSignature: value })}
+                    placeholder="Np. Imię albo podpis słuchacza"
+                    placeholderTextColor="#6B7280"
+                    multiline
+                    textAlignVertical="top"
+                    style={styles.settingsTextInput}
+                  />
+                  <Text style={styles.settingInputLabel}>Kontakt zwrotny</Text>
+                  <TextInput
+                    accessibilityLabel="Kontakt zwrotny do wiadomości"
+                    value={settings.replyContact}
+                    onChangeText={(value) => updateSettings({ replyContact: value })}
+                    placeholder="Telefon albo e-mail"
+                    placeholderTextColor="#6B7280"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    style={styles.settingsTextInput}
+                  />
+                </View>
+
+                <View style={styles.settingGroup}>
+                  <Text style={styles.settingGroupTitle}>Aktualizacja aplikacji</Text>
+                  <Text accessibilityLiveRegion="polite" style={styles.settingDescription}>
+                    {updateStatus}
+                  </Text>
+                  <View style={styles.settingButtonRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Sprawdź aktualizacje aplikacji"
+                      onPress={checkForOtaUpdate}
+                      style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                    >
+                      <Icon name="refresh" size={19} color="#0C5C4A" />
+                      <Text style={styles.settingsActionButtonText}>Sprawdź</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel="Otwórz stronę aktualizacji aplikacji"
+                      onPress={openReleases}
+                      style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                    >
+                      <Icon name="download" size={19} color="#0C5C4A" />
+                      <Text style={styles.settingsActionButtonText}>Pobierz</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <View style={styles.settingGroupLast}>
+                  <Text style={styles.settingGroupTitle}>Prywatność</Text>
+                  <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+                </View>
+              </View>
+            ) : null}
+
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Aktualizacja aplikacji"
-              accessibilityValue={{ text: updateStatus }}
-              onPress={openReleases}
-              style={({ pressed }) => [styles.updateButton, pressed && styles.secondaryButtonPressed]}
+              accessibilityLabel={settingsOpen ? 'Zamknij ustawienia' : 'Ustawienia'}
+              accessibilityState={{ expanded: settingsOpen }}
+              onPress={toggleSettingsPanel}
+              style={({ pressed }) => [styles.settingsButton, pressed && styles.secondaryButtonPressed]}
             >
-              <Icon name="refresh" size={19} color="#0C5C4A" />
-              <Text style={styles.updateButtonText}>Aktualizacja aplikacji</Text>
+              <Icon name={settingsOpen ? 'close' : 'cog'} size={20} color="#0C5C4A" />
+              <Text style={styles.settingsButtonText}>{settingsOpen ? 'Zamknij' : 'Ustawienia'}</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -812,6 +1113,31 @@ function Section({ icon, title, children }: SectionProps) {
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>
       {children}
+    </View>
+  );
+}
+
+type SettingsSwitchRowProps = {
+  label: string;
+  description: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+};
+
+function SettingsSwitchRow({ label, description, value, onValueChange }: SettingsSwitchRowProps) {
+  return (
+    <View style={styles.settingsSwitchRow}>
+      <View style={styles.settingsSwitchText}>
+        <Text style={styles.settingLabel}>{label}</Text>
+        <Text style={styles.settingDescription}>{description}</Text>
+      </View>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: '#C7D6D0', true: '#A7D8CB' }}
+        thumbColor={value ? '#0C8C72' : '#FFFFFF'}
+      />
     </View>
   );
 }
@@ -864,17 +1190,15 @@ const styles = StyleSheet.create({
     width: 112,
     height: 42,
   },
+  brandText: {
+    flex: 1,
+  },
   brandTitle: {
     color: '#17212B',
-    fontSize: 25,
+    fontSize: 24,
     lineHeight: 29,
     fontWeight: '800',
-  },
-  brandSubtitle: {
-    color: '#476058',
-    fontSize: 15,
-    fontWeight: '600',
-    marginTop: 2,
+    flexShrink: 1,
   },
   playButton: {
     minHeight: 112,
@@ -1212,23 +1536,158 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
   },
-  updateFooter: {
+  settingsFooter: {
     alignItems: 'flex-end',
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 6,
     backgroundColor: '#F6F8F7',
   },
-  updateStatus: {
-    color: '#52645F',
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '700',
-    maxWidth: 260,
-    textAlign: 'right',
-    marginBottom: 6,
+  settingsPanel: {
+    alignSelf: 'stretch',
+    marginBottom: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFD3CC',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
   },
-  updateButton: {
+  settingsTitleRow: {
+    minHeight: 56,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#EAF4EF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#D4E4DD',
+  },
+  settingsTitle: {
+    color: '#17212B',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  settingGroup: {
+    paddingHorizontal: 14,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DCE6E1',
+  },
+  settingGroupLast: {
+    paddingHorizontal: 14,
+    paddingVertical: 15,
+  },
+  settingGroupTitle: {
+    color: '#17212B',
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: '900',
+    marginBottom: 7,
+  },
+  settingLabel: {
+    color: '#1F2933',
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '800',
+  },
+  settingDescription: {
+    color: '#52645F',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  settingsSwitchRow: {
+    marginTop: 12,
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingsSwitchText: {
+    flex: 1,
+  },
+  startVolumeBox: {
+    marginTop: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D4E4DD',
+    padding: 12,
+    backgroundColor: '#F6F8F7',
+  },
+  startVolumeControls: {
+    marginTop: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  settingsStepButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startVolumeValue: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#0C5C4A',
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  settingInputLabel: {
+    marginTop: 10,
+    marginBottom: 6,
+    color: '#1F2933',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  settingsTextInput: {
+    minHeight: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFD3CC',
+    backgroundColor: '#FFFFFF',
+    color: '#17212B',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  settingButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 12,
+  },
+  settingsActionButton: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 10,
+  },
+  settingsActionButtonText: {
+    color: '#0C5C4A',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  privacyText: {
+    color: '#31473F',
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: '600',
+  },
+  settingsButton: {
     minHeight: 44,
     borderRadius: 8,
     borderWidth: 1,
@@ -1240,7 +1699,7 @@ const styles = StyleSheet.create({
     gap: 7,
     paddingHorizontal: 12,
   },
-  updateButtonText: {
+  settingsButtonText: {
     color: '#0C5C4A',
     fontSize: 14,
     fontWeight: '800',
