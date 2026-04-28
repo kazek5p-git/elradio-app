@@ -5,12 +5,47 @@ const { withAndroidManifest, withDangerousMod, withInfoPlist, withXcodeProject }
 const { addFramework, getProjectName } = require('@expo/config-plugins/build/ios/utils/Xcodeproj');
 
 const STREAM_HOST = 'dhtk2.noip.pl';
+const STREAM_USER_AGENT = 'El Radio app';
 
 function replaceOnce(source, search, replacement, label) {
   if (!source.includes(search)) {
-    throw new Error(`Cannot patch Expo AV now playing metadata. Missing anchor: ${label}`);
+    throw new Error(`Cannot patch El Radio native config. Missing anchor: ${label}`);
   }
   return source.replace(search, replacement);
+}
+
+function patchExpoAvAndroidUserAgent(projectRoot) {
+  const simpleExoPlayerDataPath = path.join(
+    projectRoot,
+    'node_modules',
+    'expo-av',
+    'android',
+    'src',
+    'main',
+    'java',
+    'expo',
+    'modules',
+    'av',
+    'player',
+    'SimpleExoPlayerData.java',
+  );
+  if (!fs.existsSync(simpleExoPlayerDataPath)) {
+    throw new Error(`Cannot patch Expo AV Android user agent. Missing file: ${simpleExoPlayerDataPath}`);
+  }
+
+  let source = fs.readFileSync(simpleExoPlayerDataPath, 'utf8');
+  if (source.includes(`"${STREAM_USER_AGENT}"`)) {
+    return;
+  }
+
+  source = replaceOnce(
+    source,
+    '            Util.getUserAgent(context, "yourApplicationName"),',
+    `            "${STREAM_USER_AGENT}",`,
+    'Android ExoPlayer user agent',
+  );
+
+  fs.writeFileSync(simpleExoPlayerDataPath, source);
 }
 
 function patchExpoAvNowPlaying(projectRoot) {
@@ -119,6 +154,14 @@ function withElRadioNativeConfig(config) {
     }
     return modConfig;
   });
+
+  config = withDangerousMod(config, [
+    'android',
+    (modConfig) => {
+      patchExpoAvAndroidUserAgent(modConfig.modRequest.projectRoot);
+      return modConfig;
+    },
+  ]);
 
   config = withInfoPlist(config, (modConfig) => {
     const plist = modConfig.modResults;

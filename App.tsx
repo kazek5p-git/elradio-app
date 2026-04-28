@@ -77,7 +77,7 @@ const FACEBOOK_FEED_SCRIPT = `
 
     function compactRepeatedLinks() {
       var seen = {};
-      var noiseLabels = /^(el radio|elradio 90[,.]8 fm|elradio\\.pl|lubię to|like|komentarz|comment|udostępnij|share|wyślij|send|obserwuj|follow|zaloguj się|log in)$/i;
+      var noiseLabels = /^(el radio|elradio 90[,.]8 fm|elradio\\.pl|lubię to|like|komentarz|comment|udostępnij|share|wyślij|send|obserwuj|follow|zaloguj się|log in|znajdź nas na facebooku)$/i;
 
       document.querySelectorAll('a').forEach(function (link) {
         var text = (link.textContent || '').replace(/\\s+/g, ' ').trim();
@@ -86,6 +86,11 @@ const FACEBOOK_FEED_SCRIPT = `
 
         if (!text && !link.querySelector('img')) {
           link.remove();
+          return;
+        }
+
+        if (!text && link.querySelector('img')) {
+          link.replaceWith.apply(link, Array.prototype.slice.call(link.childNodes));
           return;
         }
 
@@ -100,6 +105,11 @@ const FACEBOOK_FEED_SCRIPT = `
         }
 
         seen[key] = true;
+        link.removeAttribute('href');
+        link.removeAttribute('role');
+        link.removeAttribute('aria-label');
+        link.setAttribute('tabindex', '-1');
+        link.style.pointerEvents = 'none';
       });
 
       document.querySelectorAll('br').forEach(function (lineBreak) {
@@ -108,7 +118,7 @@ const FACEBOOK_FEED_SCRIPT = `
     }
 
     function removeRepeatedStationLabels() {
-      var noiseText = /^(elradio 90[,.]8 fm|el radio 90[,.]8 fm|skomentuj|komentarz|comment|\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu|w niedzielę)$/i;
+      var noiseText = /^(elradio 90[,.]8 fm|el radio 90[,.]8 fm|skomentuj|komentarz|comment|znajdź nas na facebooku|\\d+\\s*(obserwujących|obserwujący)|\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu|w niedzielę|w sobotę)$/i;
 
       document.querySelectorAll('a, span, strong, h1, h2, h3, h4, div').forEach(function (element) {
         var text = (element.textContent || '').replace(/\\s+/g, ' ').trim();
@@ -119,6 +129,23 @@ const FACEBOOK_FEED_SCRIPT = `
           }
           element.remove();
         }
+      });
+
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      var textNodes = [];
+      while (walker.nextNode()) {
+        var nodeText = (walker.currentNode.nodeValue || '').replace(/\\s+/g, ' ').trim();
+        if (nodeText && nodeText.length < 48 && noiseText.test(nodeText)) {
+          textNodes.push(walker.currentNode);
+        }
+      }
+      textNodes.forEach(function (node) {
+        var parent = node.parentElement;
+        if (parent && parent.childNodes.length <= 1) {
+          parent.remove();
+          return;
+        }
+        node.nodeValue = '';
       });
     }
 
@@ -242,12 +269,14 @@ export default function App() {
   };
 
   const handleVolumeAccessibilityAction = (event: AccessibilityActionEvent) => {
+    const androidVolumeStep = Platform.OS === 'android' ? -VOLUME_STEP : VOLUME_STEP;
+
     switch (event.nativeEvent.actionName) {
       case 'increment':
-        adjustVolume(VOLUME_STEP);
+        adjustVolume(androidVolumeStep);
         break;
       case 'decrement':
-        adjustVolume(-VOLUME_STEP);
+        adjustVolume(-androidVolumeStep);
         break;
       default:
         break;
@@ -412,8 +441,8 @@ export default function App() {
                 accessibilityLabel="Głośność"
                 accessibilityValue={{ min: 0, max: 100, now: volumePercent, text: `${volumePercent} procent` }}
                 accessibilityActions={[
-                  { name: 'increment', label: 'Głośniej' },
-                  { name: 'decrement', label: 'Ciszej' },
+                  { name: 'increment', label: Platform.OS === 'android' ? 'Ciszej' : 'Głośniej' },
+                  { name: 'decrement', label: Platform.OS === 'android' ? 'Głośniej' : 'Ciszej' },
                 ]}
                 onAccessibilityAction={handleVolumeAccessibilityAction}
                 style={styles.volumeHeader}
@@ -470,13 +499,9 @@ export default function App() {
           <Section icon="calendar-heart" title={`Dziś jest: ${todayLabel}`}>
             <View
               accessible
-              accessibilityLabel={`Imieniny: ${todayNameDays.names.join(' ')}`}
+              accessibilityLabel={`Imieniny: ${todayNameDays.names.join(', ')}`}
             >
-              {todayNameDays.names.map((name) => (
-                <Text key={name} style={styles.nameDayNames}>
-                  {name}
-                </Text>
-              ))}
+              <Text style={styles.nameDayNames}>{todayNameDays.names.join(', ')}</Text>
             </View>
           </Section>
 
