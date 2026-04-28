@@ -15,6 +15,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -46,8 +47,13 @@ const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/la
 const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
 const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
+const SLEEP_TIMER_OPTIONS = [15, 30, 60] as const;
 const SETTINGS_STORAGE_KEY = '@elradio/settings/v1';
 const DEFAULT_START_VOLUME = 0.86;
+const FACEBOOK_WEBVIEW_USER_AGENT =
+  Platform.OS === 'ios'
+    ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+    : 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
 const PRIVACY_TEXT =
   'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia, podpis i kontakt zwrotny są zapisywane tylko lokalnie na tym urządzeniu.\n\n' +
   'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
@@ -94,7 +100,8 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         .replace(/El Radio 90[,.]8 FM/gi, ' ')
         .replace(/\\bELRadio\\b/gi, ' ')
         .replace(/\\d*\\s*(Skomentuj|Komentarz|Comment|Udostępnij|Share|Lubię to|Like|Wyślij|Send)\\s*/gi, ' ')
-        .replace(/\\b(Lubię to|Like|Skomentuj|Komentarz|Comment|Udostępnij|Share|Wyślij|Send|Obserwuj|Follow|Zaloguj się|Log in)\\b/gi, ' ')
+        .replace(/\\b(Lubię to|Like|Skomentuj|Komentarz|Comment|Udostępnij|Share|Wyślij|Send|Obserwuj|Follow|Zaloguj się|Log in|Zobacz więcej|See more|Pokaż więcej|Show more)\\b/gi, ' ')
+        .replace(/\\b(Polubiono przez|Liked by|Najtrafniejsze|Most relevant|Wszystkie reakcje|All reactions)\\b/gi, ' ')
         .replace(/\\d+\\s*(obserwujących|obserwujący)/gi, ' ')
         .replace(/\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu/gi, ' ')
         .replace(/\\b(w niedzielę|w sobotę)\\b/gi, ' ');
@@ -115,6 +122,73 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         element.remove();
       });
       return normalizeText(clone.innerText || clone.textContent || '');
+    }
+
+    function collectStructuredPosts() {
+      var output = [];
+
+      function readImage(value) {
+        if (!value) {
+          return '';
+        }
+        if (typeof value === 'string') {
+          return value;
+        }
+        if (Array.isArray(value)) {
+          for (var i = 0; i < value.length; i += 1) {
+            var image = readImage(value[i]);
+            if (image) {
+              return image;
+            }
+          }
+          return '';
+        }
+        if (typeof value === 'object') {
+          return readImage(value.url || value.contentUrl || value.thumbnailUrl);
+        }
+        return '';
+      }
+
+      function visit(value) {
+        if (!value || typeof value !== 'object') {
+          return;
+        }
+        if (Array.isArray(value)) {
+          value.forEach(visit);
+          return;
+        }
+
+        var type = String(value['@type'] || value.type || '');
+        var body = value.articleBody || value.text || value.description || value.name || '';
+        if (/SocialMediaPosting|NewsArticle|Article/i.test(type) && body) {
+          output.push({
+            text: cleanPostText(String(body)),
+            imageUrl: readImage(value.image || value.thumbnailUrl)
+          });
+        }
+
+        Object.keys(value).forEach(function (key) {
+          if (key !== 'image' && key !== 'thumbnailUrl') {
+            visit(value[key]);
+          }
+        });
+      }
+
+      document.querySelectorAll('script[type="application/ld+json"], script[data-content-len]').forEach(function (script) {
+        var raw = script.textContent || '';
+        if (!raw || raw.indexOf('{') === -1) {
+          return;
+        }
+        try {
+          visit(JSON.parse(raw));
+        } catch (error) {
+          // Facebook sometimes emits non-JSON boot data here; DOM extraction will still run.
+        }
+      });
+
+      return output.filter(function (post) {
+        return post.text || post.imageUrl;
+      });
     }
 
     function findPostImage(root) {
@@ -154,12 +228,10 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       var seenText = {};
       var nodes = findPostNodes();
 
-      nodes.forEach(function (node) {
+      function addPost(text, imageUrl) {
         if (posts.length >= maxPosts) {
           return;
         }
-        var text = cleanPostText(getReadableText(node));
-        var imageUrl = findPostImage(node);
         var imageKey = imageUrl ? imageUrl.split('?')[0] : '';
         var textKey = text.slice(0, 110).toLowerCase();
         var key = (text.slice(0, 90) + '|' + imageUrl).toLowerCase();
@@ -190,6 +262,14 @@ const FACEBOOK_EXTRACT_SCRIPT = `
           text: text,
           imageUrl: imageUrl
         });
+      }
+
+      collectStructuredPosts().forEach(function (post) {
+        addPost(post.text || '', post.imageUrl || '');
+      });
+
+      nodes.forEach(function (node) {
+        addPost(cleanPostText(getReadableText(node)), findPostImage(node));
       });
 
       return posts;
@@ -227,9 +307,21 @@ const FACEBOOK_EXTRACT_SCRIPT = `
     function collect() {
       attempts += 1;
       prepare();
-      if (!sendPosts(attempts >= 20) && attempts < 20) {
-        setTimeout(collect, 650);
+      if (!sendPosts(attempts >= 45) && attempts < 45) {
+        setTimeout(collect, 850);
       }
+    }
+
+    if (!window.__elradioFacebookObserver) {
+      window.__elradioFacebookObserver = new MutationObserver(function () {
+        setTimeout(function () {
+          sendPosts(false);
+        }, 250);
+      });
+      window.__elradioFacebookObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
     }
 
     collect();
@@ -241,22 +333,76 @@ const VOLUME_STEP = 0.05;
 type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 type FacebookFeedState = 'loading' | 'ready' | 'error';
 type NetworkMode = 'wifiAndCellular' | 'wifiOnly';
+type StartupVolumeMode = 'fixed' | 'last';
+type MessageType = 'general' | 'greetings' | 'song' | 'city' | 'technical';
 
 type AppSettings = {
   networkMode: NetworkMode;
+  reduceDataUsage: boolean;
   autoPlayOnLaunch: boolean;
+  startupVolumeMode: StartupVolumeMode;
   startVolume: number;
+  lastVolume: number;
+  simplifiedAccessibility: boolean;
   messageSignature: string;
   replyContact: string;
+  defaultMessageType: MessageType;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   networkMode: 'wifiAndCellular',
+  reduceDataUsage: false,
   autoPlayOnLaunch: false,
+  startupVolumeMode: 'fixed',
   startVolume: DEFAULT_START_VOLUME,
+  lastVolume: DEFAULT_START_VOLUME,
+  simplifiedAccessibility: false,
   messageSignature: '',
   replyContact: '',
+  defaultMessageType: 'general',
 };
+
+const MESSAGE_TYPE_OPTIONS: Array<{
+  id: MessageType;
+  label: string;
+  subject: string;
+  placeholder: string;
+}> = [
+  {
+    id: 'general',
+    label: 'Ogólna',
+    subject: 'Wiadomość z aplikacji EL Radio',
+    placeholder: 'Wpisz swoją wiadomość',
+  },
+  {
+    id: 'greetings',
+    label: 'Pozdrowienia',
+    subject: 'Pozdrowienia z aplikacji EL Radio',
+    placeholder: 'Napisz, kogo chcesz pozdrowić',
+  },
+  {
+    id: 'song',
+    label: 'Utwór',
+    subject: 'Prośba o utwór z aplikacji EL Radio',
+    placeholder: 'Podaj wykonawcę, tytuł utworu i ewentualnie dedykację',
+  },
+  {
+    id: 'city',
+    label: 'Info z miasta',
+    subject: 'Informacja z Łodzi z aplikacji EL Radio',
+    placeholder: 'Napisz krótką informację z miasta',
+  },
+  {
+    id: 'technical',
+    label: 'Techniczna',
+    subject: 'Wiadomość techniczna z aplikacji EL Radio',
+    placeholder: 'Opisz sprawę techniczną',
+  },
+];
+
+function getMessageTypeOption(messageType: MessageType) {
+  return MESSAGE_TYPE_OPTIONS.find((option) => option.id === messageType) ?? MESSAGE_TYPE_OPTIONS[0];
+}
 
 function clampVolumeValue(nextVolume: number) {
   if (!Number.isFinite(nextVolume)) {
@@ -267,12 +413,22 @@ function clampVolumeValue(nextVolume: number) {
 
 function normalizeStoredSettings(value: unknown): AppSettings {
   const stored = value && typeof value === 'object' ? (value as Partial<AppSettings>) : {};
+  const storedMessageType = stored.defaultMessageType;
+  const defaultMessageType: MessageType = MESSAGE_TYPE_OPTIONS.some((option) => option.id === storedMessageType)
+    ? (storedMessageType as MessageType)
+    : DEFAULT_SETTINGS.defaultMessageType;
+
   return {
     networkMode: stored.networkMode === 'wifiOnly' ? 'wifiOnly' : 'wifiAndCellular',
+    reduceDataUsage: stored.reduceDataUsage === true,
     autoPlayOnLaunch: stored.autoPlayOnLaunch === true,
+    startupVolumeMode: stored.startupVolumeMode === 'last' ? 'last' : 'fixed',
     startVolume: clampVolumeValue(typeof stored.startVolume === 'number' ? stored.startVolume : DEFAULT_START_VOLUME),
+    lastVolume: clampVolumeValue(typeof stored.lastVolume === 'number' ? stored.lastVolume : DEFAULT_START_VOLUME),
+    simplifiedAccessibility: stored.simplifiedAccessibility === true,
     messageSignature: typeof stored.messageSignature === 'string' ? stored.messageSignature : '',
     replyContact: typeof stored.replyContact === 'string' ? stored.replyContact : '',
+    defaultMessageType,
   };
 }
 
@@ -289,7 +445,9 @@ type FacebookPayload = {
 
 export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const facebookWebViewRef = useRef<WebView>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sleepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryAttemptRef = useRef(0);
   const userWantsPlaybackRef = useRef(false);
   const autoPlayedOnLaunchRef = useRef(false);
@@ -298,13 +456,17 @@ export default function App() {
   const [connectionStatus, setConnectionStatus] = useState('Radio nie gra.');
   const [volume, setVolume] = useState(DEFAULT_START_VOLUME);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<MessageType>(DEFAULT_SETTINGS.defaultMessageType);
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
+  const [facebookWebViewKey, setFacebookWebViewKey] = useState(0);
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [isCellularNetwork, setIsCellularNetwork] = useState(false);
+  const [sleepTimerEndsAt, setSleepTimerEndsAt] = useState<number | null>(null);
   const today = new Date();
   const todayNameDays = getNameDaysForDate(today);
   const todayLabel = `${todayNameDays.label} ${today.getFullYear()}`;
@@ -315,7 +477,8 @@ export default function App() {
       if (stored) {
         const nextSettings = normalizeStoredSettings(JSON.parse(stored));
         setSettings(nextSettings);
-        setVolume(nextSettings.startVolume);
+        setMessageType(nextSettings.defaultMessageType);
+        setVolume(nextSettings.startupVolumeMode === 'last' ? nextSettings.lastVolume : nextSettings.startVolume);
       }
     } catch {
       // Defaults are safe if stored settings cannot be read.
@@ -348,6 +511,7 @@ export default function App() {
 
     return () => {
       clearRetryTimer();
+      clearSleepTimer();
       soundRef.current?.unloadAsync();
       soundRef.current = null;
     };
@@ -357,11 +521,27 @@ export default function App() {
     soundRef.current?.setVolumeAsync(volume).catch(() => undefined);
   }, [volume]);
 
+  useEffect(() => {
+    if (!settingsLoaded || Math.abs(settings.lastVolume - volume) < 0.005) {
+      return;
+    }
+
+    updateSettings({ lastVolume: volume });
+  }, [settingsLoaded, settings.lastVolume, volume]);
+
   const clearRetryTimer = () => {
     if (retryTimerRef.current) {
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
     }
+  };
+
+  const clearSleepTimer = () => {
+    if (sleepTimerRef.current) {
+      clearTimeout(sleepTimerRef.current);
+      sleepTimerRef.current = null;
+    }
+    setSleepTimerEndsAt(null);
   };
 
   const unloadCurrentSound = async () => {
@@ -539,6 +719,22 @@ export default function App() {
     await startPlayback();
   };
 
+  const enableSleepTimer = (minutes: number) => {
+    if (sleepTimerRef.current) {
+      clearTimeout(sleepTimerRef.current);
+    }
+
+    const endsAt = Date.now() + minutes * 60 * 1000;
+    setSleepTimerEndsAt(endsAt);
+    sleepTimerRef.current = setTimeout(() => {
+      sleepTimerRef.current = null;
+      setSleepTimerEndsAt(null);
+      void pausePlayback().then(() => {
+        setConnectionStatus('Timer snu zatrzymał odtwarzanie.');
+      });
+    }, minutes * 60 * 1000);
+  };
+
   useEffect(() => {
     if (!settingsLoaded || autoPlayedOnLaunchRef.current || !settings.autoPlayOnLaunch) {
       return;
@@ -550,6 +746,8 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((networkState) => {
+      setIsCellularNetwork(networkState.type === 'cellular');
+
       if (networkState.type !== 'cellular') {
         networkBlockAlertShownRef.current = false;
       }
@@ -623,7 +821,7 @@ export default function App() {
       return;
     }
 
-    const subject = 'Wiadomość z aplikacji EL Radio';
+    const subject = getMessageTypeOption(messageType).subject;
     const signature = settings.messageSignature.trim() || 'Wysłano z aplikacji EL Radio';
     const replyContact = settings.replyContact.trim();
     const body = [
@@ -669,6 +867,17 @@ export default function App() {
     await WebBrowser.openBrowserAsync(APP_RELEASES_URL);
   };
 
+  const selectMessageType = (nextMessageType: MessageType) => {
+    setMessageType(nextMessageType);
+    updateSettings({ defaultMessageType: nextMessageType });
+  };
+
+  const refreshFacebookFeed = () => {
+    setFacebookPosts([]);
+    setFacebookFeedState('loading');
+    setFacebookWebViewKey((currentKey) => currentKey + 1);
+  };
+
   const handleFacebookMessage = (event: WebViewMessageEvent) => {
     try {
       const payload = JSON.parse(event.nativeEvent.data) as FacebookPayload;
@@ -706,6 +915,13 @@ export default function App() {
   const playLabel = isPlaying ? 'Wstrzymaj' : 'Odtwarzaj';
   const volumePercent = Math.round(volume * 100);
   const startVolumePercent = Math.round(settings.startVolume * 100);
+  const lastVolumePercent = Math.round(settings.lastVolume * 100);
+  const messageTypeOption = getMessageTypeOption(messageType);
+  const facebookBlockedByNetwork = settings.networkMode === 'wifiOnly' && isCellularNetwork;
+  const hideFacebookImages = settings.reduceDataUsage && isCellularNetwork;
+  const sleepTimerMinutesLeft = sleepTimerEndsAt
+    ? Math.max(1, Math.ceil((sleepTimerEndsAt - Date.now()) / 60000))
+    : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -821,6 +1037,41 @@ export default function App() {
                 </Pressable>
               </View>
             </View>
+
+            <View style={styles.sleepTimerPanel}>
+              <View style={styles.sleepTimerHeader}>
+                <Icon name="timer-outline" size={22} color="#1F2933" />
+                <Text style={styles.sleepTimerTitle}>Timer snu</Text>
+                <Text accessibilityLiveRegion="polite" style={styles.sleepTimerValue}>
+                  {sleepTimerMinutesLeft ? `${sleepTimerMinutesLeft} min` : 'Wyłączony'}
+                </Text>
+              </View>
+              <View style={styles.sleepTimerButtons}>
+                {SLEEP_TIMER_OPTIONS.map((minutes) => (
+                  <Pressable
+                    key={minutes}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Wyłącz radio za ${minutes} minut`}
+                    onPress={() => enableSleepTimer(minutes)}
+                    style={({ pressed }) => [styles.sleepTimerButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Text style={styles.sleepTimerButtonText}>{minutes} min</Text>
+                  </Pressable>
+                ))}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Wyłącz timer snu"
+                  onPress={clearSleepTimer}
+                  style={({ pressed }) => [
+                    styles.sleepTimerButton,
+                    styles.sleepTimerOffButton,
+                    pressed && styles.secondaryButtonPressed,
+                  ]}
+                >
+                  <Text style={styles.sleepTimerButtonText}>Stop</Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
 
           <View
@@ -843,57 +1094,87 @@ export default function App() {
 
           <Section icon="facebook" title="Aktualności z Facebooka">
             <View style={styles.newsList}>
-              {facebookFeedState === 'loading' && (
+              {facebookBlockedByNetwork && (
+                <View style={styles.facebookStatusCard}>
+                  <Icon name="wifi-off" size={24} color="#E25D3F" />
+                  <Text style={styles.facebookStatusText}>
+                    Aktualności są wstrzymane, bo w ustawieniach wybrano tylko Wi-Fi.
+                  </Text>
+                </View>
+              )}
+              {!facebookBlockedByNetwork && facebookFeedState === 'loading' && (
                 <View style={styles.facebookStatusCard}>
                   <ActivityIndicator color="#0C8C72" />
                   <Text style={styles.facebookStatusText}>Ładuję posty z Facebooka...</Text>
                 </View>
               )}
-              {facebookFeedState === 'error' && (
+              {!facebookBlockedByNetwork && facebookFeedState === 'error' && (
                 <View style={styles.facebookStatusCard}>
                   <Icon name="alert-circle-outline" size={24} color="#E25D3F" />
                   <Text style={styles.facebookStatusText}>
                     Nie udało się pobrać postów. Otwórz profil EL Radio na Facebooku.
                   </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Spróbuj ponownie pobrać posty z Facebooka"
+                    onPress={refreshFacebookFeed}
+                    style={({ pressed }) => [styles.retryButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Text style={styles.retryButtonText}>Spróbuj ponownie</Text>
+                  </Pressable>
                 </View>
               )}
-              {facebookPosts.map((post) => (
+              {!facebookBlockedByNetwork && facebookPosts.map((post) => (
                 <View
                   key={post.id}
                   accessible
-                  accessibilityLabel={`Post z Facebooka. ${post.text || 'Zdjęcie z profilu EL Radio.'}`}
+                  accessibilityLabel={
+                    settings.simplifiedAccessibility
+                      ? post.text || 'Zdjęcie'
+                      : `Post z Facebooka. ${post.text || 'Zdjęcie z profilu EL Radio.'}`
+                  }
                   style={styles.facebookPostCard}
                 >
-                  {post.imageUrl ? (
+                  {post.imageUrl && !hideFacebookImages ? (
                     <Image
-                      source={{ uri: post.imageUrl }}
+                      source={{ uri: post.imageUrl, headers: { 'User-Agent': FACEBOOK_WEBVIEW_USER_AGENT } }}
                       style={styles.facebookPostImage}
                       resizeMode="cover"
                       accessible={false}
                       accessibilityIgnoresInvertColors
                     />
                   ) : null}
+                  {post.imageUrl && hideFacebookImages ? (
+                    <Text style={styles.facebookImageHiddenText}>Zdjęcie ukryte w trybie oszczędzania danych.</Text>
+                  ) : null}
                   {post.text ? <Text style={styles.facebookPostText}>{post.text}</Text> : null}
                 </View>
               ))}
-              <WebView
-                accessible={false}
-                focusable={false}
-                importantForAccessibility="no-hide-descendants"
-                source={{ uri: FACEBOOK_FEED_URL }}
-                originWhitelist={['https://*']}
-                javaScriptEnabled
-                domStorageEnabled
-                sharedCookiesEnabled
-                thirdPartyCookiesEnabled
-                setSupportMultipleWindows={false}
-                textZoom={82}
-                injectedJavaScript={FACEBOOK_EXTRACT_SCRIPT}
-                injectedJavaScriptBeforeContentLoaded={FACEBOOK_EXTRACT_SCRIPT}
-                onMessage={handleFacebookMessage}
-                onError={() => setFacebookFeedState('error')}
-                style={styles.facebookLoader}
-              />
+              {!facebookBlockedByNetwork ? (
+                <WebView
+                  key={facebookWebViewKey}
+                  ref={facebookWebViewRef}
+                  accessible={false}
+                  focusable={false}
+                  importantForAccessibility="no-hide-descendants"
+                  source={{ uri: FACEBOOK_FEED_URL }}
+                  originWhitelist={['https://*']}
+                  javaScriptEnabled
+                  domStorageEnabled
+                  sharedCookiesEnabled
+                  thirdPartyCookiesEnabled
+                  setSupportMultipleWindows={false}
+                  userAgent={FACEBOOK_WEBVIEW_USER_AGENT}
+                  textZoom={82}
+                  injectedJavaScript={FACEBOOK_EXTRACT_SCRIPT}
+                  injectedJavaScriptBeforeContentLoaded={FACEBOOK_EXTRACT_SCRIPT}
+                  onLoadEnd={() => facebookWebViewRef.current?.injectJavaScript(FACEBOOK_EXTRACT_SCRIPT)}
+                  onMessage={handleFacebookMessage}
+                  onError={() => setFacebookFeedState('error')}
+                  onHttpError={() => setFacebookFeedState('error')}
+                  style={styles.facebookLoader}
+                />
+              ) : null}
             </View>
             <Pressable
               accessibilityRole="button"
@@ -907,13 +1188,37 @@ export default function App() {
           </Section>
 
           <Section icon="email-fast-outline" title="Napisz do nas">
+            <Text style={styles.messageTypeLabel}>Temat wiadomości</Text>
+            <View style={styles.messageTypeGrid}>
+              {MESSAGE_TYPE_OPTIONS.map((option) => {
+                const selected = option.id === messageType;
+                return (
+                  <Pressable
+                    key={option.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Temat wiadomości: ${option.label}`}
+                    accessibilityState={{ selected }}
+                    onPress={() => selectMessageType(option.id)}
+                    style={({ pressed }) => [
+                      styles.messageTypeButton,
+                      selected && styles.messageTypeButtonSelected,
+                      pressed && styles.secondaryButtonPressed,
+                    ]}
+                  >
+                    <Text style={[styles.messageTypeButtonText, selected && styles.messageTypeButtonTextSelected]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
             <TextInput
               accessibilityLabel="Treść wiadomości do EL Radio"
               multiline
               textAlignVertical="top"
               value={message}
               onChangeText={setMessage}
-              placeholder="Wpisz swoją wiadomość"
+              placeholder={messageTypeOption.placeholder}
               placeholderTextColor="#6B7280"
               style={styles.messageInput}
             />
@@ -949,35 +1254,84 @@ export default function App() {
           </View>
 
           <View style={styles.settingsFooter}>
-            {settingsOpen ? (
-              <View style={styles.settingsPanel}>
-                <View style={styles.settingsTitleRow} accessible accessibilityRole="header" accessibilityLabel="Ustawienia">
-                  <Icon name="cog" size={24} color="#0C5C4A" />
-                  <Text style={styles.settingsTitle}>Ustawienia</Text>
-                </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Ustawienia"
+              onPress={toggleSettingsPanel}
+              style={({ pressed }) => [styles.settingsButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="cog" size={20} color="#0C5C4A" />
+              <Text style={styles.settingsButtonText}>Ustawienia</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <Modal
+        visible={settingsOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setSettingsOpen(false)}
+      >
+        <SafeAreaView style={styles.settingsScreen}>
+          <StatusBar style="dark" />
+          <KeyboardAvoidingView
+            behavior={Platform.select({ ios: 'padding', android: undefined })}
+            style={styles.settingsKeyboardContainer}
+          >
+            <View style={styles.settingsScreenHeader} accessible accessibilityRole="header" accessibilityLabel="Ustawienia">
+              <View style={styles.settingsScreenTitleRow}>
+                <Icon name="cog" size={25} color="#0C5C4A" />
+                <Text style={styles.settingsScreenTitle}>Ustawienia</Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Zamknij ustawienia"
+                onPress={() => setSettingsOpen(false)}
+                style={({ pressed }) => [styles.settingsCloseButton, pressed && styles.secondaryButtonPressed]}
+              >
+                <Icon name="close" size={24} color="#0C5C4A" />
+              </Pressable>
+            </View>
 
-                <View style={styles.settingGroup}>
-                  <Text style={styles.settingGroupTitle}>Dane i sieć</Text>
-                  <Text style={styles.settingDescription}>
-                    Stream radia i zdjęcia z Facebooka pobierają dane z internetu. Włącz tylko Wi-Fi, jeśli nie chcesz
-                    odtwarzać przez dane komórkowe.
-                  </Text>
-                  <SettingsSwitchRow
-                    label="Tylko Wi-Fi"
-                    description="Na wykrytych danych komórkowych radio nie wystartuje."
-                    value={settings.networkMode === 'wifiOnly'}
-                    onValueChange={(value) => updateSettings({ networkMode: value ? 'wifiOnly' : 'wifiAndCellular' })}
-                  />
-                </View>
+            <ScrollView
+              contentContainerStyle={styles.settingsScreenContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Dane i sieć</Text>
+                <Text style={styles.settingDescription}>
+                  Stream radia, aktualności i zdjęcia z Facebooka pobierają dane z internetu.
+                </Text>
+                <SettingsSwitchRow
+                  label="Tylko Wi-Fi"
+                  description="Na wykrytych danych komórkowych radio i aktualności nie wystartują."
+                  value={settings.networkMode === 'wifiOnly'}
+                  onValueChange={(value) => updateSettings({ networkMode: value ? 'wifiOnly' : 'wifiAndCellular' })}
+                />
+                <SettingsSwitchRow
+                  label="Oszczędzanie danych"
+                  description="Na danych komórkowych aplikacja ukryje zdjęcia z Facebooka."
+                  value={settings.reduceDataUsage}
+                  onValueChange={(value) => updateSettings({ reduceDataUsage: value })}
+                />
+              </View>
 
-                <View style={styles.settingGroup}>
-                  <Text style={styles.settingGroupTitle}>Start aplikacji</Text>
-                  <SettingsSwitchRow
-                    label="Włącz odtwarzanie po uruchomieniu"
-                    description="Po otwarciu aplikacji radio uruchomi się automatycznie."
-                    value={settings.autoPlayOnLaunch}
-                    onValueChange={(value) => updateSettings({ autoPlayOnLaunch: value })}
-                  />
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Start aplikacji</Text>
+                <SettingsSwitchRow
+                  label="Włącz odtwarzanie po uruchomieniu"
+                  description="Po otwarciu aplikacji radio uruchomi się automatycznie."
+                  value={settings.autoPlayOnLaunch}
+                  onValueChange={(value) => updateSettings({ autoPlayOnLaunch: value })}
+                />
+                <SettingsSwitchRow
+                  label="Startuj z ostatnią głośnością"
+                  description={`Ostatnio zapamiętana głośność: ${lastVolumePercent} procent.`}
+                  value={settings.startupVolumeMode === 'last'}
+                  onValueChange={(value) => updateSettings({ startupVolumeMode: value ? 'last' : 'fixed' })}
+                />
+                {settings.startupVolumeMode === 'fixed' ? (
                   <View
                     accessible
                     accessibilityRole="adjustable"
@@ -1020,81 +1374,104 @@ export default function App() {
                       </Pressable>
                     </View>
                   </View>
-                </View>
+                ) : null}
+              </View>
 
-                <View style={styles.settingGroup}>
-                  <Text style={styles.settingGroupTitle}>Wiadomości</Text>
-                  <Text style={styles.settingInputLabel}>Podpis</Text>
-                  <TextInput
-                    accessibilityLabel="Podpis do wiadomości"
-                    value={settings.messageSignature}
-                    onChangeText={(value) => updateSettings({ messageSignature: value })}
-                    placeholder="Np. Imię albo podpis słuchacza"
-                    placeholderTextColor="#6B7280"
-                    multiline
-                    textAlignVertical="top"
-                    style={styles.settingsTextInput}
-                  />
-                  <Text style={styles.settingInputLabel}>Kontakt zwrotny</Text>
-                  <TextInput
-                    accessibilityLabel="Kontakt zwrotny do wiadomości"
-                    value={settings.replyContact}
-                    onChangeText={(value) => updateSettings({ replyContact: value })}
-                    placeholder="Telefon albo e-mail"
-                    placeholderTextColor="#6B7280"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    style={styles.settingsTextInput}
-                  />
-                </View>
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Dostępność</Text>
+                <SettingsSwitchRow
+                  label="Prostsze opisy dla czytnika"
+                  description="Posty i elementy pomocnicze mają krótsze etykiety."
+                  value={settings.simplifiedAccessibility}
+                  onValueChange={(value) => updateSettings({ simplifiedAccessibility: value })}
+                />
+              </View>
 
-                <View style={styles.settingGroup}>
-                  <Text style={styles.settingGroupTitle}>Aktualizacja aplikacji</Text>
-                  <Text accessibilityLiveRegion="polite" style={styles.settingDescription}>
-                    {updateStatus}
-                  </Text>
-                  <View style={styles.settingButtonRow}>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="Sprawdź aktualizacje aplikacji"
-                      onPress={checkForOtaUpdate}
-                      style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
-                    >
-                      <Icon name="refresh" size={19} color="#0C5C4A" />
-                      <Text style={styles.settingsActionButtonText}>Sprawdź</Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="link"
-                      accessibilityLabel="Otwórz stronę aktualizacji aplikacji"
-                      onPress={openReleases}
-                      style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
-                    >
-                      <Icon name="download" size={19} color="#0C5C4A" />
-                      <Text style={styles.settingsActionButtonText}>Pobierz</Text>
-                    </Pressable>
-                  </View>
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Wiadomości</Text>
+                <Text style={styles.settingInputLabel}>Domyślny temat</Text>
+                <View style={styles.messageTypeGrid}>
+                  {MESSAGE_TYPE_OPTIONS.map((option) => {
+                    const selected = option.id === messageType;
+                    return (
+                      <Pressable
+                        key={option.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Domyślny temat wiadomości: ${option.label}`}
+                        accessibilityState={{ selected }}
+                        onPress={() => selectMessageType(option.id)}
+                        style={({ pressed }) => [
+                          styles.messageTypeButton,
+                          selected && styles.messageTypeButtonSelected,
+                          pressed && styles.secondaryButtonPressed,
+                        ]}
+                      >
+                        <Text style={[styles.messageTypeButtonText, selected && styles.messageTypeButtonTextSelected]}>
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
+                <Text style={styles.settingInputLabel}>Podpis</Text>
+                <TextInput
+                  accessibilityLabel="Podpis do wiadomości"
+                  value={settings.messageSignature}
+                  onChangeText={(value) => updateSettings({ messageSignature: value })}
+                  placeholder="Np. Imię albo podpis słuchacza"
+                  placeholderTextColor="#6B7280"
+                  multiline
+                  textAlignVertical="top"
+                  style={styles.settingsTextInput}
+                />
+                <Text style={styles.settingInputLabel}>Kontakt zwrotny</Text>
+                <TextInput
+                  accessibilityLabel="Kontakt zwrotny do wiadomości"
+                  value={settings.replyContact}
+                  onChangeText={(value) => updateSettings({ replyContact: value })}
+                  placeholder="Telefon albo e-mail"
+                  placeholderTextColor="#6B7280"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={styles.settingsTextInput}
+                />
+              </View>
 
-                <View style={styles.settingGroupLast}>
-                  <Text style={styles.settingGroupTitle}>Prywatność</Text>
-                  <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Aktualizacja aplikacji</Text>
+                <Text accessibilityLiveRegion="polite" style={styles.settingDescription}>
+                  {updateStatus}
+                </Text>
+                <View style={styles.settingButtonRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Sprawdź aktualizacje aplikacji"
+                    onPress={checkForOtaUpdate}
+                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Icon name="refresh" size={19} color="#0C5C4A" />
+                    <Text style={styles.settingsActionButtonText}>Sprawdź</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Otwórz stronę aktualizacji aplikacji"
+                    onPress={openReleases}
+                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Icon name="download" size={19} color="#0C5C4A" />
+                    <Text style={styles.settingsActionButtonText}>Pobierz</Text>
+                  </Pressable>
                 </View>
               </View>
-            ) : null}
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={settingsOpen ? 'Zamknij ustawienia' : 'Ustawienia'}
-              accessibilityState={{ expanded: settingsOpen }}
-              onPress={toggleSettingsPanel}
-              style={({ pressed }) => [styles.settingsButton, pressed && styles.secondaryButtonPressed]}
-            >
-              <Icon name={settingsOpen ? 'close' : 'cog'} size={20} color="#0C5C4A" />
-              <Text style={styles.settingsButtonText}>{settingsOpen ? 'Zamknij' : 'Ustawienia'}</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              <View style={styles.settingGroupLast}>
+                <Text style={styles.settingGroupTitle}>Prywatność</Text>
+                <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1348,6 +1725,57 @@ const styles = StyleSheet.create({
     shadowRadius: 7,
     elevation: 4,
   },
+  sleepTimerPanel: {
+    marginTop: 14,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#BFD3CC',
+    borderWidth: 1,
+  },
+  sleepTimerHeader: {
+    minHeight: 34,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sleepTimerTitle: {
+    flex: 1,
+    color: '#1F2933',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  sleepTimerValue: {
+    color: '#0C5C4A',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  sleepTimerButtons: {
+    marginTop: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sleepTimerButton: {
+    minHeight: 42,
+    minWidth: 72,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#F4F7F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  sleepTimerOffButton: {
+    backgroundColor: '#FFF7E2',
+    borderColor: '#E3C46C',
+  },
+  sleepTimerButtonText: {
+    color: '#0C5C4A',
+    fontSize: 15,
+    fontWeight: '900',
+  },
   frequencyBand: {
     backgroundColor: '#1F2933',
     paddingHorizontal: 20,
@@ -1424,6 +1852,14 @@ const styles = StyleSheet.create({
     height: 205,
     backgroundColor: '#DCE6E1',
   },
+  facebookImageHiddenText: {
+    color: '#52645F',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+    paddingHorizontal: 14,
+    paddingTop: 12,
+  },
   facebookPostText: {
     color: '#1F2933',
     fontSize: 16,
@@ -1433,9 +1869,26 @@ const styles = StyleSheet.create({
   },
   facebookLoader: {
     position: 'absolute',
-    width: 1,
-    height: 1,
+    left: -1200,
+    top: 0,
+    width: 500,
+    height: 900,
     opacity: 0,
+  },
+  retryButton: {
+    minHeight: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  retryButtonText: {
+    color: '#0C5C4A',
+    fontSize: 14,
+    fontWeight: '900',
   },
   secondaryButton: {
     minHeight: 52,
@@ -1457,6 +1910,40 @@ const styles = StyleSheet.create({
     color: '#0C5C4A',
     fontSize: 17,
     fontWeight: '800',
+  },
+  messageTypeLabel: {
+    color: '#1F2933',
+    fontSize: 15,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  messageTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  messageTypeButton: {
+    minHeight: 42,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  messageTypeButtonSelected: {
+    borderColor: '#0C8C72',
+    backgroundColor: '#0C8C72',
+  },
+  messageTypeButtonText: {
+    color: '#0C5C4A',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  messageTypeButtonTextSelected: {
+    color: '#FFFFFF',
   },
   messageInput: {
     minHeight: 150,
@@ -1535,6 +2022,50 @@ const styles = StyleSheet.create({
     color: '#F6C95C',
     fontSize: 16,
     fontWeight: '800',
+  },
+  settingsScreen: {
+    flex: 1,
+    backgroundColor: '#F6F8F7',
+  },
+  settingsKeyboardContainer: {
+    flex: 1,
+  },
+  settingsScreenHeader: {
+    minHeight: Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 0) + 62 : 62,
+    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight ?? 0 : 0,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomColor: '#CEE0D8',
+    borderBottomWidth: 1,
+    backgroundColor: '#EAF4EF',
+  },
+  settingsScreenTitleRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  settingsScreenTitle: {
+    color: '#17212B',
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  settingsCloseButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsScreenContent: {
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 34,
   },
   settingsFooter: {
     alignItems: 'flex-end',
