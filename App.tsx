@@ -67,6 +67,12 @@ const PRIVACY_TEXT =
   'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz zgłoszenie błędu lub propozycji i zostawisz włączoną opcję dołączenia diagnostyki.';
 const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
+    function boot() {
+      if (!document.documentElement || !document.head || !document.body) {
+        setTimeout(boot, 120);
+        return;
+      }
+
     var attempts = 0;
     var maxPosts = 4;
     var includeImages = __ELRADIO_INCLUDE_IMAGES__;
@@ -347,6 +353,9 @@ const FACEBOOK_EXTRACT_SCRIPT = `
     }
 
     collect();
+    }
+
+    boot();
   })();
   true;
 `;
@@ -522,6 +531,7 @@ export default function App() {
   const [messageTypeSelectorOpen, setMessageTypeSelectorOpen] = useState(false);
   const [sleepTimerSelectorOpen, setSleepTimerSelectorOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackKind, setFeedbackKind] = useState<FeedbackKind>('bug');
   const [feedbackText, setFeedbackText] = useState('');
@@ -1298,10 +1308,16 @@ export default function App() {
                   textZoom={82}
                   injectedJavaScript={facebookExtractScript}
                   injectedJavaScriptBeforeContentLoaded={facebookExtractScript}
+                  onLoadProgress={(event) => {
+                    if (event.nativeEvent.progress >= 0.35) {
+                      facebookWebViewRef.current?.injectJavaScript(facebookExtractScript);
+                    }
+                  }}
                   onLoadEnd={() => facebookWebViewRef.current?.injectJavaScript(facebookExtractScript)}
                   onMessage={handleFacebookMessage}
                   onError={() => setFacebookFeedState('error')}
                   onHttpError={() => setFacebookFeedState('error')}
+                  pointerEvents={'none'}
                   style={styles.facebookLoader}
                 />
               ) : null}
@@ -1357,10 +1373,15 @@ export default function App() {
           </Section>
 
           <View style={styles.aboutBand}>
-            <Text style={styles.aboutTitle}>O nas</Text>
-            <Text style={styles.aboutText}>El Radio Łódź 90,8 · Księży Młyn 14, Łódź · BIURO@ELRADIO.PL</Text>
-            <Pressable accessibilityRole="link" onPress={openWebsite} style={styles.websiteButton}>
-              <Text style={styles.websiteText}>https://elradio.pl</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="O nas"
+              onPress={() => setAboutOpen(true)}
+              style={({ pressed }) => [styles.aboutButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="information-outline" size={22} color="#F6C95C" />
+              <Text style={styles.aboutButtonText}>O nas</Text>
+              <Icon name="chevron-right" size={24} color="#F6C95C" />
             </Pressable>
           </View>
 
@@ -1663,6 +1684,39 @@ export default function App() {
         onSelect={selectSleepTimerOption}
         onClose={() => setSleepTimerSelectorOpen(false)}
       />
+      <Modal
+        visible={aboutOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setAboutOpen(false)}
+      >
+        <SafeAreaView style={styles.settingsScreen}>
+          <StatusBar style="dark" />
+          <View style={styles.settingsScreenHeader}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Wróć"
+              onPress={() => setAboutOpen(false)}
+              style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="chevron-left" size={28} color="#0C5C4A" />
+              <Text style={styles.settingsBackButtonText}>Wróć</Text>
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.settingsScreenContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.settingGroupLast}>
+              <Text style={styles.settingGroupTitle}>O nas</Text>
+              <Text style={styles.aboutModalText}>El Radio Łódź 90,8</Text>
+              <Text style={styles.aboutModalText}>EL RADIO SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ</Text>
+              <Text style={styles.aboutModalText}>Księży Młyn 14 90-345 Łódź</Text>
+              <Text style={styles.aboutModalText}>e-mail: BIURO@ELRADIO.PL</Text>
+              <Pressable accessibilityRole="link" onPress={openWebsite} style={styles.websiteButton}>
+                <Text style={styles.websiteTextDark}>https://elradio.pl</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
       <Modal
         visible={privacyOpen}
         animationType="slide"
@@ -2173,11 +2227,11 @@ const styles = StyleSheet.create({
   },
   facebookLoader: {
     position: 'absolute',
-    left: -1200,
+    left: Platform.OS === 'ios' ? 0 : -1200,
     top: 0,
     width: 500,
     height: 900,
-    opacity: 0,
+    opacity: Platform.OS === 'ios' ? 0.01 : 0,
   },
   retryButton: {
     minHeight: 40,
@@ -2304,6 +2358,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
+  aboutButton: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  aboutButtonText: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
   aboutTitle: {
     color: '#FFFFFF',
     fontSize: 22,
@@ -2326,6 +2392,18 @@ const styles = StyleSheet.create({
     color: '#F6C95C',
     fontSize: 16,
     fontWeight: '800',
+  },
+  websiteTextDark: {
+    color: '#0C5C4A',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  aboutModalText: {
+    color: '#31473F',
+    fontSize: 17,
+    lineHeight: 25,
+    fontWeight: '700',
+    marginTop: 8,
   },
   settingsScreen: {
     flex: 1,

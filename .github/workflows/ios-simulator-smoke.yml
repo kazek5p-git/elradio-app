@@ -1,0 +1,48 @@
+name: iOS Simulator Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx expo prebuild --platform ios --clean
+      - name: Build simulator app
+        run: |
+          set -euo pipefail
+          WORKSPACE=$(find ios -maxdepth 1 -name '*.xcworkspace' -print -quit)
+          SCHEME_PATH=$(find ios -path '*/xcshareddata/xcschemes/*.xcscheme' ! -path '*/Pods/*' -print -quit)
+          SCHEME=$(basename $SCHEME_PATH .xcscheme)
+          xcodebuild -workspace $WORKSPACE -scheme $SCHEME -configuration Release -sdk iphonesimulator -derivedDataPath build-simulator CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= build
+      - name: Run simulator screenshot
+        run: |
+          set -euo pipefail
+          mkdir -p simulator-screenshots
+          DEVICE_TYPE=$(xcrun simctl list devicetypes | sed -n 's/.*(\(com.apple.CoreSimulator.SimDeviceType.iPhone-16[^)]*\)).*/\1/p' | head -n 1)
+          RUNTIME=$(xcrun simctl list runtimes | sed -n 's/.*(\(com.apple.CoreSimulator.SimRuntime.iOS-[^)]*\)).*/\1/p' | tail -n 1)
+          UDID=$(xcrun simctl create ElRadioSmoke $DEVICE_TYPE $RUNTIME)
+          trap 'xcrun simctl shutdown $UDID || true; xcrun simctl delete $UDID || true' EXIT
+          xcrun simctl boot $UDID
+          xcrun simctl bootstatus $UDID -b
+          APP_PATH=$(find build-simulator -path '*Release-iphonesimulator/*.app' -print -quit)
+          xcrun simctl install $UDID $APP_PATH
+          xcrun simctl launch $UDID pl.elradio.app
+          sleep 55
+          xcrun simctl io $UDID screenshot simulator-screenshots/home.png
+          xcrun simctl openurl $UDID elradio://news
+          sleep 20
+          xcrun simctl io $UDID screenshot simulator-screenshots/news.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-screenshots
+          path: simulator-screenshots/*.png
