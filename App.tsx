@@ -790,6 +790,7 @@ export default function App() {
   const [sleepTimerSelectorOpen, setSleepTimerSelectorOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackKind, setFeedbackKind] = useState<FeedbackKind>('bug');
   const [feedbackText, setFeedbackText] = useState('');
@@ -1166,6 +1167,7 @@ export default function App() {
     const sent = await openMailComposer(subject, body);
     if (sent) {
       setMessage('');
+      setContactOpen(false);
     }
   };
 
@@ -1667,43 +1669,18 @@ export default function App() {
             </Section>
           </View>
 
-          <Section icon="email-fast-outline" title="Napisz do nas">
-            <SelectButton
-              label="Temat wiadomości"
-              value={messageTypeOption.label}
-              icon="format-list-bulleted"
-              accessibilityLabel={`Temat wiadomości: ${messageTypeOption.label}`}
-              onPress={() => setMessageTypeSelectorOpen(true)}
-            />
-            <TextInput
-              accessibilityLabel="Treść wiadomości do EL Radio"
-              multiline
-              textAlignVertical="top"
-              value={message}
-              onChangeText={setMessage}
-              placeholder={messageTypeOption.placeholder}
-              placeholderTextColor="#6B7280"
-              style={styles.messageInput}
-            />
+          <View style={styles.contactBand}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Wyślij wiadomość do EL Radio"
-              onPress={sendMessage}
-              style={({ pressed }) => [styles.primarySmallButton, pressed && styles.primarySmallButtonPressed]}
+              accessibilityLabel="Napisz do nas"
+              onPress={() => setContactOpen(true)}
+              style={({ pressed }) => [styles.contactButton, pressed && styles.secondaryButtonPressed]}
             >
-              <Icon name="send" size={20} color="#FFFFFF" />
-              <Text style={styles.primarySmallButtonText}>Wyślij wiadomość</Text>
+              <Icon name="email-fast-outline" size={22} color="#0C5C4A" />
+              <Text style={styles.contactButtonText}>Napisz do nas</Text>
+              <Icon name="chevron-right" size={24} color="#0C5C4A" />
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Zgłoś błąd w aplikacji"
-              onPress={() => openFeedbackForm('bug')}
-              style={({ pressed }) => [styles.reportButton, pressed && styles.secondaryButtonPressed]}
-            >
-              <Icon name="bug-outline" size={20} color="#0C5C4A" />
-              <Text style={styles.reportButtonText}>Zgłoś błąd</Text>
-            </Pressable>
-          </Section>
+          </View>
 
           <View style={styles.aboutBand}>
             <Pressable
@@ -1907,6 +1884,69 @@ export default function App() {
                 >
                   <Icon name="shield-account-outline" size={19} color="#0C5C4A" />
                   <Text style={styles.settingsActionButtonText}>Pokaż</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
+      <Modal
+        visible={contactOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setContactOpen(false)}
+      >
+        <SafeAreaView style={styles.settingsScreen}>
+          <StatusBar style="dark" />
+          <KeyboardAvoidingView
+            behavior={Platform.select({ ios: 'padding', android: undefined })}
+            style={styles.settingsKeyboardContainer}
+          >
+            <View style={styles.settingsScreenHeader}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Wróć"
+                onPress={() => setContactOpen(false)}
+                style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
+              >
+                <Icon name="chevron-left" size={28} color="#0C5C4A" />
+                <Text style={styles.settingsBackButtonText}>Wróć</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView
+              contentContainerStyle={styles.settingsScreenContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.settingGroupLast}>
+                <Text style={styles.settingGroupTitle}>Napisz do nas</Text>
+                <SelectButton
+                  label="Temat wiadomości"
+                  value={messageTypeOption.label}
+                  icon="format-list-bulleted"
+                  accessibilityLabel={`Temat wiadomości: ${messageTypeOption.label}`}
+                  onPress={() => setMessageTypeSelectorOpen(true)}
+                />
+                <Text style={styles.settingInputLabel}>Treść</Text>
+                <TextInput
+                  accessibilityLabel="Treść wiadomości do EL Radio"
+                  multiline
+                  textAlignVertical="top"
+                  value={message}
+                  onChangeText={setMessage}
+                  placeholder={messageTypeOption.placeholder}
+                  placeholderTextColor="#6B7280"
+                  style={styles.messageInput}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Wyślij wiadomość do EL Radio"
+                  onPress={sendMessage}
+                  style={({ pressed }) => [styles.primarySmallButton, pressed && styles.primarySmallButtonPressed]}
+                >
+                  <Icon name="send" size={20} color="#FFFFFF" />
+                  <Text style={styles.primarySmallButtonText}>Wyślij wiadomość</Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -2674,23 +2714,29 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
   },
-  reportButton: {
-    minHeight: 48,
-    marginTop: 10,
+  contactBand: {
+    backgroundColor: '#F4F7F5',
+    borderTopWidth: 1,
+    borderTopColor: '#DCE6E1',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  contactButton: {
+    minHeight: 56,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#AFC9BF',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
-    justifyContent: 'center',
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 16,
   },
-  reportButtonText: {
-    color: '#0C5C4A',
-    fontSize: 16,
-    fontWeight: '800',
+  contactButtonText: {
+    flex: 1,
+    color: '#17212B',
+    fontSize: 18,
+    fontWeight: '900',
   },
   aboutBand: {
     backgroundColor: '#17212B',
