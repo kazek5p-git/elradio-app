@@ -446,6 +446,8 @@ type FacebookPayload = {
 export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const facebookWebViewRef = useRef<WebView>(null);
+  const mainScrollRef = useRef<ScrollView>(null);
+  const newsSectionYRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sleepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryAttemptRef = useRef(0);
@@ -878,6 +880,36 @@ export default function App() {
     setFacebookWebViewKey((currentKey) => currentKey + 1);
   };
 
+  const scrollToNews = () => {
+    mainScrollRef.current?.scrollTo({
+      y: Math.max(0, newsSectionYRef.current - 12),
+      animated: false,
+    });
+  };
+
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) {
+        return;
+      }
+
+      const normalizedUrl = url.toLowerCase();
+      if (normalizedUrl.includes('settings')) {
+        setSettingsOpen(true);
+      }
+      if (normalizedUrl.includes('news') || normalizedUrl.includes('facebook')) {
+        setTimeout(scrollToNews, 350);
+      }
+      if (normalizedUrl.includes('refresh')) {
+        refreshFacebookFeed();
+      }
+    };
+
+    Linking.getInitialURL().then(handleUrl).catch(() => undefined);
+    const subscription = Linking.addEventListener('url', (event) => handleUrl(event.url));
+    return () => subscription.remove();
+  }, []);
+
   const handleFacebookMessage = (event: WebViewMessageEvent) => {
     try {
       const payload = JSON.parse(event.nativeEvent.data) as FacebookPayload;
@@ -931,6 +963,7 @@ export default function App() {
         style={styles.keyboardContainer}
       >
         <ScrollView
+          ref={mainScrollRef}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -1092,8 +1125,11 @@ export default function App() {
             </View>
           </Section>
 
-          <Section icon="facebook" title="Aktualności z Facebooka">
-            <View style={styles.newsList}>
+          <View onLayout={(event) => {
+            newsSectionYRef.current = event.nativeEvent.layout.y;
+          }}>
+            <Section icon="facebook" title="Aktualności z Facebooka">
+              <View style={styles.newsList}>
               {facebookBlockedByNetwork && (
                 <View style={styles.facebookStatusCard}>
                   <Icon name="wifi-off" size={24} color="#E25D3F" />
@@ -1175,17 +1211,18 @@ export default function App() {
                   style={styles.facebookLoader}
                 />
               ) : null}
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Facebook EL Radio"
-              onPress={openFacebook}
-              style={({ pressed }) => [styles.secondaryButton, pressed && styles.secondaryButtonPressed]}
-            >
-              <Icon name="facebook" size={22} color="#0C5C4A" />
-              <Text style={styles.secondaryButtonText}>Zaobserwuj lub polub</Text>
-            </Pressable>
-          </Section>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Facebook EL Radio"
+                onPress={openFacebook}
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.secondaryButtonPressed]}
+              >
+                <Icon name="facebook" size={22} color="#0C5C4A" />
+                <Text style={styles.secondaryButtonText}>Zaobserwuj lub polub</Text>
+              </Pressable>
+            </Section>
+          </View>
 
           <Section icon="email-fast-outline" title="Napisz do nas">
             <Text style={styles.messageTypeLabel}>Temat wiadomości</Text>
