@@ -294,8 +294,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
           .replace(/\\n/g, ' ')
           .replace(/\\r/g, ' ')
           .replace(/\\t/g, ' ')
-          .replace(/\\"/g, '"')
-          .replace(/\\\\/g, '\\');
+          .replace(/\\"/g, '"');
       }
 
       var textarea = document.createElement('textarea');
@@ -310,7 +309,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       var imagePattern = /"photo_image"\\s*:\\s*\\{\\s*"uri"\\s*:\\s*"([^"]+)"/;
       var match;
 
-      while ((match = messagePattern.exec(html)) && output.length < maxPosts * 5) {
+      while ((match = messagePattern.exec(html)) && output.length < maxPosts * 30) {
         var text = cleanPostText(decodeFacebookJsonString(match[1]));
         if (!text || /^(Zobacz wi.?cej informacji|Strona|Ksi|Czynne|Jeszcze nie oceniono)/i.test(text)) {
           continue;
