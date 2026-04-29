@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 const FACEBOOK_SOURCE_URL = 'https://www.facebook.com/people/ELRadio-908-FM/61584365428208/';
@@ -129,7 +129,21 @@ async function fetchFacebookHtml() {
   throw lastError ?? new Error('Could not fetch Facebook feed');
 }
 
-const result = await fetchFacebookHtml();
+let result;
+try {
+  result = await fetchFacebookHtml();
+} catch (error) {
+  try {
+    const existing = JSON.parse(await readFile(OUTPUT_PATH, 'utf8'));
+    if (Array.isArray(existing.posts) && existing.posts.length) {
+      console.warn(`Facebook fetch failed, keeping existing ${existing.posts.length} posts: ${error.message}`);
+      process.exit(0);
+    }
+  } catch {
+    // No usable cached feed exists, fail below.
+  }
+  throw error;
+}
 const output = {
   updatedAt: new Date().toISOString(),
   source: 'facebook',
