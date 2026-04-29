@@ -9,8 +9,6 @@ permissions:
 jobs:
   smoke:
     runs-on: macos-15
-    env:
-      EXPO_PUBLIC_ELRADIO_DEBUG_FACEBOOK: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

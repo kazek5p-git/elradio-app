@@ -43,6 +43,7 @@ const FACEBOOK_PAGE_ID = '61584365428208';
 const FACEBOOK_URL = `https://www.facebook.com/people/ELRadio-908-FM/${FACEBOOK_PAGE_ID}/`;
 const FACEBOOK_PLUGIN_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
 const FACEBOOK_CRAWLER_URL = 'https://mbasic.facebook.com/943822595472447';
+const FACEBOOK_FEED_JSON_URL = 'https://raw.githubusercontent.com/kazek5p-git/elradio-app/main/data/facebook-feed.json';
 const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
   FACEBOOK_PLUGIN_URL,
 )}&tabs=timeline&width=500&height=900&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`;
@@ -63,7 +64,7 @@ const DEFAULT_START_VOLUME = 0.86;
 const FACEBOOK_CRAWLER_USER_AGENT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 const FACEBOOK_WEBVIEW_USER_AGENT =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
-const DEBUG_FACEBOOK_FEED = true;
+const DEBUG_FACEBOOK_FEED = typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_ELRADIO_DEBUG_FACEBOOK === '1';
 const PRIVACY_TEXT =
   'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia są zapisywane lokalnie na tym urządzeniu.\n\n' +
   'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia w kartach postów są pobierane przez aplikację tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
@@ -638,6 +639,21 @@ type FacebookPayload = {
   posts?: FacebookPost[];
 };
 
+type FacebookFeedJson = {
+  posts?: FacebookPost[];
+};
+
+function normalizeFacebookPosts(posts: FacebookPost[] | undefined, includeImages: boolean) {
+  return (posts ?? [])
+    .filter((post) => post.text || post.imageUrl)
+    .slice(0, MAX_FACEBOOK_POSTS)
+    .map((post, index) => ({
+      id: post.id || `${index + 1}-${post.text.slice(0, 24)}`,
+      text: post.text,
+      imageUrl: includeImages ? post.imageUrl : '',
+    }));
+}
+
 function decodeFacebookCrawlerString(value: string) {
   if (!value) {
     return '';
@@ -738,7 +754,7 @@ function parseFacebookCrawlerPosts(html: string, includeImages: boolean): Facebo
     const nextMessageIndex = html.indexOf('"message"', messagePattern.lastIndex);
     const segmentEnd = nextMessageIndex > match.index ? nextMessageIndex : Math.min(html.length, match.index + 70000);
     const segment = html.slice(match.index, segmentEnd);
-    const imageMatch = imagePattern.exec(segment) ?? imagePattern.exec(html.slice(match.index, Math.min(html.length, match.index + 70000)));
+    const imageMatch = imagePattern.exec(segment);
     const imageUrl = imageMatch && includeImages ? decodeFacebookCrawlerString(imageMatch[1]) : '';
     addPost(text, imageUrl);
   }
@@ -1282,14 +1298,7 @@ export default function App() {
         return;
       }
 
-      const posts = (payload.posts ?? [])
-        .filter((post) => post.text || post.imageUrl)
-        .slice(0, MAX_FACEBOOK_POSTS)
-        .map((post, index) => ({
-          id: post.id || `${index + 1}-${post.text.slice(0, 24)}`,
-          text: post.text,
-          imageUrl: post.imageUrl,
-        }));
+      const posts = normalizeFacebookPosts(payload.posts, settings.downloadFacebookImages);
 
       setFacebookPosts(posts);
       setFacebookFeedState(posts.length ? 'ready' : 'error');
@@ -1341,38 +1350,60 @@ export default function App() {
     const requestId = facebookFetchRequestRef.current + 1;
     facebookFetchRequestRef.current = requestId;
 
+    const loadJsonPosts = async () => {
+      const response = await fetch(`${FACEBOOK_FEED_JSON_URL}?refresh=${facebookWebViewKey}`, { cache: 'no-store' });
+      const payload = await response.json() as FacebookFeedJson;
+      const posts = normalizeFacebookPosts(payload.posts, settings.downloadFacebookImages);
+      if (!response.ok || !posts.length) {
+        throw new Error(`json ${response.status}, posty ${posts.length}`);
+      }
+      return { posts, debug: `json ${response.status}, posty ${posts.length}` };
+    };
+
     const loadCrawlerPosts = async () => {
+      const response = await fetch(FACEBOOK_CRAWLER_URL, {
+        headers: {
+          'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+          'User-Agent': FACEBOOK_CRAWLER_USER_AGENT,
+        },
+      });
+      const html = await response.text();
+      const posts = parseFacebookCrawlerPosts(html, settings.downloadFacebookImages);
+      if (!response.ok || !posts.length) {
+        throw new Error(
+          `fetch ${response.status}, html ${html.length}, message ${html.includes('message') ? 'tak' : 'nie'}, elporter ${html.toLowerCase().includes('elporter') ? 'tak' : 'nie'}, posty ${posts.length}`,
+        );
+      }
+      return { posts, debug: `fetch ${response.status}, posty ${posts.length}` };
+    };
+
+    const loadPosts = async () => {
       try {
-        const response = await fetch(FACEBOOK_CRAWLER_URL, {
-          headers: {
-            'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
-            'User-Agent': FACEBOOK_CRAWLER_USER_AGENT,
-          },
-        });
-        const html = await response.text();
+        let result;
+        try {
+          result = await loadJsonPosts();
+        } catch {
+          result = await loadCrawlerPosts();
+        }
         if (cancelled || facebookFetchRequestRef.current !== requestId) {
           return;
         }
-
-        const posts = parseFacebookCrawlerPosts(html, settings.downloadFacebookImages);
         if (DEBUG_FACEBOOK_FEED) {
-          setFacebookDebug(
-            `fetch ${response.status}, html ${html.length}, message ${html.includes('message') ? 'tak' : 'nie'}, elporter ${html.toLowerCase().includes('elporter') ? 'tak' : 'nie'}, posty ${posts.length}`,
-          );
+          setFacebookDebug(result.debug);
         }
-        setFacebookPosts(posts);
-        setFacebookFeedState(posts.length ? 'ready' : 'error');
-      } catch {
+        setFacebookPosts(result.posts);
+        setFacebookFeedState('ready');
+      } catch (error) {
         if (!cancelled && facebookFetchRequestRef.current === requestId) {
           if (DEBUG_FACEBOOK_FEED) {
-            setFacebookDebug('fetch error');
+            setFacebookDebug(error instanceof Error ? error.message : 'fetch error');
           }
           setFacebookFeedState('error');
         }
       }
     };
 
-    void loadCrawlerPosts();
+    void loadPosts();
     return () => {
       cancelled = true;
     };
