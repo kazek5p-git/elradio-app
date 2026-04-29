@@ -1315,18 +1315,15 @@ export default function App() {
             behavior={Platform.select({ ios: 'padding', android: undefined })}
             style={styles.settingsKeyboardContainer}
           >
-            <View style={styles.settingsScreenHeader} accessible accessibilityRole="header" accessibilityLabel="Ustawienia">
-              <View style={styles.settingsScreenTitleRow}>
-                <Icon name="cog" size={25} color="#0C5C4A" />
-                <Text style={styles.settingsScreenTitle}>Ustawienia</Text>
-              </View>
+            <View style={styles.settingsScreenHeader}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Zamknij ustawienia"
+                accessibilityLabel="Wróć"
                 onPress={() => setSettingsOpen(false)}
-                style={({ pressed }) => [styles.settingsCloseButton, pressed && styles.secondaryButtonPressed]}
+                style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
               >
-                <Icon name="close" size={24} color="#0C5C4A" />
+                <Icon name="chevron-left" size={28} color="#0C5C4A" />
+                <Text style={styles.settingsBackButtonText}>Wróć</Text>
               </Pressable>
             </View>
 
@@ -1415,16 +1412,6 @@ export default function App() {
               </View>
 
               <View style={styles.settingGroup}>
-                <Text style={styles.settingGroupTitle}>Dostępność</Text>
-                <SettingsSwitchRow
-                  label="Prostsze opisy dla czytnika"
-                  description="Posty i elementy pomocnicze mają krótsze etykiety."
-                  value={settings.simplifiedAccessibility}
-                  onValueChange={(value) => updateSettings({ simplifiedAccessibility: value })}
-                />
-              </View>
-
-              <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Wiadomości</Text>
                 <Text style={styles.settingInputLabel}>Domyślny temat</Text>
                 <View style={styles.messageTypeGrid}>
@@ -1499,6 +1486,16 @@ export default function App() {
                     <Text style={styles.settingsActionButtonText}>Pobierz</Text>
                   </Pressable>
                 </View>
+              </View>
+
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Dostępność</Text>
+                <SettingsSwitchRow
+                  label="Prostsze opisy dla czytnika"
+                  description="Posty i elementy pomocnicze mają krótsze etykiety."
+                  value={settings.simplifiedAccessibility}
+                  onValueChange={(value) => updateSettings({ simplifiedAccessibility: value })}
+                />
               </View>
 
               <View style={styles.settingGroupLast}>
@@ -2073,24 +2070,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     borderBottomColor: '#CEE0D8',
     borderBottomWidth: 1,
     backgroundColor: '#EAF4EF',
   },
-  settingsScreenTitleRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  settingsScreenTitle: {
-    color: '#17212B',
-    fontSize: 22,
-    fontWeight: '900',
-  },
-  settingsCloseButton: {
-    width: 46,
+  settingsBackButton: {
+    minWidth: 112,
     height: 46,
     borderRadius: 8,
     borderWidth: 1,
@@ -2098,6 +2084,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 4,
+    paddingLeft: 10,
+    paddingRight: 14,
+  },
+  settingsBackButtonText: {
+    color: '#0C5C4A',
+    fontSize: 18,
+    fontWeight: '900',
   },
   settingsScreenContent: {
     paddingHorizontal: 18,
