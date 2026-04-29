@@ -635,9 +635,118 @@ type FacebookPayload = {
   posts?: FacebookPost[];
 };
 
+function decodeFacebookCrawlerString(value: string) {
+  if (!value) {
+    return '';
+  }
+
+  let decoded = value;
+  try {
+    decoded = JSON.parse(`"${value}"`) as string;
+  } catch {
+    decoded = value
+      .replace(/\\u([0-9a-f]{4})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/\\\//g, '/')
+      .replace(/\\[nrt]/g, ' ')
+      .replace(/\\"/g, '"');
+  }
+
+  return decoded
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanFacebookCrawlerPostText(value: string) {
+  let text = value
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/www\.\S+/gi, ' ')
+    .replace(/ELRadio 90[,.]8 FM/gi, ' ')
+    .replace(/El Radio 90[,.]8 FM/gi, ' ')
+    .replace(/ELRadio/gi, ' ')
+    .replace(/\d*\s*(Skomentuj|Komentarz|Comment|Udostepnij|Udost?pnij|Share|Lubie to|Lubi? to|Like|Wyslij|Wy?lij|Send)\s*/gi, ' ')
+    .replace(/(Zobacz wiecej|Zobacz wi?cej|See more|Pokaz wiecej|Poka? wi?cej|Obserwuj|Follow|Zaloguj sie|Zaloguj si?|Log in)/gi, ' ')
+    .replace(/Komentowanie tego posta zostalo wylaczone\.?/gi, ' ')
+    .replace(/Komentowanie tego posta zosta?o wy??czone\.?/gi, ' ')
+    .replace(/\d+\s*(min\.|godz\.|dni?)\s*temu/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!text || /^(Zobacz wiecej informacji|Zobacz wi?cej informacji|Strona|Ksiez|Ksi??|Czynne|Jeszcze nie oceniono)/i.test(text)) {
+    return '';
+  }
+  if (/@context|schema\.org|SocialMediaPosting|interactionStatistic|dateCreated|dateModified/.test(text)) {
+    return '';
+  }
+  if (text.length > 420) {
+    text = `${text.slice(0, 420).replace(/\s+\S*$/, '').trim()}...`;
+  }
+  return text;
+}
+
+function makeFacebookPostId(text: string, imageUrl: string, index: number) {
+  const key = `${text.slice(0, 90)}|${imageUrl}`;
+  const hash = key.split('').reduce((currentHash, char) => ((currentHash << 5) - currentHash) + char.charCodeAt(0), 0);
+  return `${index + 1}-${Math.abs(hash)}`;
+}
+
+function parseFacebookCrawlerPosts(html: string, includeImages: boolean): FacebookPost[] {
+  const posts: FacebookPost[] = [];
+  const seenKeys = new Set<string>();
+  const seenText = new Set<string>();
+  const seenImages = new Set<string>();
+  const messagePattern = new RegExp('"message"\\s*:\\s*\\{[^\\}]{0,3000}?"text"\\s*:\\s*"((?:\\\\.|[^"\\\\]){20,900})"', 'g');
+  const imagePattern = new RegExp('"photo_image"\\s*:\\s*\\{\\s*"uri"\\s*:\\s*"([^"]+)"');
+  let match: RegExpExecArray | null;
+  let scanned = 0;
+
+  const addPost = (text: string, imageUrl: string) => {
+    if (posts.length >= MAX_FACEBOOK_POSTS) {
+      return;
+    }
+
+    const imageKey = imageUrl ? imageUrl.split('?')[0] : '';
+    const textKey = text.slice(0, 110).toLowerCase();
+    const key = `${text.slice(0, 90)}|${imageUrl}`.toLowerCase();
+    if (text.length < 24 || seenKeys.has(key) || seenText.has(textKey) || (imageKey && seenImages.has(imageKey) && !text)) {
+      return;
+    }
+
+    seenKeys.add(key);
+    seenText.add(textKey);
+    if (imageKey) {
+      seenImages.add(imageKey);
+    }
+    posts.push({ id: makeFacebookPostId(text, imageUrl, posts.length), text, imageUrl });
+  };
+
+  while ((match = messagePattern.exec(html)) && posts.length < MAX_FACEBOOK_POSTS && scanned < MAX_FACEBOOK_POSTS * 40) {
+    scanned += 1;
+    const text = cleanFacebookCrawlerPostText(decodeFacebookCrawlerString(match[1]));
+    if (!text) {
+      continue;
+    }
+
+    const nextMessageIndex = html.indexOf('"message"', messagePattern.lastIndex);
+    const segmentEnd = nextMessageIndex > match.index ? nextMessageIndex : Math.min(html.length, match.index + 70000);
+    const segment = html.slice(match.index, segmentEnd);
+    const imageMatch = imagePattern.exec(segment) ?? imagePattern.exec(html.slice(match.index, Math.min(html.length, match.index + 70000)));
+    const imageUrl = imageMatch && includeImages ? decodeFacebookCrawlerString(imageMatch[1]) : '';
+    addPost(text, imageUrl);
+  }
+
+  return posts;
+}
+
 export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const facebookWebViewRef = useRef<WebView>(null);
+  const facebookFetchRequestRef = useRef(0);
   const mainScrollRef = useRef<ScrollView>(null);
   const newsSectionYRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1218,6 +1327,44 @@ export default function App() {
     ? (String(sleepTimerDurationMinutes) as SleepTimerOptionId)
     : 'off';
 
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || facebookBlockedByNetwork) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const requestId = facebookFetchRequestRef.current + 1;
+    facebookFetchRequestRef.current = requestId;
+
+    const loadCrawlerPosts = async () => {
+      try {
+        const response = await fetch(FACEBOOK_CRAWLER_URL, {
+          headers: {
+            'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+            'User-Agent': FACEBOOK_CRAWLER_USER_AGENT,
+          },
+        });
+        const html = await response.text();
+        if (cancelled || facebookFetchRequestRef.current !== requestId) {
+          return;
+        }
+
+        const posts = parseFacebookCrawlerPosts(html, settings.downloadFacebookImages);
+        setFacebookPosts(posts);
+        setFacebookFeedState(posts.length ? 'ready' : 'error');
+      } catch {
+        if (!cancelled && facebookFetchRequestRef.current === requestId) {
+          setFacebookFeedState('error');
+        }
+      }
+    };
+
+    void loadCrawlerPosts();
+    return () => {
+      cancelled = true;
+    };
+  }, [facebookBlockedByNetwork, facebookWebViewKey, settings.downloadFacebookImages]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -1421,7 +1568,7 @@ export default function App() {
                   {post.text ? <Text style={styles.facebookPostText}>{post.text}</Text> : null}
                 </View>
               ))}
-              {!facebookBlockedByNetwork ? (
+              {!facebookBlockedByNetwork && Platform.OS !== 'ios' ? (
                 <WebView
                   key={`${facebookWebViewKey}-${settings.downloadFacebookImages ? 'images' : 'text'}`}
                   ref={facebookWebViewRef}
