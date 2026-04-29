@@ -48,6 +48,12 @@ const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
 const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
 const SLEEP_TIMER_OPTIONS = [15, 30, 60] as const;
+const SLEEP_TIMER_SELECT_OPTIONS: Array<SelectionOption<SleepTimerOptionId>> = [
+  { id: '15', label: '15 minut' },
+  { id: '30', label: '30 minut' },
+  { id: '60', label: '60 minut' },
+  { id: 'off', label: 'Wyłączony' },
+];
 const SETTINGS_STORAGE_KEY = '@elradio/settings/v1';
 const DEFAULT_START_VOLUME = 0.86;
 const FACEBOOK_WEBVIEW_USER_AGENT =
@@ -352,6 +358,13 @@ type NetworkMode = 'wifiAndCellular' | 'wifiOnly';
 type StartupVolumeMode = 'fixed' | 'last';
 type MessageType = 'general' | 'greetings' | 'song' | 'city' | 'technical';
 type FeedbackKind = 'bug' | 'suggestion';
+type SleepTimerOptionId = 'off' | '15' | '30' | '60';
+
+type SelectionOption<T extends string> = {
+  id: T;
+  label: string;
+  accessibilityLabel?: string;
+};
 
 type AppSettings = {
   networkMode: NetworkMode;
@@ -506,6 +519,9 @@ export default function App() {
   const [facebookWebViewKey, setFacebookWebViewKey] = useState(0);
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [messageTypeSelectorOpen, setMessageTypeSelectorOpen] = useState(false);
+  const [sleepTimerSelectorOpen, setSleepTimerSelectorOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackKind, setFeedbackKind] = useState<FeedbackKind>('bug');
   const [feedbackText, setFeedbackText] = useState('');
@@ -515,6 +531,7 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isCellularNetwork, setIsCellularNetwork] = useState(false);
   const [sleepTimerEndsAt, setSleepTimerEndsAt] = useState<number | null>(null);
+  const [sleepTimerDurationMinutes, setSleepTimerDurationMinutes] = useState<number | null>(null);
   const today = new Date();
   const todayNameDays = getNameDaysForDate(today);
   const todayLabel = `${todayNameDays.label} ${today.getFullYear()}`;
@@ -589,6 +606,7 @@ export default function App() {
       sleepTimerRef.current = null;
     }
     setSleepTimerEndsAt(null);
+    setSleepTimerDurationMinutes(null);
   };
 
   const unloadCurrentSound = async () => {
@@ -773,11 +791,13 @@ export default function App() {
 
     const endsAt = Date.now() + minutes * 60 * 1000;
     setSleepTimerEndsAt(endsAt);
+    setSleepTimerDurationMinutes(minutes);
     sleepTimerRef.current = setTimeout(() => {
       sleepTimerRef.current = null;
       setSleepTimerEndsAt(null);
+      setSleepTimerDurationMinutes(null);
       void pausePlayback().then(() => {
-        setConnectionStatus('Timer snu zatrzymał odtwarzanie.');
+        setConnectionStatus('Wyłącznik czasowy zatrzymał odtwarzanie.');
       });
     }, minutes * 60 * 1000);
   };
@@ -953,6 +973,17 @@ export default function App() {
 
   const selectMessageType = (nextMessageType: MessageType) => {
     setMessageType(nextMessageType);
+    setMessageTypeSelectorOpen(false);
+  };
+
+  const selectSleepTimerOption = (optionId: SleepTimerOptionId) => {
+    setSleepTimerSelectorOpen(false);
+    if (optionId === 'off') {
+      clearSleepTimer();
+      return;
+    }
+
+    enableSleepTimer(Number(optionId));
   };
 
   const refreshFacebookFeed = () => {
@@ -1041,6 +1072,10 @@ export default function App() {
   const sleepTimerMinutesLeft = sleepTimerEndsAt
     ? Math.max(1, Math.ceil((sleepTimerEndsAt - Date.now()) / 60000))
     : null;
+  const sleepTimerLabel = sleepTimerMinutesLeft ? `Za ${sleepTimerMinutesLeft} min` : 'Wyłączony';
+  const selectedSleepTimerOption = sleepTimerDurationMinutes
+    ? (String(sleepTimerDurationMinutes) as SleepTimerOptionId)
+    : 'off';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -1087,19 +1122,21 @@ export default function App() {
               )}
               <Text style={styles.playButtonText}>{playLabel}</Text>
             </Pressable>
-            <View
-              accessible
-              accessibilityLiveRegion="polite"
-              accessibilityLabel={connectionStatus}
-              style={styles.playbackStatusRow}
-            >
-              <Icon
-                name={isPlaying ? 'radio-tower' : isLoading ? 'sync' : playbackState === 'error' ? 'wifi-alert' : 'radio'}
-                size={20}
-                color={isPlaying ? '#0C5C4A' : playbackState === 'error' ? '#E25D3F' : '#476058'}
-              />
-              <Text style={styles.playbackStatusText}>{connectionStatus}</Text>
-            </View>
+            {playbackState !== 'idle' ? (
+              <View
+                accessible
+                accessibilityLiveRegion="polite"
+                accessibilityLabel={connectionStatus}
+                style={styles.playbackStatusRow}
+              >
+                <Icon
+                  name={isPlaying ? 'radio-tower' : isLoading ? 'sync' : playbackState === 'error' ? 'wifi-alert' : 'radio'}
+                  size={20}
+                  color={isPlaying ? '#0C5C4A' : playbackState === 'error' ? '#E25D3F' : '#476058'}
+                />
+                <Text style={styles.playbackStatusText}>{connectionStatus}</Text>
+              </View>
+            ) : null}
 
             <View style={styles.volumePanel}>
               <View
@@ -1159,49 +1196,17 @@ export default function App() {
             </View>
 
             <View style={styles.sleepTimerPanel}>
-              <View style={styles.sleepTimerHeader}>
-                <Icon name="timer-outline" size={22} color="#1F2933" />
-                <Text style={styles.sleepTimerTitle}>Timer snu</Text>
-                <Text accessibilityLiveRegion="polite" style={styles.sleepTimerValue}>
-                  {sleepTimerMinutesLeft ? `${sleepTimerMinutesLeft} min` : 'Wyłączony'}
-                </Text>
-              </View>
-              <View style={styles.sleepTimerButtons}>
-                {SLEEP_TIMER_OPTIONS.map((minutes) => (
-                  <Pressable
-                    key={minutes}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Wyłącz radio za ${minutes} minut`}
-                    onPress={() => enableSleepTimer(minutes)}
-                    style={({ pressed }) => [styles.sleepTimerButton, pressed && styles.secondaryButtonPressed]}
-                  >
-                    <Text style={styles.sleepTimerButtonText}>{minutes} min</Text>
-                  </Pressable>
-                ))}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Wyłącz timer snu"
-                  onPress={clearSleepTimer}
-                  style={({ pressed }) => [
-                    styles.sleepTimerButton,
-                    styles.sleepTimerOffButton,
-                    pressed && styles.secondaryButtonPressed,
-                  ]}
-                >
-                  <Text style={styles.sleepTimerButtonText}>Stop</Text>
-                </Pressable>
-              </View>
+              <SelectButton
+                label="Wyłącznik czasowy"
+                value={sleepTimerLabel}
+                icon="timer-outline"
+                accessibilityLabel={`Wyłącznik czasowy: ${sleepTimerLabel}`}
+                onPress={() => setSleepTimerSelectorOpen(true)}
+              />
             </View>
+
           </View>
 
-          <View
-            accessibilityRole="text"
-            accessibilityLabel="Słuchaj nas w Łodzi na częstotliwości 90 i 8"
-            style={styles.frequencyBand}
-          >
-            <Text style={styles.frequencyCaption}>Słuchaj nas w Łodzi na częstotliwości</Text>
-            <Text style={styles.frequencyValue}>90.8</Text>
-          </View>
 
           <Section icon="calendar-heart" title={`Dziś jest: ${todayLabel}`}>
             <View
@@ -1314,30 +1319,13 @@ export default function App() {
           </View>
 
           <Section icon="email-fast-outline" title="Napisz do nas">
-            <Text style={styles.messageTypeLabel}>Temat wiadomości</Text>
-            <View style={styles.messageTypeGrid}>
-              {MESSAGE_TYPE_OPTIONS.map((option) => {
-                const selected = option.id === messageType;
-                return (
-                  <Pressable
-                    key={option.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Temat wiadomości: ${option.label}`}
-                    accessibilityState={{ selected }}
-                    onPress={() => selectMessageType(option.id)}
-                    style={({ pressed }) => [
-                      styles.messageTypeButton,
-                      selected && styles.messageTypeButtonSelected,
-                      pressed && styles.secondaryButtonPressed,
-                    ]}
-                  >
-                    <Text style={[styles.messageTypeButtonText, selected && styles.messageTypeButtonTextSelected]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <SelectButton
+              label="Temat wiadomości"
+              value={messageTypeOption.label}
+              icon="format-list-bulleted"
+              accessibilityLabel={`Temat wiadomości: ${messageTypeOption.label}`}
+              onPress={() => setMessageTypeSelectorOpen(true)}
+            />
             <TextInput
               accessibilityLabel="Treść wiadomości do EL Radio"
               multiline
@@ -1370,10 +1358,7 @@ export default function App() {
 
           <View style={styles.aboutBand}>
             <Text style={styles.aboutTitle}>O nas</Text>
-            <Text style={styles.aboutText}>El Radio Łódź 90,8</Text>
-            <Text style={styles.aboutText}>EL RADIO SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ</Text>
-            <Text style={styles.aboutText}>Księży Młyn 14 90-345 Łódź</Text>
-            <Text style={styles.aboutText}>e-mail: BIURO@ELRADIO.PL</Text>
+            <Text style={styles.aboutText}>El Radio Łódź 90,8 · Księży Młyn 14, Łódź · BIURO@ELRADIO.PL</Text>
             <Pressable accessibilityRole="link" onPress={openWebsite} style={styles.websiteButton}>
               <Text style={styles.websiteText}>https://elradio.pl</Text>
             </Pressable>
@@ -1423,9 +1408,6 @@ export default function App() {
             >
               <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Dane i sieć</Text>
-                <Text style={styles.settingDescription}>
-                  Stream radia, aktualności i opcjonalne zdjęcia z Facebooka pobierają dane z internetu.
-                </Text>
                 <SettingsSwitchRow
                   label="Tylko Wi-Fi"
                   description="Na wykrytych danych komórkowych radio i aktualności nie wystartują."
@@ -1529,9 +1511,6 @@ export default function App() {
 
               <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Błędy i propozycje</Text>
-                <Text style={styles.settingDescription}>
-                  Zgłoszenie otworzy formularz z opcjonalną diagnostyką do sprawdzenia przed wysłaniem.
-                </Text>
                 <View style={styles.settingButtonRow}>
                   <Pressable
                     accessibilityRole="button"
@@ -1566,7 +1545,15 @@ export default function App() {
 
               <View style={styles.settingGroupLast}>
                 <Text style={styles.settingGroupTitle}>Prywatność</Text>
-                <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Pokaż informacje o prywatności"
+                  onPress={() => setPrivacyOpen(true)}
+                  style={({ pressed }) => [styles.settingsActionButton, styles.singleSettingsActionButton, pressed && styles.secondaryButtonPressed]}
+                >
+                  <Icon name="shield-account-outline" size={19} color="#0C5C4A" />
+                  <Text style={styles.settingsActionButtonText}>Pokaż</Text>
+                </Pressable>
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
@@ -1660,6 +1647,49 @@ export default function App() {
           </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
+      <SelectionModal
+        visible={messageTypeSelectorOpen}
+        title="Temat wiadomości"
+        options={MESSAGE_TYPE_OPTIONS.map((option) => ({ id: option.id, label: option.label }))}
+        selectedId={messageType}
+        onSelect={selectMessageType}
+        onClose={() => setMessageTypeSelectorOpen(false)}
+      />
+      <SelectionModal
+        visible={sleepTimerSelectorOpen}
+        title="Wyłącznik czasowy"
+        options={SLEEP_TIMER_SELECT_OPTIONS}
+        selectedId={selectedSleepTimerOption}
+        onSelect={selectSleepTimerOption}
+        onClose={() => setSleepTimerSelectorOpen(false)}
+      />
+      <Modal
+        visible={privacyOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setPrivacyOpen(false)}
+      >
+        <SafeAreaView style={styles.settingsScreen}>
+          <StatusBar style="dark" />
+          <View style={styles.settingsScreenHeader}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Wróć"
+              onPress={() => setPrivacyOpen(false)}
+              style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="chevron-left" size={28} color="#0C5C4A" />
+              <Text style={styles.settingsBackButtonText}>Wróć</Text>
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.settingsScreenContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.settingGroupLast}>
+              <Text style={styles.settingGroupTitle}>Prywatność</Text>
+              <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1682,19 +1712,110 @@ function Section({ icon, title, children }: SectionProps) {
   );
 }
 
+type SelectButtonProps = {
+  label: string;
+  value: string;
+  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  accessibilityLabel?: string;
+  onPress: () => void;
+};
+
+function SelectButton({ label, value, icon, accessibilityLabel, onPress }: SelectButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? `${label}: ${value}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.selectButton, pressed && styles.secondaryButtonPressed]}
+    >
+      {icon ? <Icon name={icon} size={22} color="#0C5C4A" /> : null}
+      <View style={styles.selectButtonText}>
+        <Text style={styles.selectButtonLabel}>{label}</Text>
+        <Text style={styles.selectButtonValue}>{value}</Text>
+      </View>
+      <Icon name="chevron-down" size={24} color="#0C5C4A" />
+    </Pressable>
+  );
+}
+
+type SelectionModalProps<T extends string> = {
+  visible: boolean;
+  title: string;
+  options: Array<SelectionOption<T>>;
+  selectedId: T;
+  onSelect: (id: T) => void;
+  onClose: () => void;
+};
+
+function SelectionModal<T extends string>({
+  visible,
+  title,
+  options,
+  selectedId,
+  onSelect,
+  onClose,
+}: SelectionModalProps<T>) {
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
+      <SafeAreaView style={styles.settingsScreen}>
+        <StatusBar style="dark" />
+        <View style={styles.settingsScreenHeader}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Wróć"
+            onPress={onClose}
+            style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
+          >
+            <Icon name="chevron-left" size={28} color="#0C5C4A" />
+            <Text style={styles.settingsBackButtonText}>Wróć</Text>
+          </Pressable>
+        </View>
+        <ScrollView contentContainerStyle={styles.settingsScreenContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.settingGroupLast}>
+            <Text style={styles.settingGroupTitle}>{title}</Text>
+            <View style={styles.selectionList}>
+              {options.map((option) => {
+                const selected = option.id === selectedId;
+                return (
+                  <Pressable
+                    key={option.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={option.accessibilityLabel ?? option.label}
+                    accessibilityState={{ selected }}
+                    onPress={() => onSelect(option.id)}
+                    style={({ pressed }) => [
+                      styles.selectionOption,
+                      selected && styles.selectionOptionSelected,
+                      pressed && styles.secondaryButtonPressed,
+                    ]}
+                  >
+                    <Text style={[styles.selectionOptionText, selected && styles.selectionOptionTextSelected]}>
+                      {option.label}
+                    </Text>
+                    {selected ? <Icon name="check" size={22} color="#FFFFFF" /> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 type SettingsSwitchRowProps = {
   label: string;
-  description: string;
+  description?: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
 };
 
-function SettingsSwitchRow({ label, description, value, onValueChange }: SettingsSwitchRowProps) {
+function SettingsSwitchRow({ label, value, onValueChange }: SettingsSwitchRowProps) {
   return (
     <View style={styles.settingsSwitchRow}>
       <View style={styles.settingsSwitchText}>
         <Text style={styles.settingLabel}>{label}</Text>
-        <Text style={styles.settingDescription}>{description}</Text>
       </View>
       <Switch
         accessibilityLabel={label}
@@ -1739,8 +1860,8 @@ const styles = StyleSheet.create({
   },
   playerBand: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 0) + 18 : 18,
-    paddingBottom: 22,
+    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 0) + 12 : 12,
+    paddingBottom: 14,
     backgroundColor: '#EAF4EF',
     borderBottomColor: '#CEE0D8',
     borderBottomWidth: 1,
@@ -1749,24 +1870,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 11,
-    marginBottom: 18,
+    marginBottom: 10,
   },
   brandLogo: {
-    width: 112,
-    height: 42,
+    width: 96,
+    height: 36,
   },
   brandText: {
     flex: 1,
   },
   brandTitle: {
     color: '#17212B',
-    fontSize: 24,
-    lineHeight: 29,
+    fontSize: 21,
+    lineHeight: 25,
     fontWeight: '800',
     flexShrink: 1,
   },
   playButton: {
-    minHeight: 112,
+    minHeight: 78,
     borderRadius: 8,
     backgroundColor: '#0C8C72',
     alignItems: 'center',
@@ -1789,12 +1910,12 @@ const styles = StyleSheet.create({
   },
   playButtonText: {
     color: '#FFFFFF',
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: '800',
   },
   playbackStatusRow: {
-    minHeight: 38,
-    marginTop: 12,
+    minHeight: 34,
+    marginTop: 8,
     borderRadius: 8,
     backgroundColor: '#F4F7F5',
     borderColor: '#CEE0D8',
@@ -1812,8 +1933,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   volumePanel: {
-    marginTop: 18,
-    padding: 16,
+    marginTop: 10,
+    padding: 12,
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
     borderColor: '#BFD3CC',
@@ -1848,8 +1969,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   volumeStepButton: {
-    width: 48,
-    height: 48,
+    width: 42,
+    height: 42,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#AFC9BF',
@@ -1859,7 +1980,7 @@ const styles = StyleSheet.create({
   },
   volumeTrackTouch: {
     flex: 1,
-    height: 52,
+    height: 44,
     justifyContent: 'center',
   },
   volumeTrack: {
@@ -1914,12 +2035,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   sleepTimerPanel: {
-    marginTop: 14,
-    padding: 14,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#BFD3CC',
-    borderWidth: 1,
+    marginTop: 10,
   },
   sleepTimerHeader: {
     minHeight: 34,
@@ -1985,7 +2101,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: 20,
-    paddingVertical: 21,
+    paddingVertical: 14,
     borderBottomColor: '#DCE6E1',
     borderBottomWidth: 1,
     backgroundColor: '#F6F8F7',
@@ -1994,17 +2110,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
     color: '#17212B',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
   },
   nameDayNames: {
     color: '#17212B',
-    fontSize: 25,
-    lineHeight: 32,
+    fontSize: 20,
+    lineHeight: 27,
     fontWeight: '800',
   },
   newsList: {
@@ -2134,7 +2250,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   messageInput: {
-    minHeight: 150,
+    minHeight: 112,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#BFD3CC',
@@ -2186,7 +2302,7 @@ const styles = StyleSheet.create({
   aboutBand: {
     backgroundColor: '#17212B',
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingVertical: 16,
   },
   aboutTitle: {
     color: '#FFFFFF',
@@ -2250,7 +2366,7 @@ const styles = StyleSheet.create({
   },
   settingsScreenContent: {
     paddingHorizontal: 18,
-    paddingTop: 16,
+    paddingTop: 10,
     paddingBottom: 34,
   },
   settingsFooter: {
@@ -2286,7 +2402,7 @@ const styles = StyleSheet.create({
   },
   settingGroup: {
     paddingHorizontal: 14,
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#DCE6E1',
   },
@@ -2299,7 +2415,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 23,
     fontWeight: '900',
-    marginBottom: 7,
+    marginBottom: 4,
   },
   settingLabel: {
     color: '#1F2933',
@@ -2314,8 +2430,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   settingsSwitchRow: {
-    marginTop: 12,
-    minHeight: 54,
+    marginTop: 6,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -2423,6 +2539,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 16,
+  },
+  selectButton: {
+    minHeight: 54,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  selectButtonText: {
+    flex: 1,
+  },
+  selectButtonLabel: {
+    color: '#52645F',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '800',
+  },
+  selectButtonValue: {
+    color: '#17212B',
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '900',
+  },
+  selectionList: {
+    gap: 8,
+    marginTop: 6,
+  },
+  selectionOption: {
+    minHeight: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 14,
+  },
+  selectionOptionSelected: {
+    borderColor: '#0C8C72',
+    backgroundColor: '#0C8C72',
+  },
+  selectionOptionText: {
+    color: '#0C5C4A',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  selectionOptionTextSelected: {
+    color: '#FFFFFF',
+  },
+  singleSettingsActionButton: {
+    marginTop: 6,
   },
   privacyText: {
     color: '#31473F',
