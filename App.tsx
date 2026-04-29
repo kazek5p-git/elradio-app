@@ -107,6 +107,71 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       return (value || '').replace(/\\s+/g, ' ').trim();
     }
 
+    function relayToParent(payload) {
+      var relay = {
+        type: 'elradio-facebook-relay',
+        payload: payload
+      };
+
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(relay, '*');
+        }
+      } catch (error) {
+        // Some Facebook frames are cross-origin; try the remaining routes.
+      }
+
+      try {
+        if (window.top && window.top !== window && window.top !== window.parent) {
+          window.top.postMessage(relay, '*');
+        }
+      } catch (error) {
+        // Cross-origin access can be denied by WebKit.
+      }
+    }
+
+    function postToNative(payload) {
+      var message = JSON.stringify(payload);
+      var posted = false;
+
+      function tryBridge(target) {
+        try {
+          if (target && target.ReactNativeWebView && target.ReactNativeWebView.postMessage) {
+            target.ReactNativeWebView.postMessage(message);
+            posted = true;
+          }
+        } catch (error) {
+          // Keep trying other frame bridges.
+        }
+      }
+
+      tryBridge(window);
+      tryBridge(window.parent);
+      tryBridge(window.top);
+
+      if (!posted) {
+        relayToParent(payload);
+      }
+    }
+
+    if (!window.__elradioFacebookRelayListener) {
+      window.__elradioFacebookRelayListener = true;
+      window.addEventListener('message', function (event) {
+        var data = event.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch (error) {
+            return;
+          }
+        }
+        if (!data || data.type !== 'elradio-facebook-relay' || !data.payload) {
+          return;
+        }
+        postToNative(data.payload);
+      });
+    }
+
     function cleanPostText(value) {
       var text = normalizeText(value)
         .replace(/https?:\\/\\/\\S+/gi, ' ')
@@ -301,12 +366,10 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       if (!posts.length && !force) {
         return false;
       }
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          type: 'elradio-facebook-posts',
-          posts: posts
-        }));
-      }
+      postToNative({
+        type: 'elradio-facebook-posts',
+        posts: posts
+      });
       return posts.length > 0;
     }
 
