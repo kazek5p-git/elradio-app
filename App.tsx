@@ -1306,6 +1306,8 @@ export default function App() {
                   textZoom={82}
                   injectedJavaScript={facebookExtractScript}
                   injectedJavaScriptBeforeContentLoaded={facebookExtractScript}
+                  injectedJavaScriptForMainFrameOnly={false}
+                  injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
                   onLoadProgress={(event) => {
                     if (event.nativeEvent.progress >= 0.35) {
                       facebookWebViewRef.current?.injectJavaScript(facebookExtractScript);
