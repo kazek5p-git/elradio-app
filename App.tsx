@@ -38,9 +38,11 @@ const STREAM_HEADERS = {
   'User-Agent': 'El Radio app',
 };
 const FACEBOOK_PAGE_ID = '61584365428208';
-const FACEBOOK_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
+const FACEBOOK_URL = `https://www.facebook.com/people/ELRadio-908-FM/${FACEBOOK_PAGE_ID}/`;
+const FACEBOOK_PLUGIN_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
+const FACEBOOK_CRAWLER_URL = 'https://mbasic.facebook.com/943822595472447';
 const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
-  FACEBOOK_URL,
+  FACEBOOK_PLUGIN_URL,
 )}&tabs=timeline&width=500&height=900&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`;
 const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
 const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
@@ -56,6 +58,7 @@ const SLEEP_TIMER_SELECT_OPTIONS: Array<SelectionOption<SleepTimerOptionId>> = [
 ];
 const SETTINGS_STORAGE_KEY = '@elradio/settings/v1';
 const DEFAULT_START_VOLUME = 0.86;
+const FACEBOOK_CRAWLER_USER_AGENT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 const FACEBOOK_WEBVIEW_USER_AGENT =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
 const PRIVACY_TEXT =
@@ -274,6 +277,59 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       });
     }
 
+    function decodeFacebookJsonString(value) {
+      if (!value) {
+        return '';
+      }
+
+      var decoded = value;
+      try {
+        decoded = JSON.parse('"' + value + '"');
+      } catch (error) {
+        decoded = value
+          .replace(/\\u([0-9a-f]{4})/gi, function (_, hex) {
+            return String.fromCharCode(parseInt(hex, 16));
+          })
+          .replace(/\\\//g, '/')
+          .replace(/\\n/g, ' ')
+          .replace(/\\r/g, ' ')
+          .replace(/\\t/g, ' ')
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
+      }
+
+      var textarea = document.createElement('textarea');
+      textarea.innerHTML = decoded;
+      return normalizeText(textarea.value || decoded);
+    }
+
+    function collectBootDataPosts() {
+      var html = document.documentElement ? (document.documentElement.innerHTML || '') : '';
+      var output = [];
+      var messagePattern = /"message"\\s*:\\s*\\{[^\\}]{0,3000}?"text"\\s*:\\s*"((?:\\\\.|[^"\\\\]){20,900})"/g;
+      var imagePattern = /"photo_image"\\s*:\\s*\\{\\s*"uri"\\s*:\\s*"([^"]+)"/;
+      var match;
+
+      while ((match = messagePattern.exec(html)) && output.length < maxPosts * 5) {
+        var text = cleanPostText(decodeFacebookJsonString(match[1]));
+        if (!text || /^(Zobacz wi.?cej informacji|Strona|Ksi|Czynne|Jeszcze nie oceniono)/i.test(text)) {
+          continue;
+        }
+
+        var nextMessageIndex = html.indexOf('"message"', messagePattern.lastIndex);
+        var segmentEnd = nextMessageIndex > match.index ? nextMessageIndex : Math.min(html.length, match.index + 70000);
+        var segment = html.slice(match.index, segmentEnd);
+        var imageMatch = imagePattern.exec(segment) || imagePattern.exec(html.slice(match.index, Math.min(html.length, match.index + 70000)));
+
+        output.push({
+          text: text,
+          imageUrl: imageMatch && includeImages ? decodeFacebookJsonString(imageMatch[1]) : ''
+        });
+      }
+
+      return output;
+    }
+
     function findPostImage(root) {
       if (!includeImages) {
         return '';
@@ -351,6 +407,10 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       }
 
       collectStructuredPosts().forEach(function (post) {
+        addPost(post.text || '', post.imageUrl || '');
+      });
+
+      collectBootDataPosts().forEach(function (post) {
         addPost(post.text || '', post.imageUrl || '');
       });
 
@@ -1134,6 +1194,8 @@ export default function App() {
   const messageTypeOption = getMessageTypeOption(messageType);
   const facebookBlockedByNetwork = settings.networkMode === 'wifiOnly' && isCellularNetwork;
   const showFacebookImages = settings.downloadFacebookImages;
+  const facebookWebViewUrl = Platform.OS === 'ios' ? FACEBOOK_CRAWLER_URL : FACEBOOK_FEED_URL;
+  const facebookUserAgent = Platform.OS === 'ios' ? FACEBOOK_CRAWLER_USER_AGENT : FACEBOOK_WEBVIEW_USER_AGENT;
   const facebookExtractScript = FACEBOOK_EXTRACT_SCRIPT.replace(
     '__ELRADIO_INCLUDE_IMAGES__',
     settings.downloadFacebookImages ? 'true' : 'false',
@@ -1336,7 +1398,7 @@ export default function App() {
                 >
                   {post.imageUrl && showFacebookImages ? (
                     <Image
-                      source={{ uri: post.imageUrl, headers: { 'User-Agent': FACEBOOK_WEBVIEW_USER_AGENT } }}
+                      source={{ uri: post.imageUrl, headers: { 'User-Agent': facebookUserAgent } }}
                       style={styles.facebookPostImage}
                       resizeMode="cover"
                       accessible={false}
@@ -1358,14 +1420,14 @@ export default function App() {
                   accessible={false}
                   focusable={false}
                   importantForAccessibility="no-hide-descendants"
-                  source={{ uri: FACEBOOK_FEED_URL }}
+                  source={{ uri: facebookWebViewUrl }}
                   originWhitelist={['https://*']}
                   javaScriptEnabled
                   domStorageEnabled
                   sharedCookiesEnabled
                   thirdPartyCookiesEnabled
                   setSupportMultipleWindows={false}
-                  userAgent={FACEBOOK_WEBVIEW_USER_AGENT}
+                  userAgent={facebookUserAgent}
                   textZoom={82}
                   injectedJavaScript={facebookExtractScript}
                   injectedJavaScriptBeforeContentLoaded={facebookExtractScript}
