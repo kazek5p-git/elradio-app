@@ -303,7 +303,16 @@ const FACEBOOK_EXTRACT_SCRIPT = `
     }
 
     function collectBootDataPosts() {
-      var html = document.documentElement ? (document.documentElement.innerHTML || '') : '';
+      var htmlParts = [];
+      if (document.documentElement) {
+        htmlParts.push(document.documentElement.innerHTML || '');
+        htmlParts.push(document.documentElement.textContent || '');
+      }
+      document.querySelectorAll('script').forEach(function (script) {
+        htmlParts.push(script.textContent || '');
+      });
+
+      var html = htmlParts.join('\\n');
       var output = [];
       var messagePattern = /"message"\\s*:\\s*\\{[^\\}]{0,3000}?"text"\\s*:\\s*"((?:\\\\.|[^"\\\\]){20,900})"/g;
       var imagePattern = /"photo_image"\\s*:\\s*\\{\\s*"uri"\\s*:\\s*"([^"]+)"/;
@@ -1419,7 +1428,13 @@ export default function App() {
                   accessible={false}
                   focusable={false}
                   importantForAccessibility="no-hide-descendants"
-                  source={{ uri: facebookWebViewUrl }}
+                  source={{
+                    uri: facebookWebViewUrl,
+                    headers: {
+                      'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+                      'User-Agent': facebookUserAgent,
+                    },
+                  }}
                   originWhitelist={['https://*']}
                   javaScriptEnabled
                   domStorageEnabled
