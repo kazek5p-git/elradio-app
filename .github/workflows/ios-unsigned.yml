@@ -26,6 +26,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare app build metadata
+        run: |
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "EXPO_PUBLIC_ELRADIO_BUILD_SHA=$GITHUB_SHA" >> "$GITHUB_ENV"
+          echo "EXPO_PUBLIC_ELRADIO_BUILD_TIME=$BUILD_TIME" >> "$GITHUB_ENV"
+
       - name: Generate iOS project
         run: npx expo prebuild --platform ios --clean
 
@@ -68,6 +74,25 @@ jobs:
           mkdir -p Payload dist
           cp -R "$APP_PATH" Payload/
           ditto -c -k --sequesterRsrc --keepParent Payload dist/EL-Radio-unsigned.ipa
+          VERSION="$(node -p "require('./app.json').expo.version")"
+          cat > dist/EL-Radio-release.json <<EOF
+          {
+            "commit": "$GITHUB_SHA",
+            "buildTime": "$EXPO_PUBLIC_ELRADIO_BUILD_TIME",
+            "version": "$VERSION",
+            "tag": "latest-build",
+            "assets": {
+              "android": {
+                "name": "EL-Radio.apk",
+                "url": "https://github.com/kazek5p-git/elradio-app/releases/download/latest-build/EL-Radio.apk"
+              },
+              "ios": {
+                "name": "EL-Radio-unsigned.ipa",
+                "url": "https://github.com/kazek5p-git/elradio-app/releases/download/latest-build/EL-Radio-unsigned.ipa"
+              }
+            }
+          }
+          EOF
 
       - name: Upload rolling release IPA
         env:
@@ -76,4 +101,4 @@ jobs:
           set -euo pipefail
           TAG="latest-build"
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "EL Radio latest build" --notes "Rolling private build for sideload installation." --prerelease || true
-          gh release upload "$TAG" dist/EL-Radio-unsigned.ipa --clobber
+          gh release upload "$TAG" dist/EL-Radio-unsigned.ipa dist/EL-Radio-release.json --clobber

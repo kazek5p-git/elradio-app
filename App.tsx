@@ -4,7 +4,6 @@ import NetInfo from '@react-native-community/netinfo';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as MailComposer from 'expo-mail-composer';
 import { StatusBar } from 'expo-status-bar';
-import * as Updates from 'expo-updates';
 import * as WebBrowser from 'expo-web-browser';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -48,7 +47,17 @@ const FACEBOOK_FEED_URL = `https://www.facebook.com/plugins/page.php?href=${enco
   FACEBOOK_PLUGIN_URL,
 )}&tabs=timeline&width=500&height=900&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false`;
 const CONTACT_EMAIL = 'BIURO@ELRADIO.PL';
-const APP_RELEASES_URL = 'https://github.com/kazek5p-git/elradio-app/releases/latest';
+const APP_RELEASE_TAG = 'latest-build';
+const APP_RELEASE_REPOSITORY = 'kazek5p-git/elradio-app';
+const APP_RELEASE_PAGE_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/tag/${APP_RELEASE_TAG}`;
+const APP_RELEASE_API_URL = `https://api.github.com/repos/${APP_RELEASE_REPOSITORY}/releases/tags/${APP_RELEASE_TAG}`;
+const APP_ANDROID_APK_NAME = 'EL-Radio.apk';
+const APP_IOS_IPA_NAME = 'EL-Radio-unsigned.ipa';
+const APP_RELEASE_METADATA_NAME = 'EL-Radio-release.json';
+const APP_ANDROID_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_ANDROID_APK_NAME}`;
+const APP_IOS_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_IOS_IPA_NAME}`;
+const APP_BUILD_SHA = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_ELRADIO_BUILD_SHA?.trim() ?? '' : '';
+const APP_BUILD_TIME = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_ELRADIO_BUILD_TIME?.trim() ?? '' : '';
 const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
 const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
@@ -501,6 +510,35 @@ type StartupVolumeMode = 'fixed' | 'last';
 type MessageType = 'general' | 'greetings' | 'song' | 'city' | 'technical';
 type FeedbackKind = 'bug' | 'suggestion';
 type SleepTimerOptionId = 'off' | '15' | '30' | '60';
+type AppUpdateComparison = 'newer' | 'current' | 'unknown';
+
+type AppReleaseAsset = {
+  name?: string;
+  browser_download_url?: string;
+  updated_at?: string;
+};
+
+type AppReleasePayload = {
+  html_url?: string;
+  updated_at?: string;
+  published_at?: string;
+  assets?: AppReleaseAsset[];
+};
+
+type AppReleaseMetadata = {
+  commit?: string;
+  buildTime?: string;
+  version?: string;
+};
+
+type DirectAppUpdateInfo = {
+  assetName: string;
+  downloadUrl: string;
+  releasePageUrl: string;
+  remoteBuildTime?: string;
+  remoteCommit?: string;
+  comparison: AppUpdateComparison;
+};
 
 type SelectionOption<T extends string> = {
   id: T;
@@ -606,6 +644,124 @@ function clampVolumeValue(nextVolume: number) {
     return DEFAULT_START_VOLUME;
   }
   return Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
+}
+
+function getPlatformUpdateAssetName() {
+  return Platform.OS === 'ios' ? APP_IOS_IPA_NAME : APP_ANDROID_APK_NAME;
+}
+
+function getPlatformUpdateFallbackUrl() {
+  if (Platform.OS === 'ios') {
+    return APP_IOS_DOWNLOAD_URL;
+  }
+  if (Platform.OS === 'android') {
+    return APP_ANDROID_DOWNLOAD_URL;
+  }
+  return APP_RELEASE_PAGE_URL;
+}
+
+function getPlatformUpdateDownloadLabel() {
+  if (Platform.OS === 'ios') {
+    return 'Pobierz IPA';
+  }
+  if (Platform.OS === 'android') {
+    return 'Pobierz APK';
+  }
+  return 'Pobierz';
+}
+
+function parseTimestamp(value?: string) {
+  if (!value) {
+    return null;
+  }
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function formatUpdateTimestamp(value?: string) {
+  const timestamp = parseTimestamp(value);
+  if (!timestamp) {
+    return '';
+  }
+  return new Intl.DateTimeFormat('pl-PL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(timestamp));
+}
+
+function compareAppUpdate(remoteCommit?: string, remoteBuildTime?: string): AppUpdateComparison {
+  if (remoteCommit && APP_BUILD_SHA) {
+    return remoteCommit === APP_BUILD_SHA ? 'current' : 'newer';
+  }
+
+  const remoteTimestamp = parseTimestamp(remoteBuildTime);
+  const localTimestamp = parseTimestamp(APP_BUILD_TIME);
+  if (remoteTimestamp && localTimestamp) {
+    return remoteTimestamp > localTimestamp + 60_000 ? 'newer' : 'current';
+  }
+
+  return 'unknown';
+}
+
+async function fetchJsonWithTimeout<T>(url: string, timeoutMs = 15000): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/vnd.github+json, application/json',
+        'Cache-Control': 'no-cache',
+        'User-Agent': 'El Radio app updater',
+      },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json() as T;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function readDirectAppUpdateInfo(): Promise<DirectAppUpdateInfo> {
+  const release = await fetchJsonWithTimeout<AppReleasePayload>(`${APP_RELEASE_API_URL}?t=${Date.now()}`);
+  const assets = Array.isArray(release.assets) ? release.assets : [];
+  const platformAssetName = getPlatformUpdateAssetName();
+  const platformAsset = assets.find((asset) => asset.name === platformAssetName);
+  const metadataAsset = assets.find((asset) => asset.name === APP_RELEASE_METADATA_NAME);
+  const metadataUrl = metadataAsset?.browser_download_url;
+  const metadata = metadataUrl
+    ? await fetchJsonWithTimeout<AppReleaseMetadata>(`${metadataUrl}?t=${Date.now()}`).catch(() => null)
+    : null;
+  const remoteBuildTime = metadata?.buildTime ?? platformAsset?.updated_at ?? release.updated_at ?? release.published_at;
+
+  return {
+    assetName: platformAssetName,
+    downloadUrl: platformAsset?.browser_download_url ?? getPlatformUpdateFallbackUrl(),
+    releasePageUrl: release.html_url ?? APP_RELEASE_PAGE_URL,
+    remoteBuildTime,
+    remoteCommit: metadata?.commit,
+    comparison: compareAppUpdate(metadata?.commit, remoteBuildTime),
+  };
+}
+
+function buildUpdateStatusText(info: DirectAppUpdateInfo) {
+  const dateLabel = formatUpdateTimestamp(info.remoteBuildTime);
+  if (info.comparison === 'newer') {
+    return dateLabel
+      ? `Dostępna jest nowa wersja z ${dateLabel}.`
+      : 'Dostępna jest nowa wersja aplikacji.';
+  }
+  if (info.comparison === 'current') {
+    return 'Masz najnowszą wersję aplikacji.';
+  }
+  return dateLabel
+    ? `Najnowsza paczka z ${dateLabel} jest gotowa do pobrania.`
+    : 'Najnowsza paczka jest gotowa do pobrania.';
 }
 
 function normalizeStoredSettings(value: unknown): AppSettings {
@@ -780,6 +936,8 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<MessageType>('general');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
+  const [isCheckingAppUpdate, setIsCheckingAppUpdate] = useState(false);
+  const [directAppUpdateInfo, setDirectAppUpdateInfo] = useState<DirectAppUpdateInfo | null>(null);
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
   const [facebookDebug, setFacebookDebug] = useState('');
@@ -840,7 +998,7 @@ export default function App() {
     });
 
     void loadSettings();
-    checkForOtaUpdate();
+    checkForDirectAppUpdate(false);
 
     return () => {
       clearRetryTimer();
@@ -1109,23 +1267,41 @@ export default function App() {
     return unsubscribe;
   }, [settings.networkMode]);
 
-  const checkForOtaUpdate = async () => {
-    if (__DEV__) {
-      setUpdateStatus('Tryb testowy. Aktualizacje OTA działają w zbudowanej aplikacji.');
+  const checkForDirectAppUpdate = async (manual: boolean) => {
+    if (isCheckingAppUpdate) {
       return;
     }
 
+    setIsCheckingAppUpdate(true);
+    setUpdateStatus('Sprawdzam najnowszą paczkę aplikacji...');
     try {
-      const update = await Updates.checkForUpdateAsync();
-      if (update.isAvailable) {
-        setUpdateStatus('Pobieram nową wersję aplikacji...');
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
-        return;
+      const updateInfo = await readDirectAppUpdateInfo();
+      setDirectAppUpdateInfo(updateInfo);
+      setUpdateStatus(buildUpdateStatusText(updateInfo));
+
+      if (updateInfo.comparison === 'newer') {
+        Alert.alert(
+          'Dostępna aktualizacja',
+          'Możesz pobrać najnowszą wersję aplikacji bezpośrednio z GitHuba.',
+          [
+            { text: 'Później', style: 'cancel' },
+            { text: getPlatformUpdateDownloadLabel(), onPress: () => openAppUpdateDownload(updateInfo) },
+          ],
+        );
+      } else if (manual && updateInfo.comparison === 'unknown') {
+        Alert.alert(
+          'Paczka jest dostępna',
+          'Nie mogę porównać numeru tej instalacji, ale mogę otworzyć najnowszy plik z GitHuba.',
+          [
+            { text: 'Anuluj', style: 'cancel' },
+            { text: getPlatformUpdateDownloadLabel(), onPress: () => openAppUpdateDownload(updateInfo) },
+          ],
+        );
       }
-      setUpdateStatus('Aplikacja jest aktualna.');
     } catch {
-      setUpdateStatus('Aktualizacje zostaną sprawdzone ponownie później.');
+      setUpdateStatus('Nie udało się teraz sprawdzić aktualizacji.');
+    } finally {
+      setIsCheckingAppUpdate(false);
     }
   };
 
@@ -1237,8 +1413,14 @@ export default function App() {
     await WebBrowser.openBrowserAsync('https://elradio.pl');
   };
 
-  const openReleases = async () => {
-    await WebBrowser.openBrowserAsync(APP_RELEASES_URL);
+  const openAppUpdateDownload = async (updateInfo: DirectAppUpdateInfo | null = directAppUpdateInfo) => {
+    const downloadUrl = updateInfo?.downloadUrl ?? getPlatformUpdateFallbackUrl();
+    const releasePageUrl = updateInfo?.releasePageUrl ?? APP_RELEASE_PAGE_URL;
+    try {
+      await Linking.openURL(downloadUrl);
+    } catch {
+      await WebBrowser.openBrowserAsync(releasePageUrl);
+    }
   };
 
   const selectMessageType = (nextMessageType: MessageType) => {
@@ -1822,20 +2004,30 @@ export default function App() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Sprawdź aktualizacje aplikacji"
-                    onPress={checkForOtaUpdate}
-                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                    accessibilityState={{ disabled: isCheckingAppUpdate }}
+                    disabled={isCheckingAppUpdate}
+                    onPress={() => checkForDirectAppUpdate(true)}
+                    style={({ pressed }) => [
+                      styles.settingsActionButton,
+                      isCheckingAppUpdate && styles.settingsActionButtonDisabled,
+                      pressed && styles.secondaryButtonPressed,
+                    ]}
                   >
-                    <Icon name="refresh" size={19} color="#0C5C4A" />
-                    <Text style={styles.settingsActionButtonText}>Sprawdź</Text>
+                    {isCheckingAppUpdate ? (
+                      <ActivityIndicator size="small" color="#0C5C4A" />
+                    ) : (
+                      <Icon name="refresh" size={19} color="#0C5C4A" />
+                    )}
+                    <Text style={styles.settingsActionButtonText}>{isCheckingAppUpdate ? 'Sprawdzam' : 'Sprawdź'}</Text>
                   </Pressable>
                   <Pressable
                     accessibilityRole="link"
-                    accessibilityLabel="Otwórz stronę aktualizacji aplikacji"
-                    onPress={openReleases}
+                    accessibilityLabel={`Pobierz aktualizację aplikacji: ${getPlatformUpdateAssetName()}`}
+                    onPress={() => openAppUpdateDownload()}
                     style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
                   >
                     <Icon name="download" size={19} color="#0C5C4A" />
-                    <Text style={styles.settingsActionButtonText}>Pobierz</Text>
+                    <Text style={styles.settingsActionButtonText}>{getPlatformUpdateDownloadLabel()}</Text>
                   </Pressable>
                 </View>
               </View>
@@ -2987,6 +3179,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 7,
     paddingHorizontal: 10,
+  },
+  settingsActionButtonDisabled: {
+    opacity: 0.62,
   },
   settingsActionButtonText: {
     color: '#0C5C4A',
