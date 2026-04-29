@@ -56,7 +56,7 @@ const FACEBOOK_WEBVIEW_USER_AGENT =
     : 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
 const PRIVACY_TEXT =
   'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia są zapisywane lokalnie na tym urządzeniu.\n\n' +
-  'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia z postów są pobierane tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
+  'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia w kartach postów są pobierane przez aplikację tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
   'Wiadomości, zgłoszenia błędów i propozycje są wysyłane przez aplikację pocztową wybraną w systemie. Aplikacja nie wysyła ich samodzielnie na żaden dodatkowy serwer.\n\n' +
   'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz zgłoszenie błędu lub propozycji i zostawisz włączoną opcję dołączenia diagnostyki.';
 const FACEBOOK_EXTRACT_SCRIPT = `
