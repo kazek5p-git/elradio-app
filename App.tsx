@@ -55,14 +55,15 @@ const FACEBOOK_WEBVIEW_USER_AGENT =
     ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
     : 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
 const PRIVACY_TEXT =
-  'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia, podpis i kontakt zwrotny są zapisywane tylko lokalnie na tym urządzeniu.\n\n' +
-  'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
-  'Wiadomości i zgłoszenia problemu są wysyłane przez aplikację pocztową wybraną w systemie. Aplikacja nie wysyła ich samodzielnie na żaden dodatkowy serwer.\n\n' +
-  'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz „Zgłoś problem” i wyślesz wiadomość.';
+  'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia są zapisywane lokalnie na tym urządzeniu.\n\n' +
+  'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia z postów są pobierane tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
+  'Wiadomości, zgłoszenia błędów i propozycje są wysyłane przez aplikację pocztową wybraną w systemie. Aplikacja nie wysyła ich samodzielnie na żaden dodatkowy serwer.\n\n' +
+  'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz zgłoszenie błędu lub propozycji i zostawisz włączoną opcję dołączenia diagnostyki.';
 const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
     var attempts = 0;
     var maxPosts = 4;
+    var includeImages = __ELRADIO_INCLUDE_IMAGES__;
 
     function setCompactViewport() {
       var viewport = document.querySelector('meta[name="viewport"]');
@@ -81,10 +82,14 @@ const FACEBOOK_EXTRACT_SCRIPT = `
 
       var style = document.createElement('style');
       style.id = 'elradio-compact-facebook';
-      style.textContent = [
+      var compactRules = [
         'button, form, a[role="button"], [role="button"], .pluginConnectButton, .UFILikeLink, .UFICommentLink, .UFIShareLink, ._42ft { display: none !important; }',
         '[aria-label*="Skomentuj"], [aria-label*="Comment"], [aria-label*="Komentarz"], [aria-label*="Lubię to"], [aria-label*="Like"], [aria-label*="Udostępnij"], [aria-label*="Share"], [aria-label*="Wyślij"], [aria-label*="Send"], [aria-label*="Follow"], [aria-label*="Obserwuj"] { display: none !important; }'
-      ].join('\\n');
+      ];
+      if (!includeImages) {
+        compactRules.push('img, picture, source { display: none !important; }');
+      }
+      style.textContent = compactRules.join('\\n');
       document.head.appendChild(style);
     }
 
@@ -128,6 +133,9 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       var output = [];
 
       function readImage(value) {
+        if (!includeImages) {
+          return '';
+        }
         if (!value) {
           return '';
         }
@@ -192,6 +200,9 @@ const FACEBOOK_EXTRACT_SCRIPT = `
     }
 
     function findPostImage(root) {
+      if (!includeImages) {
+        return '';
+      }
       var images = Array.prototype.slice.call(root.querySelectorAll('img'));
       for (var i = 0; i < images.length; i += 1) {
         var image = images[i];
@@ -217,7 +228,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
       }
       return Array.prototype.slice.call(document.querySelectorAll('div')).filter(function (element) {
         var text = cleanPostText(getReadableText(element));
-        return text.length >= 40 && !!findPostImage(element);
+        return text.length >= 40 && (includeImages ? !!findPostImage(element) : true);
       });
     }
 
@@ -302,6 +313,11 @@ const FACEBOOK_EXTRACT_SCRIPT = `
           link.replaceWith.apply(link, Array.prototype.slice.call(link.childNodes));
         }
       });
+      if (!includeImages) {
+        document.querySelectorAll('img, picture, source').forEach(function (element) {
+          element.remove();
+        });
+      }
     }
 
     function collect() {
@@ -335,31 +351,33 @@ type FacebookFeedState = 'loading' | 'ready' | 'error';
 type NetworkMode = 'wifiAndCellular' | 'wifiOnly';
 type StartupVolumeMode = 'fixed' | 'last';
 type MessageType = 'general' | 'greetings' | 'song' | 'city' | 'technical';
+type FeedbackKind = 'bug' | 'suggestion';
 
 type AppSettings = {
   networkMode: NetworkMode;
-  reduceDataUsage: boolean;
+  downloadFacebookImages: boolean;
   autoPlayOnLaunch: boolean;
   startupVolumeMode: StartupVolumeMode;
   startVolume: number;
   lastVolume: number;
   simplifiedAccessibility: boolean;
-  messageSignature: string;
-  replyContact: string;
-  defaultMessageType: MessageType;
+};
+
+type StoredAppSettings = Partial<AppSettings> & {
+  reduceDataUsage?: boolean;
+  messageSignature?: string;
+  replyContact?: string;
+  defaultMessageType?: MessageType;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   networkMode: 'wifiAndCellular',
-  reduceDataUsage: false,
+  downloadFacebookImages: true,
   autoPlayOnLaunch: false,
   startupVolumeMode: 'fixed',
   startVolume: DEFAULT_START_VOLUME,
   lastVolume: DEFAULT_START_VOLUME,
   simplifiedAccessibility: false,
-  messageSignature: '',
-  replyContact: '',
-  defaultMessageType: 'general',
 };
 
 const MESSAGE_TYPE_OPTIONS: Array<{
@@ -404,6 +422,30 @@ function getMessageTypeOption(messageType: MessageType) {
   return MESSAGE_TYPE_OPTIONS.find((option) => option.id === messageType) ?? MESSAGE_TYPE_OPTIONS[0];
 }
 
+const FEEDBACK_COPY: Record<FeedbackKind, {
+  title: string;
+  messageLabel: string;
+  placeholder: string;
+  subject: string;
+}> = {
+  bug: {
+    title: 'Zgłoś błąd',
+    messageLabel: 'Opis błędu',
+    placeholder: 'Opisz, co nie działa i co robiłeś przed wystąpieniem problemu.',
+    subject: 'Błąd w aplikacji El Radio',
+  },
+  suggestion: {
+    title: 'Wyślij propozycję',
+    messageLabel: 'Treść propozycji',
+    placeholder: 'Napisz, co warto dodać albo zmienić w aplikacji.',
+    subject: 'Propozycja do aplikacji El Radio',
+  },
+};
+
+function getFeedbackCopy(kind: FeedbackKind) {
+  return FEEDBACK_COPY[kind];
+}
+
 function clampVolumeValue(nextVolume: number) {
   if (!Number.isFinite(nextVolume)) {
     return DEFAULT_START_VOLUME;
@@ -412,23 +454,22 @@ function clampVolumeValue(nextVolume: number) {
 }
 
 function normalizeStoredSettings(value: unknown): AppSettings {
-  const stored = value && typeof value === 'object' ? (value as Partial<AppSettings>) : {};
-  const storedMessageType = stored.defaultMessageType;
-  const defaultMessageType: MessageType = MESSAGE_TYPE_OPTIONS.some((option) => option.id === storedMessageType)
-    ? (storedMessageType as MessageType)
-    : DEFAULT_SETTINGS.defaultMessageType;
+  const stored = value && typeof value === 'object' ? (value as StoredAppSettings) : {};
+  const downloadFacebookImages =
+    typeof stored.downloadFacebookImages === 'boolean'
+      ? stored.downloadFacebookImages
+      : stored.reduceDataUsage === true
+        ? false
+        : DEFAULT_SETTINGS.downloadFacebookImages;
 
   return {
     networkMode: stored.networkMode === 'wifiOnly' ? 'wifiOnly' : 'wifiAndCellular',
-    reduceDataUsage: stored.reduceDataUsage === true,
+    downloadFacebookImages,
     autoPlayOnLaunch: stored.autoPlayOnLaunch === true,
     startupVolumeMode: stored.startupVolumeMode === 'last' ? 'last' : 'fixed',
     startVolume: clampVolumeValue(typeof stored.startVolume === 'number' ? stored.startVolume : DEFAULT_START_VOLUME),
     lastVolume: clampVolumeValue(typeof stored.lastVolume === 'number' ? stored.lastVolume : DEFAULT_START_VOLUME),
     simplifiedAccessibility: stored.simplifiedAccessibility === true,
-    messageSignature: typeof stored.messageSignature === 'string' ? stored.messageSignature : '',
-    replyContact: typeof stored.replyContact === 'string' ? stored.replyContact : '',
-    defaultMessageType,
   };
 }
 
@@ -458,13 +499,18 @@ export default function App() {
   const [connectionStatus, setConnectionStatus] = useState('Radio nie gra.');
   const [volume, setVolume] = useState(DEFAULT_START_VOLUME);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<MessageType>(DEFAULT_SETTINGS.defaultMessageType);
+  const [messageType, setMessageType] = useState<MessageType>('general');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
   const [facebookWebViewKey, setFacebookWebViewKey] = useState(0);
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackKind, setFeedbackKind] = useState<FeedbackKind>('bug');
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackContact, setFeedbackContact] = useState('');
+  const [feedbackIncludeDiagnostics, setFeedbackIncludeDiagnostics] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isCellularNetwork, setIsCellularNetwork] = useState(false);
@@ -479,7 +525,6 @@ export default function App() {
       if (stored) {
         const nextSettings = normalizeStoredSettings(JSON.parse(stored));
         setSettings(nextSettings);
-        setMessageType(nextSettings.defaultMessageType);
         setVolume(nextSettings.startupVolumeMode === 'last' ? nextSettings.lastVolume : nextSettings.startVolume);
       }
     } catch {
@@ -824,14 +869,11 @@ export default function App() {
     }
 
     const subject = getMessageTypeOption(messageType).subject;
-    const signature = settings.messageSignature.trim() || 'Wysłano z aplikacji EL Radio';
-    const replyContact = settings.replyContact.trim();
     const body = [
       trimmed,
       '',
       '--',
-      replyContact ? `Kontakt zwrotny: ${replyContact}` : '',
-      signature,
+      'Wysłano z aplikacji EL Radio',
     ].filter(Boolean).join('\n');
     const sent = await openMailComposer(subject, body);
     if (sent) {
@@ -839,22 +881,62 @@ export default function App() {
     }
   };
 
-  const sendProblemReport = async () => {
-    const subject = 'Problem z aplikacją El Radio';
+  const buildDiagnosticsText = () => [
+    `Aplikacja: ${APP_DISPLAY_NAME}`,
+    `System: ${Platform.OS} ${Platform.Version}`,
+    `Stan odtwarzania: ${connectionStatus}`,
+    `Głośność: ${Math.round(volume * 100)}%`,
+    `Tryb sieci: ${settings.networkMode === 'wifiOnly' ? 'tylko Wi-Fi' : 'Wi-Fi i dane komórkowe'}`,
+    `Wykryta sieć: ${isCellularNetwork ? 'dane komórkowe' : 'Wi-Fi albo inna sieć'}`,
+    `Zdjęcia z Facebooka: ${settings.downloadFacebookImages ? 'włączone' : 'wyłączone'}`,
+    `Aktualności z Facebooka: ${facebookFeedState}, posty: ${facebookPosts.length}`,
+    `Uproszczona dostępność: ${settings.simplifiedAccessibility ? 'tak' : 'nie'}`,
+    `Data: ${new Date().toISOString()}`,
+  ].join('\n');
+
+  const openFeedbackForm = (kind: FeedbackKind) => {
+    setFeedbackKind(kind);
+    setFeedbackText('');
+    setFeedbackContact('');
+    setFeedbackIncludeDiagnostics(true);
+    setSettingsOpen(false);
+    setFeedbackOpen(true);
+  };
+
+  const closeFeedbackForm = () => {
+    setFeedbackOpen(false);
+  };
+
+  const sendFeedbackReport = async () => {
+    const trimmed = feedbackText.trim();
+    const contact = feedbackContact.trim();
+    const feedbackCopy = getFeedbackCopy(feedbackKind);
+
+    if (!trimmed) {
+      Alert.alert('Uzupełnij zgłoszenie', 'Opis nie może być pusty.');
+      return;
+    }
+
     const body = [
-      'Opisz problem:',
+      `Typ zgłoszenia: ${feedbackCopy.title}`,
       '',
+      feedbackCopy.messageLabel,
+      trimmed,
+      '',
+      contact ? `Kontakt zwrotny: ${contact}` : 'Kontakt zwrotny: nie podano',
       '',
       '--',
-      'Dane diagnostyczne:',
-      `System: ${Platform.OS} ${Platform.Version}`,
-      `Stan odtwarzania: ${connectionStatus}`,
-      `Głośność: ${volumePercent}%`,
-      `Data: ${new Date().toISOString()}`,
-      `Aplikacja: ${APP_DISPLAY_NAME}`,
+      feedbackIncludeDiagnostics
+        ? `Diagnostyka aplikacji:\n${buildDiagnosticsText()}`
+        : 'Diagnostyka aplikacji: użytkownik nie dołączył.',
     ].join('\n');
 
-    await openMailComposer(subject, body);
+    const sent = await openMailComposer(feedbackCopy.subject, body);
+    if (sent) {
+      setFeedbackText('');
+      setFeedbackContact('');
+      setFeedbackOpen(false);
+    }
   };
 
   const openFacebook = async () => {
@@ -871,7 +953,6 @@ export default function App() {
 
   const selectMessageType = (nextMessageType: MessageType) => {
     setMessageType(nextMessageType);
-    updateSettings({ defaultMessageType: nextMessageType });
   };
 
   const refreshFacebookFeed = () => {
@@ -950,7 +1031,13 @@ export default function App() {
   const lastVolumePercent = Math.round(settings.lastVolume * 100);
   const messageTypeOption = getMessageTypeOption(messageType);
   const facebookBlockedByNetwork = settings.networkMode === 'wifiOnly' && isCellularNetwork;
-  const hideFacebookImages = settings.reduceDataUsage && isCellularNetwork;
+  const showFacebookImages = settings.downloadFacebookImages;
+  const facebookExtractScript = FACEBOOK_EXTRACT_SCRIPT.replace(
+    '__ELRADIO_INCLUDE_IMAGES__',
+    settings.downloadFacebookImages ? 'true' : 'false',
+  );
+  const feedbackCopy = getFeedbackCopy(feedbackKind);
+  const feedbackDiagnosticsText = buildDiagnosticsText();
   const sleepTimerMinutesLeft = sleepTimerEndsAt
     ? Math.max(1, Math.ceil((sleepTimerEndsAt - Date.now()) / 60000))
     : null;
@@ -1171,7 +1258,7 @@ export default function App() {
                   }
                   style={styles.facebookPostCard}
                 >
-                  {post.imageUrl && !hideFacebookImages ? (
+                  {post.imageUrl && showFacebookImages ? (
                     <Image
                       source={{ uri: post.imageUrl, headers: { 'User-Agent': FACEBOOK_WEBVIEW_USER_AGENT } }}
                       style={styles.facebookPostImage}
@@ -1180,15 +1267,17 @@ export default function App() {
                       accessibilityIgnoresInvertColors
                     />
                   ) : null}
-                  {post.imageUrl && hideFacebookImages ? (
-                    <Text style={styles.facebookImageHiddenText}>Zdjęcie ukryte w trybie oszczędzania danych.</Text>
+                  {post.imageUrl && !showFacebookImages ? (
+                    <Text style={styles.facebookImageHiddenText}>
+                      Zdjęcie pominięte zgodnie z ustawieniem użytkownika.
+                    </Text>
                   ) : null}
                   {post.text ? <Text style={styles.facebookPostText}>{post.text}</Text> : null}
                 </View>
               ))}
               {!facebookBlockedByNetwork ? (
                 <WebView
-                  key={facebookWebViewKey}
+                  key={`${facebookWebViewKey}-${settings.downloadFacebookImages ? 'images' : 'text'}`}
                   ref={facebookWebViewRef}
                   accessible={false}
                   focusable={false}
@@ -1202,9 +1291,9 @@ export default function App() {
                   setSupportMultipleWindows={false}
                   userAgent={FACEBOOK_WEBVIEW_USER_AGENT}
                   textZoom={82}
-                  injectedJavaScript={FACEBOOK_EXTRACT_SCRIPT}
-                  injectedJavaScriptBeforeContentLoaded={FACEBOOK_EXTRACT_SCRIPT}
-                  onLoadEnd={() => facebookWebViewRef.current?.injectJavaScript(FACEBOOK_EXTRACT_SCRIPT)}
+                  injectedJavaScript={facebookExtractScript}
+                  injectedJavaScriptBeforeContentLoaded={facebookExtractScript}
+                  onLoadEnd={() => facebookWebViewRef.current?.injectJavaScript(facebookExtractScript)}
                   onMessage={handleFacebookMessage}
                   onError={() => setFacebookFeedState('error')}
                   onHttpError={() => setFacebookFeedState('error')}
@@ -1270,12 +1359,12 @@ export default function App() {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Zgłoś problem z aplikacją"
-              onPress={sendProblemReport}
+              accessibilityLabel="Zgłoś błąd w aplikacji"
+              onPress={() => openFeedbackForm('bug')}
               style={({ pressed }) => [styles.reportButton, pressed && styles.secondaryButtonPressed]}
             >
               <Icon name="bug-outline" size={20} color="#0C5C4A" />
-              <Text style={styles.reportButtonText}>Zgłoś problem</Text>
+              <Text style={styles.reportButtonText}>Zgłoś błąd</Text>
             </Pressable>
           </Section>
 
@@ -1335,7 +1424,7 @@ export default function App() {
               <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Dane i sieć</Text>
                 <Text style={styles.settingDescription}>
-                  Stream radia, aktualności i zdjęcia z Facebooka pobierają dane z internetu.
+                  Stream radia, aktualności i opcjonalne zdjęcia z Facebooka pobierają dane z internetu.
                 </Text>
                 <SettingsSwitchRow
                   label="Tylko Wi-Fi"
@@ -1344,10 +1433,10 @@ export default function App() {
                   onValueChange={(value) => updateSettings({ networkMode: value ? 'wifiOnly' : 'wifiAndCellular' })}
                 />
                 <SettingsSwitchRow
-                  label="Oszczędzanie danych"
-                  description="Na danych komórkowych aplikacja ukryje zdjęcia z Facebooka."
-                  value={settings.reduceDataUsage}
-                  onValueChange={(value) => updateSettings({ reduceDataUsage: value })}
+                  label="Pobieraj zdjęcia z Facebooka"
+                  description="Gdy wyłączysz tę opcję, aktualności zostaną tekstowe i bez obrazów w kartach postów."
+                  value={settings.downloadFacebookImages}
+                  onValueChange={(value) => updateSettings({ downloadFacebookImages: value })}
                 />
               </View>
 
@@ -1412,56 +1501,6 @@ export default function App() {
               </View>
 
               <View style={styles.settingGroup}>
-                <Text style={styles.settingGroupTitle}>Wiadomości</Text>
-                <Text style={styles.settingInputLabel}>Domyślny temat</Text>
-                <View style={styles.messageTypeGrid}>
-                  {MESSAGE_TYPE_OPTIONS.map((option) => {
-                    const selected = option.id === messageType;
-                    return (
-                      <Pressable
-                        key={option.id}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Domyślny temat wiadomości: ${option.label}`}
-                        accessibilityState={{ selected }}
-                        onPress={() => selectMessageType(option.id)}
-                        style={({ pressed }) => [
-                          styles.messageTypeButton,
-                          selected && styles.messageTypeButtonSelected,
-                          pressed && styles.secondaryButtonPressed,
-                        ]}
-                      >
-                        <Text style={[styles.messageTypeButtonText, selected && styles.messageTypeButtonTextSelected]}>
-                          {option.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <Text style={styles.settingInputLabel}>Podpis</Text>
-                <TextInput
-                  accessibilityLabel="Podpis do wiadomości"
-                  value={settings.messageSignature}
-                  onChangeText={(value) => updateSettings({ messageSignature: value })}
-                  placeholder="Np. Imię albo podpis słuchacza"
-                  placeholderTextColor="#6B7280"
-                  multiline
-                  textAlignVertical="top"
-                  style={styles.settingsTextInput}
-                />
-                <Text style={styles.settingInputLabel}>Kontakt zwrotny</Text>
-                <TextInput
-                  accessibilityLabel="Kontakt zwrotny do wiadomości"
-                  value={settings.replyContact}
-                  onChangeText={(value) => updateSettings({ replyContact: value })}
-                  placeholder="Telefon albo e-mail"
-                  placeholderTextColor="#6B7280"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  style={styles.settingsTextInput}
-                />
-              </View>
-
-              <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Aktualizacja aplikacji</Text>
                 <Text accessibilityLiveRegion="polite" style={styles.settingDescription}>
                   {updateStatus}
@@ -1489,6 +1528,33 @@ export default function App() {
               </View>
 
               <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Błędy i propozycje</Text>
+                <Text style={styles.settingDescription}>
+                  Zgłoszenie otworzy formularz z opcjonalną diagnostyką do sprawdzenia przed wysłaniem.
+                </Text>
+                <View style={styles.settingButtonRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Zgłoś błąd w aplikacji"
+                    onPress={() => openFeedbackForm('bug')}
+                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Icon name="bug-outline" size={19} color="#0C5C4A" />
+                    <Text style={styles.settingsActionButtonText}>Zgłoś błąd</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Wyślij propozycję do aplikacji"
+                    onPress={() => openFeedbackForm('suggestion')}
+                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                  >
+                    <Icon name="lightbulb-on-outline" size={19} color="#0C5C4A" />
+                    <Text style={styles.settingsActionButtonText}>Propozycja</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Dostępność</Text>
                 <SettingsSwitchRow
                   label="Prostsze opisy dla czytnika"
@@ -1501,6 +1567,94 @@ export default function App() {
               <View style={styles.settingGroupLast}>
                 <Text style={styles.settingGroupTitle}>Prywatność</Text>
                 <Text style={styles.privacyText}>{PRIVACY_TEXT}</Text>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
+      <Modal
+        visible={feedbackOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={closeFeedbackForm}
+      >
+        <SafeAreaView style={styles.settingsScreen}>
+          <StatusBar style="dark" />
+          <KeyboardAvoidingView
+            behavior={Platform.select({ ios: 'padding', android: undefined })}
+            style={styles.settingsKeyboardContainer}
+          >
+            <View style={styles.settingsScreenHeader}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Wróć"
+                onPress={closeFeedbackForm}
+                style={({ pressed }) => [styles.settingsBackButton, pressed && styles.secondaryButtonPressed]}
+              >
+                <Icon name="chevron-left" size={28} color="#0C5C4A" />
+                <Text style={styles.settingsBackButtonText}>Wróć</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView
+              contentContainerStyle={styles.settingsScreenContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>{feedbackCopy.title}</Text>
+                <Text style={styles.settingDescription}>
+                  Opis trafi do wiadomości e-mail. Kontakt zwrotny jest opcjonalny i nie zapisuje się w ustawieniach.
+                </Text>
+                <Text style={styles.settingInputLabel}>{feedbackCopy.messageLabel}</Text>
+                <TextInput
+                  accessibilityLabel={feedbackCopy.messageLabel}
+                  multiline
+                  textAlignVertical="top"
+                  value={feedbackText}
+                  onChangeText={setFeedbackText}
+                  placeholder={feedbackCopy.placeholder}
+                  placeholderTextColor="#6B7280"
+                  style={[styles.settingsTextInput, styles.feedbackTextInput]}
+                />
+                <Text style={styles.settingInputLabel}>Kontakt zwrotny opcjonalnie</Text>
+                <TextInput
+                  accessibilityLabel="Kontakt zwrotny do zgłoszenia"
+                  value={feedbackContact}
+                  onChangeText={setFeedbackContact}
+                  placeholder="Telefon albo e-mail"
+                  placeholderTextColor="#6B7280"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={styles.settingsTextInput}
+                />
+              </View>
+
+              <View style={styles.settingGroup}>
+                <Text style={styles.settingGroupTitle}>Diagnostyka</Text>
+                <SettingsSwitchRow
+                  label="Dołącz diagnostykę"
+                  description="Możesz sprawdzić poniżej, jakie dane zostaną wpisane do maila."
+                  value={feedbackIncludeDiagnostics}
+                  onValueChange={setFeedbackIncludeDiagnostics}
+                />
+                {feedbackIncludeDiagnostics ? (
+                  <Text selectable style={styles.diagnosticsPreview}>
+                    {feedbackDiagnosticsText}
+                  </Text>
+                ) : null}
+              </View>
+
+              <View style={styles.settingGroupLast}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Wyślij zgłoszenie"
+                  onPress={sendFeedbackReport}
+                  style={({ pressed }) => [styles.feedbackSendButton, pressed && styles.primarySmallButtonPressed]}
+                >
+                  <Icon name="send" size={20} color="#FFFFFF" />
+                  <Text style={styles.primarySmallButtonText}>Wyślij zgłoszenie</Text>
+                </Pressable>
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
@@ -2220,6 +2374,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
   },
+  feedbackTextInput: {
+    minHeight: 150,
+  },
+  diagnosticsPreview: {
+    marginTop: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D4E4DD',
+    backgroundColor: '#FFFFFF',
+    color: '#31473F',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '600',
+  },
   settingButtonRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2243,6 +2413,16 @@ const styles = StyleSheet.create({
     color: '#0C5C4A',
     fontSize: 15,
     fontWeight: '800',
+  },
+  feedbackSendButton: {
+    minHeight: 52,
+    borderRadius: 8,
+    backgroundColor: '#0C8C72',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
   },
   privacyText: {
     color: '#31473F',
