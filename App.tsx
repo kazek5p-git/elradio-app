@@ -31,6 +31,8 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { getNameDaysForDate } from './src/nameDays';
 
+declare const process: { env?: Record<string, string | undefined> };
+
 const APP_DISPLAY_NAME = 'El Radio Łódź 90,8';
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
 const STREAM_HEADERS = {
@@ -61,6 +63,7 @@ const DEFAULT_START_VOLUME = 0.86;
 const FACEBOOK_CRAWLER_USER_AGENT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 const FACEBOOK_WEBVIEW_USER_AGENT =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36';
+const DEBUG_FACEBOOK_FEED = process.env?.EXPO_PUBLIC_ELRADIO_DEBUG_FACEBOOK === '1';
 const PRIVACY_TEXT =
   'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia są zapisywane lokalnie na tym urządzeniu.\n\n' +
   'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia w kartach postów są pobierane przez aplikację tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
@@ -763,6 +766,7 @@ export default function App() {
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
+  const [facebookDebug, setFacebookDebug] = useState('');
   const [facebookWebViewKey, setFacebookWebViewKey] = useState(0);
   const [volumeTrackWidth, setVolumeTrackWidth] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1236,6 +1240,7 @@ export default function App() {
 
   const refreshFacebookFeed = () => {
     setFacebookPosts([]);
+    setFacebookDebug('');
     setFacebookFeedState('loading');
     setFacebookWebViewKey((currentKey) => currentKey + 1);
   };
@@ -1350,10 +1355,18 @@ export default function App() {
         }
 
         const posts = parseFacebookCrawlerPosts(html, settings.downloadFacebookImages);
+        if (DEBUG_FACEBOOK_FEED) {
+          setFacebookDebug(
+            `fetch ${response.status}, html ${html.length}, message ${html.includes('message') ? 'tak' : 'nie'}, elporter ${html.toLowerCase().includes('elporter') ? 'tak' : 'nie'}, posty ${posts.length}`,
+          );
+        }
         setFacebookPosts(posts);
         setFacebookFeedState(posts.length ? 'ready' : 'error');
       } catch {
         if (!cancelled && facebookFetchRequestRef.current === requestId) {
+          if (DEBUG_FACEBOOK_FEED) {
+            setFacebookDebug('fetch error');
+          }
           setFacebookFeedState('error');
         }
       }
@@ -1530,6 +1543,9 @@ export default function App() {
                   <Text style={styles.facebookStatusText}>
                     Nie udało się pobrać postów. Otwórz profil EL Radio na Facebooku.
                   </Text>
+                  {DEBUG_FACEBOOK_FEED && facebookDebug ? (
+                    <Text style={styles.facebookDebugText}>{facebookDebug}</Text>
+                  ) : null}
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Spróbuj ponownie pobrać posty z Facebooka"
@@ -2482,6 +2498,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
     fontWeight: '700',
+    textAlign: 'center',
+  },
+  facebookDebugText: {
+    color: '#52645F',
+    fontSize: 11,
+    lineHeight: 15,
     textAlign: 'center',
   },
   facebookPostCard: {
