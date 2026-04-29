@@ -48,7 +48,7 @@ function cleanPostText(value) {
     .replace(/\b(Zobacz wiecej|Zobacz wi.cej|See more|Pokaz wiecej|Poka. wi.cej|Obserwuj|Follow|Zaloguj sie|Zaloguj si.|Log in)\b/gi, ' ')
     .replace(/Komentowanie tego posta zostalo wylaczone\.?/gi, ' ')
     .replace(/Komentowanie tego posta zosta.o wy..czone\.?/gi, ' ')
-    .replace(/\d+\s*(min\.|godz\.|dni?)\s*temu/gi, ' ')
+    .replace(/\d+\s*(min\.?|godz\.?|dni?)\s*temu/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 

@@ -190,7 +190,7 @@ const FACEBOOK_EXTRACT_SCRIPT = `
         .replace(/\\b(Lubię to|Like|Skomentuj|Komentarz|Comment|Udostępnij|Share|Wyślij|Send|Obserwuj|Follow|Zaloguj się|Log in|Zobacz więcej|See more|Pokaż więcej|Show more)\\b/gi, ' ')
         .replace(/\\b(Polubiono przez|Liked by|Najtrafniejsze|Most relevant|Wszystkie reakcje|All reactions)\\b/gi, ' ')
         .replace(/\\d+\\s*(obserwujących|obserwujący)/gi, ' ')
-        .replace(/\\d+\\s*(min\\.|godz\\.|dni?)\\s*temu/gi, ' ')
+        .replace(/\\d+\\s*(min\\.?|godz\\.?|dni?)\\s*temu/gi, ' ')
         .replace(/\\b(w niedzielę|w sobotę)\\b/gi, ' ');
 
       text = normalizeText(text);
@@ -692,7 +692,7 @@ function cleanFacebookCrawlerPostText(value: string) {
     .replace(/(Zobacz wiecej|Zobacz wi?cej|See more|Pokaz wiecej|Poka? wi?cej|Obserwuj|Follow|Zaloguj sie|Zaloguj si?|Log in)/gi, ' ')
     .replace(/Komentowanie tego posta zostalo wylaczone\.?/gi, ' ')
     .replace(/Komentowanie tego posta zosta?o wy??czone\.?/gi, ' ')
-    .replace(/\d+\s*(min\.|godz\.|dni?)\s*temu/gi, ' ')
+    .replace(/\d+\s*(min\.?|godz\.?|dni?)\s*temu/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
