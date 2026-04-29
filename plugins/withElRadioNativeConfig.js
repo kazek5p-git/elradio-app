@@ -1,17 +1,34 @@
 const fs = require('fs');
 const path = require('path');
 
-const { withAndroidManifest, withDangerousMod, withInfoPlist, withXcodeProject } = require('@expo/config-plugins');
+const {
+  withAndroidManifest,
+  withDangerousMod,
+  withGradleProperties,
+  withInfoPlist,
+  withXcodeProject,
+} = require('@expo/config-plugins');
 const { addFramework, getProjectName } = require('@expo/config-plugins/build/ios/utils/Xcodeproj');
 
 const STREAM_HOST = 'dhtk2.noip.pl';
 const STREAM_USER_AGENT = 'El Radio app';
+const ANDROID_RELEASE_ARCHITECTURES = 'armeabi-v7a,arm64-v8a';
 
 function replaceOnce(source, search, replacement, label) {
   if (!source.includes(search)) {
     throw new Error(`Cannot patch El Radio native config. Missing anchor: ${label}`);
   }
   return source.replace(search, replacement);
+}
+
+function upsertGradleProperty(properties, key, value) {
+  const existing = properties.find((item) => item.type === 'property' && item.key === key);
+  if (existing) {
+    existing.value = value;
+    return properties;
+  }
+  properties.push({ type: 'property', key, value });
+  return properties;
 }
 
 function patchExpoAvAndroidUserAgent(projectRoot) {
@@ -147,6 +164,15 @@ static void EXElRadioUpdateNowPlayingInfo(NSURL *url, NSDictionary *headers, BOO
 }
 
 function withElRadioNativeConfig(config) {
+  config = withGradleProperties(config, (modConfig) => {
+    modConfig.modResults = upsertGradleProperty(
+      modConfig.modResults,
+      'reactNativeArchitectures',
+      ANDROID_RELEASE_ARCHITECTURES,
+    );
+    return modConfig;
+  });
+
   config = withAndroidManifest(config, (modConfig) => {
     const application = modConfig.modResults.manifest.application?.[0];
     if (application) {
