@@ -18,6 +18,7 @@ import {
   KeyboardAvoidingView,
   Linking,
   Modal,
+  NativeModules,
   Platform,
   Pressable,
   SafeAreaView,
@@ -34,6 +35,15 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { getNameDaysForDate } from './src/nameDays';
 
 declare const process: { env: Record<string, string | undefined> };
+
+type AudioRoutesNativeModule = {
+  openAudioRoutePicker?: () => Promise<boolean>;
+};
+
+const ElRadioAudioRoutes = NativeModules.ElRadioAudioRoutes as AudioRoutesNativeModule | undefined;
+const AUDIO_ROUTE_BUTTON_LABEL = Platform.select({ ios: 'AirPlay', android: 'Cast', default: 'Wyjście audio' }) ?? 'Wyjście audio';
+const AUDIO_ROUTE_ACCESSIBILITY_LABEL =
+  Platform.select({ ios: 'AirPlay audio', android: 'Google Cast audio', default: 'Wyjście audio' }) ?? 'Wyjście audio';
 
 const APP_DISPLAY_NAME = 'El Radio Łódź 90,8';
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
@@ -1689,6 +1699,19 @@ export default function App() {
     setFacebookWebViewKey((currentKey) => currentKey + 1);
   };
 
+  const openAudioRoutePicker = async () => {
+    if (!ElRadioAudioRoutes?.openAudioRoutePicker) {
+      Alert.alert('Wyjście audio', 'Ta wersja aplikacji nie ma jeszcze natywnego wyboru wyjścia audio.');
+      return;
+    }
+
+    try {
+      await ElRadioAudioRoutes.openAudioRoutePicker();
+    } catch {
+      Alert.alert('Wyjście audio', 'Nie udało się otworzyć wyboru wyjścia audio w systemie.');
+    }
+  };
+
   const scrollToNews = () => {
     mainScrollRef.current?.scrollTo({
       y: Math.max(0, newsSectionYRef.current - 12),
@@ -1955,14 +1978,25 @@ export default function App() {
               </View>
             </View>
 
-            <View style={styles.sleepTimerPanel}>
-              <SelectButton
+            <View style={styles.playerActionRow}>
+              <View style={styles.playerActionSelect}>
+                <SelectButton
                 label="Wyłącznik czasowy"
                 value={sleepTimerLabel}
                 icon="timer-outline"
                 accessibilityLabel={`Wyłącznik czasowy: ${sleepTimerLabel}`}
                 onPress={() => setSleepTimerSelectorOpen(true)}
-              />
+                />
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={AUDIO_ROUTE_ACCESSIBILITY_LABEL}
+                onPress={openAudioRoutePicker}
+                style={({ pressed }) => [styles.audioRouteButton, pressed && styles.secondaryButtonPressed]}
+              >
+                <Icon name="cast-audio" size={23} color="#0C5C4A" />
+                <Text style={styles.audioRouteButtonText}>{AUDIO_ROUTE_BUTTON_LABEL}</Text>
+              </Pressable>
             </View>
 
           </View>
@@ -2300,7 +2334,7 @@ export default function App() {
                 <View style={styles.settingButtonRow}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Zgłoś błąd w aplikacji"
+                    accessibilityLabel="Zgłoś błąd"
                     onPress={() => openFeedbackForm('bug')}
                     style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
                   >
@@ -2309,12 +2343,12 @@ export default function App() {
                   </Pressable>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Wyślij propozycję do aplikacji"
+                    accessibilityLabel="Wyślij propozycję zmian"
                     onPress={() => openFeedbackForm('suggestion')}
                     style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
                   >
                     <Icon name="lightbulb-on-outline" size={19} color="#0C5C4A" />
-                    <Text style={styles.settingsActionButtonText}>Propozycja</Text>
+                    <Text style={styles.settingsActionButtonText}>Wyślij propozycję zmian</Text>
                   </Pressable>
                 </View>
               </View>
@@ -2919,6 +2953,34 @@ const styles = StyleSheet.create({
   sleepTimerPanel: {
     marginTop: 10,
   },
+  playerActionRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
+  },
+  playerActionSelect: {
+    flex: 1,
+    minWidth: 0,
+  },
+  audioRouteButton: {
+    minHeight: 54,
+    minWidth: 104,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#AFC9BF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 12,
+  },
+  audioRouteButtonText: {
+    color: '#0C5C4A',
+    fontSize: 15,
+    fontWeight: '900',
+  },
   sleepTimerHeader: {
     minHeight: 34,
     flexDirection: 'row',
@@ -3449,7 +3511,10 @@ const styles = StyleSheet.create({
   settingsActionButtonText: {
     color: '#0C5C4A',
     fontSize: 15,
+    lineHeight: 18,
     fontWeight: '800',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   feedbackSendButton: {
     minHeight: 52,
