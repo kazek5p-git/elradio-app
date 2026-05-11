@@ -2,6 +2,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { Audio, AVPlaybackStatus } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as IntentLauncher from 'expo-intent-launcher';
 import * as MailComposer from 'expo-mail-composer';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
@@ -30,7 +32,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { getNameDaysForDate } from './src/nameDays';
 
-declare const process: { env?: Record<string, string | undefined> };
+declare const process: { env: Record<string, string | undefined> };
 
 const APP_DISPLAY_NAME = 'El Radio Łódź 90,8';
 const STREAM_URL = 'http://dhtk2.noip.pl:8888/elradio';
@@ -54,10 +56,12 @@ const APP_RELEASE_API_URL = `https://api.github.com/repos/${APP_RELEASE_REPOSITO
 const APP_ANDROID_APK_NAME = 'EL-Radio.apk';
 const APP_IOS_IPA_NAME = 'EL-Radio-unsigned.ipa';
 const APP_RELEASE_METADATA_NAME = 'EL-Radio-release.json';
+const ANDROID_APK_MIME_TYPE = 'application/vnd.android.package-archive';
+const ANDROID_GRANT_READ_URI_PERMISSION_FLAG = 1;
 const APP_ANDROID_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_ANDROID_APK_NAME}`;
 const APP_IOS_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_IOS_IPA_NAME}`;
-const APP_BUILD_SHA = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_ELRADIO_BUILD_SHA?.trim() ?? '' : '';
-const APP_BUILD_TIME = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_ELRADIO_BUILD_TIME?.trim() ?? '' : '';
+const APP_BUILD_SHA = (process.env.EXPO_PUBLIC_ELRADIO_BUILD_SHA ?? '').trim();
+const APP_BUILD_TIME = (process.env.EXPO_PUBLIC_ELRADIO_BUILD_TIME ?? '').trim();
 const RETRY_DELAYS_MS = [3000, 7000, 15000, 30000];
 const MAX_FACEBOOK_POSTS = 4;
 const VOLUME_TICKS = Array.from({ length: 7 }, (_, index) => index);
@@ -937,6 +941,7 @@ export default function App() {
   const [messageType, setMessageType] = useState<MessageType>('general');
   const [updateStatus, setUpdateStatus] = useState('Sprawdzam aktualizacje aplikacji...');
   const [isCheckingAppUpdate, setIsCheckingAppUpdate] = useState(false);
+  const [isDownloadingAppUpdate, setIsDownloadingAppUpdate] = useState(false);
   const [directAppUpdateInfo, setDirectAppUpdateInfo] = useState<DirectAppUpdateInfo | null>(null);
   const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([]);
   const [facebookFeedState, setFacebookFeedState] = useState<FacebookFeedState>('loading');
@@ -1413,14 +1418,58 @@ export default function App() {
     await WebBrowser.openBrowserAsync('https://elradio.pl');
   };
 
-  const openAppUpdateDownload = async (updateInfo: DirectAppUpdateInfo | null = directAppUpdateInfo) => {
-    const downloadUrl = updateInfo?.downloadUrl ?? getPlatformUpdateFallbackUrl();
-    const releasePageUrl = updateInfo?.releasePageUrl ?? APP_RELEASE_PAGE_URL;
+  const openAppUpdateDownloadLink = async (downloadUrl: string, releasePageUrl: string) => {
     try {
       await Linking.openURL(downloadUrl);
     } catch {
       await WebBrowser.openBrowserAsync(releasePageUrl);
     }
+  };
+
+  const openAndroidAppInstaller = async (downloadUrl: string, releasePageUrl: string) => {
+    if (!FileSystem.cacheDirectory) {
+      await openAppUpdateDownloadLink(downloadUrl, releasePageUrl);
+      return;
+    }
+
+    setIsDownloadingAppUpdate(true);
+    setUpdateStatus('Pobieram aktualizację aplikacji...');
+    try {
+      const fileUri = `${FileSystem.cacheDirectory}${APP_ANDROID_APK_NAME}`;
+      const download = await FileSystem.downloadAsync(downloadUrl, fileUri, {
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      if (download.status < 200 || download.status >= 300) {
+        throw new Error(`HTTP ${download.status}`);
+      }
+
+      const contentUri = await FileSystem.getContentUriAsync(download.uri);
+      setUpdateStatus('Aktualizacja pobrana. Otwieram instalator Androida...');
+      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+        data: contentUri,
+        type: ANDROID_APK_MIME_TYPE,
+        flags: ANDROID_GRANT_READ_URI_PERMISSION_FLAG,
+      });
+    } catch {
+      setUpdateStatus('Nie udało się otworzyć instalatora. Otwieram pobieranie w przeglądarce.');
+      await openAppUpdateDownloadLink(downloadUrl, releasePageUrl);
+    } finally {
+      setIsDownloadingAppUpdate(false);
+    }
+  };
+
+  const openAppUpdateDownload = async (updateInfo: DirectAppUpdateInfo | null = directAppUpdateInfo) => {
+    const downloadUrl = updateInfo?.downloadUrl ?? getPlatformUpdateFallbackUrl();
+    const releasePageUrl = updateInfo?.releasePageUrl ?? APP_RELEASE_PAGE_URL;
+    if (Platform.OS === 'android') {
+      if (isDownloadingAppUpdate) {
+        return;
+      }
+      await openAndroidAppInstaller(downloadUrl, releasePageUrl);
+      return;
+    }
+
+    await openAppUpdateDownloadLink(downloadUrl, releasePageUrl);
   };
 
   const selectMessageType = (nextMessageType: MessageType) => {
@@ -2004,12 +2053,12 @@ export default function App() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Sprawdź aktualizacje aplikacji"
-                    accessibilityState={{ disabled: isCheckingAppUpdate }}
-                    disabled={isCheckingAppUpdate}
+                    accessibilityState={{ disabled: isCheckingAppUpdate || isDownloadingAppUpdate }}
+                    disabled={isCheckingAppUpdate || isDownloadingAppUpdate}
                     onPress={() => checkForDirectAppUpdate(true)}
                     style={({ pressed }) => [
                       styles.settingsActionButton,
-                      isCheckingAppUpdate && styles.settingsActionButtonDisabled,
+                      (isCheckingAppUpdate || isDownloadingAppUpdate) && styles.settingsActionButtonDisabled,
                       pressed && styles.secondaryButtonPressed,
                     ]}
                   >
@@ -2021,13 +2070,25 @@ export default function App() {
                     <Text style={styles.settingsActionButtonText}>{isCheckingAppUpdate ? 'Sprawdzam' : 'Sprawdź'}</Text>
                   </Pressable>
                   <Pressable
-                    accessibilityRole="link"
+                    accessibilityRole="button"
                     accessibilityLabel={`Pobierz aktualizację aplikacji: ${getPlatformUpdateAssetName()}`}
+                    accessibilityState={{ disabled: isDownloadingAppUpdate }}
+                    disabled={isDownloadingAppUpdate}
                     onPress={() => openAppUpdateDownload()}
-                    style={({ pressed }) => [styles.settingsActionButton, pressed && styles.secondaryButtonPressed]}
+                    style={({ pressed }) => [
+                      styles.settingsActionButton,
+                      isDownloadingAppUpdate && styles.settingsActionButtonDisabled,
+                      pressed && styles.secondaryButtonPressed,
+                    ]}
                   >
-                    <Icon name="download" size={19} color="#0C5C4A" />
-                    <Text style={styles.settingsActionButtonText}>{getPlatformUpdateDownloadLabel()}</Text>
+                    {isDownloadingAppUpdate ? (
+                      <ActivityIndicator size="small" color="#0C5C4A" />
+                    ) : (
+                      <Icon name="download" size={19} color="#0C5C4A" />
+                    )}
+                    <Text style={styles.settingsActionButtonText}>
+                      {isDownloadingAppUpdate ? 'Pobieram' : getPlatformUpdateDownloadLabel()}
+                    </Text>
                   </Pressable>
                 </View>
               </View>
