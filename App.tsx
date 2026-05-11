@@ -5,6 +5,7 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
 import * as MailComposer from 'expo-mail-composer';
+import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import type { ReactNode } from 'react';
@@ -58,6 +59,11 @@ const APP_IOS_IPA_NAME = 'EL-Radio-unsigned.ipa';
 const APP_RELEASE_METADATA_NAME = 'EL-Radio-release.json';
 const ANDROID_APK_MIME_TYPE = 'application/vnd.android.package-archive';
 const ANDROID_GRANT_READ_URI_PERMISSION_FLAG = 1;
+const APP_UPDATE_NOTIFICATION_CHANNEL_ID = 'app-updates';
+const APP_UPDATE_NOTIFICATION_ID = 'elradio-app-update';
+const APP_UPDATE_NOTIFICATION_KIND = 'app-update';
+const APP_UPDATE_NOTIFICATION_STORAGE_KEY = '@elradio/appUpdateNotification/v1';
+const APP_UPDATE_NOTIFICATION_SETTINGS_LABEL = ['Powiadomienia', 'o', 'aktualizacjach'].join(' ');
 const APP_ANDROID_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_ANDROID_APK_NAME}`;
 const APP_IOS_DOWNLOAD_URL = `https://github.com/${APP_RELEASE_REPOSITORY}/releases/download/${APP_RELEASE_TAG}/${APP_IOS_IPA_NAME}`;
 const APP_BUILD_SHA = (process.env.EXPO_PUBLIC_ELRADIO_BUILD_SHA ?? '').trim();
@@ -82,7 +88,18 @@ const PRIVACY_TEXT =
   'Aplikacja nie wymaga konta i nie ma własnego systemu logowania. Ustawienia są zapisywane lokalnie na tym urządzeniu.\n\n' +
   'Do odtwarzania radia aplikacja łączy się ze streamem EL Radio. Do aktualności pobiera publiczne posty z profilu EL Radio na Facebooku. Zdjęcia w kartach postów są pobierane przez aplikację tylko wtedy, gdy włączysz je w ustawieniach. Facebook może przetwarzać dane zgodnie z własnymi zasadami.\n\n' +
   'Wiadomości, zgłoszenia błędów i propozycje są wysyłane przez aplikację pocztową wybraną w systemie. Aplikacja nie wysyła ich samodzielnie na żaden dodatkowy serwer.\n\n' +
+  'Powiadomienia o aktualizacjach na Androidzie są lokalne: aplikacja sprawdza publiczny release na GitHubie i pokazuje informację w systemie. Nie rejestruje telefonu na zewnętrznym serwerze powiadomień.\n\n' +
   'Dane diagnostyczne trafiają do treści maila tylko wtedy, gdy samodzielnie wybierzesz zgłoszenie błędu lub propozycji i zostawisz włączoną opcję dołączenia diagnostyki.';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    priority: Notifications.AndroidNotificationPriority.DEFAULT,
+  }),
+});
 const FACEBOOK_EXTRACT_SCRIPT = `
   (function () {
     function boot() {
@@ -553,6 +570,7 @@ type SelectionOption<T extends string> = {
 type AppSettings = {
   networkMode: NetworkMode;
   downloadFacebookImages: boolean;
+  appUpdateNotifications: boolean;
   autoPlayOnLaunch: boolean;
   startupVolumeMode: StartupVolumeMode;
   startVolume: number;
@@ -570,6 +588,7 @@ type StoredAppSettings = Partial<AppSettings> & {
 const DEFAULT_SETTINGS: AppSettings = {
   networkMode: 'wifiAndCellular',
   downloadFacebookImages: true,
+  appUpdateNotifications: true,
   autoPlayOnLaunch: false,
   startupVolumeMode: 'fixed',
   startVolume: DEFAULT_START_VOLUME,
@@ -768,6 +787,79 @@ function buildUpdateStatusText(info: DirectAppUpdateInfo) {
     : 'Najnowsza paczka jest gotowa do pobrania.';
 }
 
+type AppUpdateNotificationPayload = {
+  kind: typeof APP_UPDATE_NOTIFICATION_KIND;
+  assetName: string;
+  downloadUrl: string;
+  releasePageUrl: string;
+  remoteBuildTime?: string;
+  remoteCommit?: string;
+};
+
+function getAppUpdateNotificationKey(info: DirectAppUpdateInfo) {
+  return info.remoteCommit ?? info.remoteBuildTime ?? info.assetName;
+}
+
+function readAppUpdateNotificationPayload(data: Record<string, unknown>): AppUpdateNotificationPayload | null {
+  if (
+    data.kind !== APP_UPDATE_NOTIFICATION_KIND ||
+    typeof data.assetName !== 'string' ||
+    typeof data.downloadUrl !== 'string' ||
+    typeof data.releasePageUrl !== 'string'
+  ) {
+    return null;
+  }
+
+  return {
+    kind: APP_UPDATE_NOTIFICATION_KIND,
+    assetName: data.assetName,
+    downloadUrl: data.downloadUrl,
+    releasePageUrl: data.releasePageUrl,
+    remoteBuildTime: typeof data.remoteBuildTime === 'string' ? data.remoteBuildTime : undefined,
+    remoteCommit: typeof data.remoteCommit === 'string' ? data.remoteCommit : undefined,
+  };
+}
+
+async function prepareAndroidUpdateNotificationChannel() {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+
+  await Notifications.setNotificationChannelAsync(APP_UPDATE_NOTIFICATION_CHANNEL_ID, {
+    name: 'Aktualizacje aplikacji',
+    description: 'Powiadomienia o nowych wersjach aplikacji El Radio.',
+    importance: Notifications.AndroidImportance.DEFAULT,
+    enableVibrate: false,
+    showBadge: false,
+    sound: null,
+    lightColor: '#0C8C72',
+    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+  }).catch(() => undefined);
+}
+
+async function ensureAndroidUpdateNotificationPermission(requestPermission: boolean) {
+  if (Platform.OS !== 'android') {
+    return false;
+  }
+
+  await prepareAndroidUpdateNotificationChannel();
+  let permissions = await Notifications.getPermissionsAsync();
+  if (!permissions.granted && requestPermission && permissions.canAskAgain) {
+    permissions = await Notifications.requestPermissionsAsync();
+  }
+
+  return permissions.granted;
+}
+
+async function dismissAndroidAppUpdateNotification() {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+
+  await Notifications.dismissAllNotificationsAsync().catch(() => undefined);
+  await AsyncStorage.removeItem(APP_UPDATE_NOTIFICATION_STORAGE_KEY).catch(() => undefined);
+}
+
 function normalizeStoredSettings(value: unknown): AppSettings {
   const stored = value && typeof value === 'object' ? (value as StoredAppSettings) : {};
   const downloadFacebookImages =
@@ -780,6 +872,7 @@ function normalizeStoredSettings(value: unknown): AppSettings {
   return {
     networkMode: stored.networkMode === 'wifiOnly' ? 'wifiOnly' : 'wifiAndCellular',
     downloadFacebookImages,
+    appUpdateNotifications: stored.appUpdateNotifications !== false,
     autoPlayOnLaunch: stored.autoPlayOnLaunch === true,
     startupVolumeMode: stored.startupVolumeMode === 'last' ? 'last' : 'fixed',
     startVolume: clampVolumeValue(typeof stored.startVolume === 'number' ? stored.startVolume : DEFAULT_START_VOLUME),
@@ -987,8 +1080,15 @@ export default function App() {
     setSettings((currentSettings) => {
       const nextSettings = normalizeStoredSettings({ ...currentSettings, ...updates });
       AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings)).catch(() => undefined);
+      if (updates.appUpdateNotifications === false) {
+        dismissAndroidAppUpdateNotification().catch(() => undefined);
+      }
       return nextSettings;
     });
+  };
+
+  const setAppUpdateNotificationsEnabled = (value: boolean) => {
+    updateSettings({ appUpdateNotifications: value });
   };
 
   useEffect(() => {
@@ -1003,7 +1103,7 @@ export default function App() {
     });
 
     void loadSettings();
-    checkForDirectAppUpdate(false);
+    void prepareAndroidUpdateNotificationChannel();
 
     return () => {
       clearRetryTimer();
@@ -1012,6 +1112,14 @@ export default function App() {
       soundRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!settingsLoaded) {
+      return;
+    }
+
+    checkForDirectAppUpdate(false);
+  }, [settingsLoaded]);
 
   useEffect(() => {
     soundRef.current?.setVolumeAsync(volume).catch(() => undefined);
@@ -1272,6 +1380,53 @@ export default function App() {
     return unsubscribe;
   }, [settings.networkMode]);
 
+  const showAndroidAppUpdateNotification = async (updateInfo: DirectAppUpdateInfo, skipIfAlreadySent: boolean) => {
+    if (Platform.OS !== 'android' || !settings.appUpdateNotifications) {
+      return false;
+    }
+
+    try {
+      const notificationKey = getAppUpdateNotificationKey(updateInfo);
+      if (skipIfAlreadySent) {
+        const lastNotificationKey = await AsyncStorage.getItem(APP_UPDATE_NOTIFICATION_STORAGE_KEY);
+        if (lastNotificationKey === notificationKey) {
+          return true;
+        }
+      }
+
+      const hasPermission = await ensureAndroidUpdateNotificationPermission(true);
+      if (!hasPermission) {
+        return false;
+      }
+
+      await Notifications.dismissAllNotificationsAsync().catch(() => undefined);
+      await Notifications.scheduleNotificationAsync({
+        identifier: APP_UPDATE_NOTIFICATION_ID,
+        content: {
+          title: 'Dostępna aktualizacja El Radio',
+          body: 'Dotknij, aby pobrać najnowszy APK.',
+          data: {
+            kind: APP_UPDATE_NOTIFICATION_KIND,
+            assetName: updateInfo.assetName,
+            downloadUrl: updateInfo.downloadUrl,
+            releasePageUrl: updateInfo.releasePageUrl,
+            remoteBuildTime: updateInfo.remoteBuildTime,
+            remoteCommit: updateInfo.remoteCommit,
+          },
+          sound: false,
+          priority: Notifications.AndroidNotificationPriority.DEFAULT,
+          color: '#0C8C72',
+          autoDismiss: true,
+        },
+        trigger: { channelId: APP_UPDATE_NOTIFICATION_CHANNEL_ID },
+      });
+      await AsyncStorage.setItem(APP_UPDATE_NOTIFICATION_STORAGE_KEY, notificationKey);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const checkForDirectAppUpdate = async (manual: boolean) => {
     if (isCheckingAppUpdate) {
       return;
@@ -1285,14 +1440,17 @@ export default function App() {
       setUpdateStatus(buildUpdateStatusText(updateInfo));
 
       if (updateInfo.comparison === 'newer') {
-        Alert.alert(
-          'Dostępna aktualizacja',
-          'Możesz pobrać najnowszą wersję aplikacji bezpośrednio z GitHuba.',
-          [
-            { text: 'Później', style: 'cancel' },
-            { text: getPlatformUpdateDownloadLabel(), onPress: () => openAppUpdateDownload(updateInfo) },
-          ],
-        );
+        const notificationHandled = await showAndroidAppUpdateNotification(updateInfo, !manual);
+        if (manual || !notificationHandled || Platform.OS !== 'android') {
+          Alert.alert(
+            'Dostępna aktualizacja',
+            'Możesz pobrać najnowszą wersję aplikacji bezpośrednio z GitHuba.',
+            [
+              { text: 'Później', style: 'cancel' },
+              { text: getPlatformUpdateDownloadLabel(), onPress: () => openAppUpdateDownload(updateInfo) },
+            ],
+          );
+        }
       } else if (manual && updateInfo.comparison === 'unknown') {
         Alert.alert(
           'Paczka jest dostępna',
@@ -1302,6 +1460,8 @@ export default function App() {
             { text: getPlatformUpdateDownloadLabel(), onPress: () => openAppUpdateDownload(updateInfo) },
           ],
         );
+      } else if (updateInfo.comparison === 'current') {
+        await dismissAndroidAppUpdateNotification();
       }
     } catch {
       setUpdateStatus('Nie udało się teraz sprawdzić aktualizacji.');
@@ -1471,6 +1631,41 @@ export default function App() {
 
     await openAppUpdateDownloadLink(downloadUrl, releasePageUrl);
   };
+
+  const handleAppUpdateNotificationResponse = (response: Notifications.NotificationResponse) => {
+    const payload = readAppUpdateNotificationPayload(response.notification.request.content.data ?? {});
+    if (!payload) {
+      return;
+    }
+
+    Notifications.clearLastNotificationResponse();
+    Notifications.dismissAllNotificationsAsync().catch(() => undefined);
+    const updateInfo: DirectAppUpdateInfo = {
+      assetName: payload.assetName,
+      downloadUrl: payload.downloadUrl,
+      releasePageUrl: payload.releasePageUrl,
+      remoteBuildTime: payload.remoteBuildTime,
+      remoteCommit: payload.remoteCommit,
+      comparison: 'newer',
+    };
+    setDirectAppUpdateInfo(updateInfo);
+    setUpdateStatus(buildUpdateStatusText(updateInfo));
+    void openAppUpdateDownload(updateInfo);
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return undefined;
+    }
+
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse) {
+      handleAppUpdateNotificationResponse(lastResponse);
+    }
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(handleAppUpdateNotificationResponse);
+    return () => subscription.remove();
+  }, []);
 
   const selectMessageType = (nextMessageType: MessageType) => {
     setMessageType(nextMessageType);
@@ -2046,6 +2241,13 @@ export default function App() {
 
               <View style={styles.settingGroup}>
                 <Text style={styles.settingGroupTitle}>Aktualizacja aplikacji</Text>
+                {Platform.OS === 'android' ? (
+                  <SettingsSwitchRow
+                    label={APP_UPDATE_NOTIFICATION_SETTINGS_LABEL}
+                    value={settings.appUpdateNotifications}
+                    onValueChange={setAppUpdateNotificationsEnabled}
+                  />
+                ) : null}
                 <Text accessibilityLiveRegion="polite" style={styles.settingDescription}>
                   {updateStatus}
                 </Text>
