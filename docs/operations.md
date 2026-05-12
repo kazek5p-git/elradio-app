@@ -22,6 +22,8 @@ Workflow: `.github/workflows/android-apk.yml`
 
 Uruchamia sie przy pushu na `main`, tagach `v*` i recznie przez `workflow_dispatch`.
 
+Push zmieniajacy wylacznie `README.md`, `docs/**` albo `.gitattributes` nie uruchamia tego workflow. Dzieki temu dokumentacja nie nadpisuje testowego APK w release `latest-build`.
+
 Glowne kroki:
 
 1. `npm ci`.
@@ -37,6 +39,8 @@ Glowne kroki:
 Workflow: `.github/workflows/ios-unsigned.yml`
 
 Uruchamia sie przy pushu na `main` i recznie.
+
+Push zmieniajacy wylacznie `README.md`, `docs/**` albo `.gitattributes` nie uruchamia tego workflow. Dzieki temu dokumentacja nie nadpisuje testowej IPA w release `latest-build`.
 
 Glowne kroki:
 
@@ -66,6 +70,8 @@ To jest dobra kontrola po zmianach UI, Facebooka albo deep linkow.
 Lokalnie sprawdz `npm run typecheck` i `git diff --check`, potem zrob commit i push na `main`.
 
 Po pushu na `main` poczekaj na workflow Android i iOS. Oba powinny zakonczyc sie zielonym statusem i nadpisac assety w release `latest-build`.
+
+Wyjatek: jesli commit zawiera tylko dokumentacje albo `.gitattributes`, buildy Android/iOS sa pomijane. Gdy mimo to trzeba wypuscic paczki, uruchom workflowy recznie przez `workflow_dispatch`.
 
 Minimalna kontrola po release:
 
