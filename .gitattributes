@@ -1,0 +1,46 @@
+# Keep repository text files stable across Windows, macOS and Linux.
+* text=auto eol=lf
+
+# Windows launchers and scripts are safest with native Windows line endings.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Shell and source files should remain LF for build tools and remote macOS/Linux jobs.
+*.sh text eol=lf
+*.kt text eol=lf
+*.kts text eol=lf
+*.swift text eol=lf
+*.m text eol=lf
+*.mm text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.c text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.plist text eol=lf
+*.strings text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.apk binary
+*.ipa binary
+*.aab binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.mobileprovision binary
+*.xcassets/** -text

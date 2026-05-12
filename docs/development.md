@@ -181,6 +181,16 @@ node scripts/update-facebook-feed.mjs
 
 Jesli skrypt pobierze nowe posty, zmieni `data/facebook-feed.json`. Workflow robi to automatycznie co 30 minut i commitnie zmiane, jesli feed sie zmienil.
 
+## Git i konce linii
+
+Repo ma plik `.gitattributes`, ktory utrzymuje przewidywalne konce linii miedzy Windowsem, macOS, Linuxem i GitHub Actions.
+
+- Pliki tekstowe i zrodlowe sa zapisywane w repo jako LF.
+- Skrypty Windows `.ps1`, `.bat` i `.cmd` maja w working tree uzywac CRLF.
+- APK, IPA, obrazy, archiwa, keystore i provisioning profiles sa oznaczone jako binarne.
+
+Nie uruchamiaj `git add --renormalize .` przy zwyklych poprawkach. Jesli kiedys trzeba bedzie przeliczyc cale repo wedlug `.gitattributes`, zrob to jako osobny commit bez zmian funkcjonalnych.
+
 ## Minimalna kontrola przed commitem
 
 ```powershell

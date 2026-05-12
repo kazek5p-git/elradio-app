@@ -66,4 +66,5 @@ Z poziomu katalogu nadrzednego `C:\Users\Kazek\Desktop\iOS` dziala tez wspolny s
 - Po zmianach natywnych trzeba zbudowac nowe APK/IPA. Sam JavaScript moze przejsc przez Expo Updates dopiero po pelnej konfiguracji EAS Update.
 - Aktualnosci Facebooka sa najbardziej kruche, bo opieraja sie na publicznym HTML/mbasic oraz cache w `data/facebook-feed.json`.
 - User-Agent streamu i metadane iOS Now Playing sa latane w `expo-av` podczas prebuilda. Po podbiciu wersji Expo trzeba sprawdzic plugin.
+- `.gitattributes` pilnuje koncow linii i plikow binarnych; masowa renormalizacje rob tylko w osobnym commicie.
 - Nie commituj `Builds/`, `android/`, `ios/`, `.expo/` ani lokalnych logow Sideloadly.
