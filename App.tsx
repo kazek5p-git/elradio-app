@@ -1905,6 +1905,15 @@ export default function App() {
               )}
               <Text style={styles.playButtonText}>{playLabel}</Text>
             </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={AUDIO_ROUTE_ACCESSIBILITY_LABEL}
+              onPress={openAudioRoutePicker}
+              style={({ pressed }) => [styles.audioRouteButton, pressed && styles.secondaryButtonPressed]}
+            >
+              <Icon name="cast-audio" size={23} color="#0C5C4A" />
+              <Text style={styles.audioRouteButtonText}>{AUDIO_ROUTE_BUTTON_LABEL}</Text>
+            </Pressable>
             {playbackState !== 'idle' ? (
               <View
                 accessible
@@ -1988,15 +1997,6 @@ export default function App() {
                 onPress={() => setSleepTimerSelectorOpen(true)}
                 />
               </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={AUDIO_ROUTE_ACCESSIBILITY_LABEL}
-                onPress={openAudioRoutePicker}
-                style={({ pressed }) => [styles.audioRouteButton, pressed && styles.secondaryButtonPressed]}
-              >
-                <Icon name="cast-audio" size={23} color="#0C5C4A" />
-                <Text style={styles.audioRouteButtonText}>{AUDIO_ROUTE_BUTTON_LABEL}</Text>
-              </Pressable>
             </View>
 
           </View>
@@ -2964,6 +2964,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   audioRouteButton: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
     minHeight: 54,
     minWidth: 104,
     borderRadius: 8,
