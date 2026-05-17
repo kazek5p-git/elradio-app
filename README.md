@@ -5,6 +5,7 @@ Mobilna aplikacja Android/iOS do sluchania El Radia. Projekt jest zbudowany w Ex
 ## Co robi aplikacja
 
 - Odtwarza stream `http://dhtk2.noip.pl:8888/elradio` z naglowkami Icecast i User-Agent `El Radio app`.
+- Pokazuje aktualny tytul audycji/utworu z metadanych Icecast jako `Teraz gramy`.
 - Udostepnia sterowanie odtwarzaniem, glosnoscia, wyjsciem audio AirPlay/Cast i wylacznikiem czasowym.
 - Pokazuje imieniny z lokalnej bazy `src/nameDays.ts`.
 - Pobiera aktualnosci z Facebooka przez cache JSON w repo oraz fallbacki w aplikacji.

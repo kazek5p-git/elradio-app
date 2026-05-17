@@ -51,6 +51,9 @@ const STREAM_HEADERS = {
   'Icy-MetaData': '1',
   'User-Agent': 'El Radio app',
 };
+const ICECAST_STATUS_JSON_URL = 'http://dhtk2.noip.pl:8888/status-json.xsl?mount=/elradio';
+const NOW_PLAYING_REFRESH_MS = 20000;
+const NOW_PLAYING_FETCH_TIMEOUT_MS = 8000;
 const FACEBOOK_PAGE_ID = '61584365428208';
 const FACEBOOK_URL = `https://www.facebook.com/people/ELRadio-908-FM/${FACEBOOK_PAGE_ID}/`;
 const FACEBOOK_PLUGIN_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
@@ -562,6 +565,19 @@ type AppReleaseMetadata = {
   version?: string;
 };
 
+type IcecastSourcePayload = {
+  listenurl?: unknown;
+  mount?: unknown;
+  server_name?: unknown;
+  title?: unknown;
+};
+
+type IcecastStatusPayload = {
+  icestats?: {
+    source?: IcecastSourcePayload | IcecastSourcePayload[];
+  };
+};
+
 type DirectAppUpdateInfo = {
   assetName: string;
   downloadUrl: string;
@@ -677,6 +693,60 @@ function clampVolumeValue(nextVolume: number) {
     return DEFAULT_START_VOLUME;
   }
   return Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
+}
+
+function normalizeNowPlayingTitle(value: unknown) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const title = value.replace(/\s+/g, ' ').trim();
+  if (!title || title === '-' || title.toLowerCase() === 'unknown') {
+    return '';
+  }
+  return title;
+}
+
+function normalizeIcecastText(value: unknown) {
+  return typeof value === 'string' ? value.toLowerCase() : '';
+}
+
+function getElRadioIcecastSource(payload: IcecastStatusPayload) {
+  const rawSources = payload.icestats?.source;
+  const sources = Array.isArray(rawSources) ? rawSources : rawSources ? [rawSources] : [];
+  if (!sources.length) {
+    return null;
+  }
+
+  return sources.find((source) => {
+    const mount = normalizeIcecastText(source.mount);
+    const listenUrl = normalizeIcecastText(source.listenurl);
+    const serverName = normalizeIcecastText(source.server_name);
+    return mount === '/elradio' || listenUrl.includes('/elradio') || serverName === 'el radio';
+  }) ?? sources[0];
+}
+
+async function fetchNowPlayingTitle() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NOW_PLAYING_FETCH_TIMEOUT_MS);
+  try {
+    const separator = ICECAST_STATUS_JSON_URL.includes('?') ? '&' : '?';
+    const response = await fetch(`${ICECAST_STATUS_JSON_URL}${separator}t=${Date.now()}`, {
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        'User-Agent': 'El Radio app metadata',
+      },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`Icecast HTTP ${response.status}`);
+    }
+    const payload = await response.json() as IcecastStatusPayload;
+    return normalizeNowPlayingTitle(getElRadioIcecastSource(payload)?.title);
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function getPlatformUpdateAssetName() {
@@ -1029,6 +1099,7 @@ export default function App() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const facebookWebViewRef = useRef<WebView>(null);
   const facebookFetchRequestRef = useRef(0);
+  const nowPlayingRequestRef = useRef(0);
   const mainScrollRef = useRef<ScrollView>(null);
   const newsSectionYRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1039,6 +1110,7 @@ export default function App() {
   const networkBlockAlertShownRef = useRef(false);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [connectionStatus, setConnectionStatus] = useState('Radio nie gra.');
+  const [nowPlayingTitle, setNowPlayingTitle] = useState('');
   const [volume, setVolume] = useState(DEFAULT_START_VOLUME);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<MessageType>('general');
@@ -1134,6 +1206,38 @@ export default function App() {
   useEffect(() => {
     soundRef.current?.setVolumeAsync(volume).catch(() => undefined);
   }, [volume]);
+
+  useEffect(() => {
+    const shouldPollNowPlaying =
+      (playbackState === 'playing' || playbackState === 'loading') &&
+      !(settings.networkMode === 'wifiOnly' && isCellularNetwork);
+
+    if (!shouldPollNowPlaying) {
+      setNowPlayingTitle('');
+      return undefined;
+    }
+
+    let cancelled = false;
+    const loadNowPlaying = async () => {
+      const requestId = nowPlayingRequestRef.current + 1;
+      nowPlayingRequestRef.current = requestId;
+      try {
+        const title = await fetchNowPlayingTitle();
+        if (!cancelled && nowPlayingRequestRef.current === requestId) {
+          setNowPlayingTitle(title);
+        }
+      } catch {
+        // Keep the last visible title when Icecast metadata is briefly unavailable.
+      }
+    };
+
+    void loadNowPlaying();
+    const interval = setInterval(loadNowPlaying, NOW_PLAYING_REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [playbackState, settings.networkMode, isCellularNetwork]);
 
   useEffect(() => {
     if (!settingsLoaded || Math.abs(settings.lastVolume - volume) < 0.005) {
@@ -1526,6 +1630,7 @@ export default function App() {
     `Aplikacja: ${APP_DISPLAY_NAME}`,
     `System: ${Platform.OS} ${Platform.Version}`,
     `Stan odtwarzania: ${connectionStatus}`,
+    `Teraz gramy: ${nowPlayingTitle || 'brak danych'}`,
     `Głośność: ${Math.round(volume * 100)}%`,
     `Tryb sieci: ${settings.networkMode === 'wifiOnly' ? 'tylko Wi-Fi' : 'Wi-Fi i dane komórkowe'}`,
     `Wykryta sieć: ${isCellularNetwork ? 'dane komórkowe' : 'Wi-Fi albo inna sieć'}`,
@@ -1770,6 +1875,7 @@ export default function App() {
   const isPlaying = playbackState === 'playing';
   const isLoading = playbackState === 'loading';
   const playLabel = isPlaying ? 'Wstrzymaj' : 'Odtwarzaj';
+  const showNowPlayingTitle = Boolean(nowPlayingTitle && (isPlaying || isLoading));
   const volumePercent = Math.round(volume * 100);
   const startVolumePercent = Math.round(settings.startVolume * 100);
   const lastVolumePercent = Math.round(settings.lastVolume * 100);
@@ -1927,6 +2033,21 @@ export default function App() {
                   color={isPlaying ? '#0C5C4A' : playbackState === 'error' ? '#E25D3F' : '#476058'}
                 />
                 <Text style={styles.playbackStatusText}>{connectionStatus}</Text>
+              </View>
+            ) : null}
+
+            {showNowPlayingTitle ? (
+              <View
+                accessible
+                accessibilityLiveRegion={'polite'}
+                accessibilityLabel={`Teraz gramy: ${nowPlayingTitle}`}
+                style={styles.nowPlayingRow}
+              >
+                <Icon name={'music-note'} size={22} color={'#F6C95C'} />
+                <Text style={styles.nowPlayingText} numberOfLines={2}>
+                  <Text style={styles.nowPlayingPrefix}>Teraz gramy: </Text>
+                  {nowPlayingTitle}
+                </Text>
               </View>
             ) : null}
 
@@ -2847,6 +2968,30 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: '700',
     flex: 1,
+  },
+  nowPlayingRow: {
+    minHeight: 48,
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: '#17212B',
+    borderLeftWidth: 4,
+    borderLeftColor: '#F6C95C',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  nowPlayingText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '700',
+    flex: 1,
+  },
+  nowPlayingPrefix: {
+    color: '#F6C95C',
+    fontWeight: '900',
   },
   volumePanel: {
     marginTop: 10,

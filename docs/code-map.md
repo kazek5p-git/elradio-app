@@ -36,6 +36,7 @@ Katalogi `android/` i `ios/` sa generowane przez Expo prebuild. Nie traktuj ich 
 | Zadanie | Gdzie szukac |
 | --- | --- |
 | Zmiana URL streamu albo User-Agent | `STREAM_URL`, `STREAM_HEADERS`, `plugins/withElRadioNativeConfig.js` |
+| Zmiana metadanych `Teraz gramy` | `ICECAST_STATUS_JSON_URL`, `fetchNowPlayingTitle`, UI `nowPlayingRow` |
 | Zmiana wygladu glownego odtwarzacza | JSX w `App`, sekcja `playerBand`, style `playButton`, `volumePanel`, `audioRouteButton` |
 | Zmiana glosnosci i TalkBack/VoiceOver | `volume`, `handleVolumeAccessibilityAction`, style `volume*` |
 | Zmiana ustawien | typ `AppSettings`, `DEFAULT_SETTINGS`, `normalizeStoredSettings`, ekran ustawien w JSX |
