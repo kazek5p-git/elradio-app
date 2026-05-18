@@ -1315,14 +1315,12 @@ export default function App() {
   };
 
   const handleVolumeAccessibilityAction = (event: AccessibilityActionEvent) => {
-    const androidVolumeStep = Platform.OS === 'android' ? -VOLUME_STEP : VOLUME_STEP;
-
     switch (event.nativeEvent.actionName) {
       case 'increment':
-        adjustVolume(androidVolumeStep);
+        adjustVolume(VOLUME_STEP);
         break;
       case 'decrement':
-        adjustVolume(-androidVolumeStep);
+        adjustVolume(-VOLUME_STEP);
         break;
       default:
         break;
@@ -2058,15 +2056,15 @@ export default function App() {
                 accessibilityLabel="Głośność"
                 accessibilityValue={{ min: 0, max: 100, now: volumePercent, text: `${volumePercent} procent` }}
                 accessibilityActions={[
-                  { name: 'increment', label: Platform.OS === 'android' ? 'Ciszej' : 'Głośniej' },
-                  { name: 'decrement', label: Platform.OS === 'android' ? 'Głośniej' : 'Ciszej' },
+                  { name: 'increment', label: 'Głośniej' },
+                  { name: 'decrement', label: 'Ciszej' },
                 ]}
                 onAccessibilityAction={handleVolumeAccessibilityAction}
                 style={styles.volumeHeader}
               >
                 <Icon name="volume-high" size={24} color="#1F2933" />
-                <Text style={styles.volumeLabel}>Głośność</Text>
-                <Text style={styles.volumeValue}>{volumePercent}%</Text>
+                <Text accessible={false} importantForAccessibility={'no'} style={styles.volumeLabel}>Głośność</Text>
+                <Text accessible={false} importantForAccessibility={'no'} style={styles.volumeValue}>{volumePercent}%</Text>
               </View>
               <View style={styles.volumeControls}>
                 <Pressable
@@ -2368,7 +2366,7 @@ export default function App() {
                     }}
                     style={styles.startVolumeBox}
                   >
-                    <Text style={styles.settingLabel}>Głośność startowa</Text>
+                    <Text accessible={false} importantForAccessibility={'no'} style={styles.settingLabel}>Głośność startowa</Text>
                     <View style={styles.startVolumeControls}>
                       <Pressable
                         accessible={false}
@@ -2379,7 +2377,7 @@ export default function App() {
                       >
                         <Icon name="minus" size={22} color="#0C5C4A" />
                       </Pressable>
-                      <Text style={styles.startVolumeValue}>{startVolumePercent}%</Text>
+                      <Text accessible={false} importantForAccessibility={'no'} style={styles.startVolumeValue}>{startVolumePercent}%</Text>
                       <Pressable
                         accessible={false}
                         focusable={false}
