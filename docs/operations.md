@@ -24,6 +24,8 @@ Uruchamia sie przy pushu na `main`, tagach `v*` i recznie przez `workflow_dispat
 
 Push zmieniajacy wylacznie `README.md`, `docs/**` albo `.gitattributes` nie uruchamia tego workflow. Dzieki temu dokumentacja nie nadpisuje testowego APK w release `latest-build`.
 
+Commit z dopiskiem `[ios-only]` pomija ten workflow przy pushu. Reczne uruchomienie przez `workflow_dispatch` zawsze buduje APK.
+
 Glowne kroki:
 
 1. `npm ci`.
@@ -41,6 +43,8 @@ Workflow: `.github/workflows/ios-unsigned.yml`
 Uruchamia sie przy pushu na `main` i recznie.
 
 Push zmieniajacy wylacznie `README.md`, `docs/**` albo `.gitattributes` nie uruchamia tego workflow. Dzieki temu dokumentacja nie nadpisuje testowej IPA w release `latest-build`.
+
+Commit z dopiskiem `[android-only]` pomija ten workflow przy pushu. Reczne uruchomienie przez `workflow_dispatch` zawsze buduje IPA.
 
 Glowne kroki:
 
@@ -72,6 +76,14 @@ Lokalnie sprawdz `npm run typecheck` i `git diff --check`, potem zrob commit i p
 Po pushu na `main` poczekaj na workflow Android i iOS. Oba powinny zakonczyc sie zielonym statusem i nadpisac assety w release `latest-build`.
 
 Wyjatek: jesli commit zawiera tylko dokumentacje albo `.gitattributes`, buildy Android/iOS sa pomijane. Gdy mimo to trzeba wypuscic paczki, uruchom workflowy recznie przez `workflow_dispatch`.
+
+Mozesz sterowac automatycznym buildem przez dopisek w tytule commita:
+
+- `[android-only]` - buduje tylko APK, iOS zostaje pominiety;
+- `[ios-only]` - buduje tylko IPA, Android zostaje pominiety;
+- bez dopisku - buduje APK i IPA.
+
+Uzywaj flag tylko wtedy, gdy zmiana rzeczywiscie dotyczy jednej platformy. Dla zmian wspolnych w `App.tsx`, ustawieniach, aktualizatorze albo pluginie natywnym zostaw commit bez flagi, zeby sprawdzic obie paczki.
 
 Minimalna kontrola po release:
 
