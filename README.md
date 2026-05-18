@@ -19,6 +19,8 @@ Mobilna aplikacja Android/iOS do sluchania El Radia. Projekt jest zbudowany w Ex
 - [Architektura](docs/architecture.md) opisuje glowne przeplywy: audio, ustawienia, Facebook, aktualizacje, natywne plugini i dostepnosc.
 - [Development](docs/development.md) opisuje lokalne uruchamianie, prebuild, Androida, iOS, Maca i Sideloadly.
 - [Operacje i release](docs/operations.md) opisuje GitHub Actions, rolling release, aktualizator, procedury testowe i typowe awarie.
+- [Testowanie](docs/testing.md) zawiera reczna checkliste Android/iOS po zmianach i release.
+- [Prywatnosc](PRIVACY.md) opisuje dane, zewnetrzne uslugi i diagnostyke aplikacji.
 
 ## Szybki start
 

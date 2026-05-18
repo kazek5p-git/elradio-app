@@ -32,6 +32,7 @@ import {
 } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
+import { fetchNowPlayingTitle } from './src/icecastNowPlaying';
 import { getNameDaysForDate } from './src/nameDays';
 
 declare const process: { env: Record<string, string | undefined> };
@@ -51,9 +52,7 @@ const STREAM_HEADERS = {
   'Icy-MetaData': '1',
   'User-Agent': 'El Radio app',
 };
-const ICECAST_STATUS_JSON_URL = 'http://dhtk2.noip.pl:8888/status-json.xsl?mount=/elradio';
 const NOW_PLAYING_REFRESH_MS = 20000;
-const NOW_PLAYING_FETCH_TIMEOUT_MS = 8000;
 const FACEBOOK_PAGE_ID = '61584365428208';
 const FACEBOOK_URL = `https://www.facebook.com/people/ELRadio-908-FM/${FACEBOOK_PAGE_ID}/`;
 const FACEBOOK_PLUGIN_URL = `https://www.facebook.com/profile.php?id=${FACEBOOK_PAGE_ID}`;
@@ -565,19 +564,6 @@ type AppReleaseMetadata = {
   version?: string;
 };
 
-type IcecastSourcePayload = {
-  listenurl?: unknown;
-  mount?: unknown;
-  server_name?: unknown;
-  title?: unknown;
-};
-
-type IcecastStatusPayload = {
-  icestats?: {
-    source?: IcecastSourcePayload | IcecastSourcePayload[];
-  };
-};
-
 type DirectAppUpdateInfo = {
   assetName: string;
   downloadUrl: string;
@@ -693,60 +679,6 @@ function clampVolumeValue(nextVolume: number) {
     return DEFAULT_START_VOLUME;
   }
   return Math.min(1, Math.max(0, Number(nextVolume.toFixed(2))));
-}
-
-function normalizeNowPlayingTitle(value: unknown) {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  const title = value.replace(/\s+/g, ' ').trim();
-  if (!title || title === '-' || title.toLowerCase() === 'unknown') {
-    return '';
-  }
-  return title;
-}
-
-function normalizeIcecastText(value: unknown) {
-  return typeof value === 'string' ? value.toLowerCase() : '';
-}
-
-function getElRadioIcecastSource(payload: IcecastStatusPayload) {
-  const rawSources = payload.icestats?.source;
-  const sources = Array.isArray(rawSources) ? rawSources : rawSources ? [rawSources] : [];
-  if (!sources.length) {
-    return null;
-  }
-
-  return sources.find((source) => {
-    const mount = normalizeIcecastText(source.mount);
-    const listenUrl = normalizeIcecastText(source.listenurl);
-    const serverName = normalizeIcecastText(source.server_name);
-    return mount === '/elradio' || listenUrl.includes('/elradio') || serverName === 'el radio';
-  }) ?? sources[0];
-}
-
-async function fetchNowPlayingTitle() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), NOW_PLAYING_FETCH_TIMEOUT_MS);
-  try {
-    const separator = ICECAST_STATUS_JSON_URL.includes('?') ? '&' : '?';
-    const response = await fetch(`${ICECAST_STATUS_JSON_URL}${separator}t=${Date.now()}`, {
-      headers: {
-        Accept: 'application/json',
-        'Cache-Control': 'no-cache',
-        'User-Agent': 'El Radio app metadata',
-      },
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      throw new Error(`Icecast HTTP ${response.status}`);
-    }
-    const payload = await response.json() as IcecastStatusPayload;
-    return normalizeNowPlayingTitle(getElRadioIcecastSource(payload)?.title);
-  } finally {
-    clearTimeout(timeout);
-  }
 }
 
 function getPlatformUpdateAssetName() {
@@ -1207,6 +1139,7 @@ export default function App() {
     soundRef.current?.setVolumeAsync(volume).catch(() => undefined);
   }, [volume]);
 
+  // Poll Icecast only while playback is active, so the app does not spend data when idle.
   useEffect(() => {
     const shouldPollNowPlaying =
       (playbackState === 'playing' || playbackState === 'loading') &&
@@ -1896,6 +1829,7 @@ export default function App() {
     ? (String(sleepTimerDurationMinutes) as SleepTimerOptionId)
     : 'off';
 
+  // iOS uses the committed JSON cache first; the crawler is a fallback for stale or missing feed data.
   useEffect(() => {
     if (Platform.OS !== 'ios' || facebookBlockedByNetwork) {
       return undefined;

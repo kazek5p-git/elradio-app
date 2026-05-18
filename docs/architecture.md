@@ -25,7 +25,7 @@ Glowny obiekt audio to `Audio.Sound` z `expo-av`, trzymany w `soundRef`. Przeply
 
 Glosnosc jest lokalna dla odtwarzacza, nie systemowa. Wartosci sa w zakresie `0..1`, a UI pokazuje procenty. Dla czytnikow ekranu suwak jest elementem `adjustable`.
 
-Tytul `Teraz gramy` nie jest czytany z bajtow audio w Expo AV. Aplikacja pobiera lekki JSON Icecasta z `status-json.xsl?mount=/elradio` i odswieza go podczas odtwarzania. Dzieki temu ten sam mechanizm dziala na Androidzie i iOS bez dodatkowych natywnych modulow.
+Tytul `Teraz gramy` nie jest czytany z bajtow audio w Expo AV. Aplikacja pobiera lekki JSON Icecasta z `status-json.xsl?mount=/elradio` i odswieza go podczas odtwarzania. Polling jest w `App.tsx`, a pobieranie i czyszczenie odpowiedzi w `src/icecastNowPlaying.ts`. Dzieki temu ten sam mechanizm dziala na Androidzie i iOS bez dodatkowych natywnych modulow.
 
 ## AirPlay i Cast
 

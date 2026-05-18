@@ -7,6 +7,7 @@ Ten dokument opisuje, gdzie w repozytorium znajduje sie najwazniejsza logika. Je
 | Sciezka | Rola |
 | --- | --- |
 | `App.tsx` | Glowna aplikacja: stan odtwarzacza, ustawienia, Facebook, formularze, aktualizator, UI i style. |
+| `src/icecastNowPlaying.ts` | Pobieranie i czyszczenie metadanych Icecast dla sekcji `Teraz gramy`. |
 | `src/nameDays.ts` | Lokalna baza imienin i funkcja `getNameDaysForDate`. |
 | `assets/` | Ikony, splash i logo radia. |
 | `data/facebook-feed.json` | Cache publicznych postow z Facebooka, aktualizowany przez GitHub Actions. |
@@ -26,6 +27,7 @@ Katalogi `android/` i `ios/` sa generowane przez Expo prebuild. Nie traktuj ich 
 - Stale konfiguracyjne na gorze pliku: nazwa aplikacji, URL streamu, URL Facebooka, nazwy assetow release, klucze AsyncStorage, wartosci domyslne.
 - Typy i ustawienia: `PlaybackState`, `AppSettings`, `DEFAULT_SETTINGS`, opcje formularza i wylacznika czasowego.
 - Funkcje pomocnicze aktualizatora: porownanie commitow/czasow builda, formatowanie statusu, metadata release.
+- Metadane `Teraz gramy`: polling w `App.tsx`, pobieranie/parsing w `src/icecastNowPlaying.ts`.
 - Funkcje pomocnicze Facebooka: normalizacja postow, czyszczenie linkow, dekodowanie HTML/JSON, parser mbasic.
 - Komponent `App`: stan Reacta, refy, efekty, logika odtwarzania, formularze, ustawienia i render glownego ekranu.
 - Male komponenty UI pod koniec pliku: `Section`, `SelectButton`, `SelectionModal`, `SettingsSwitchRow`, `Icon`.
