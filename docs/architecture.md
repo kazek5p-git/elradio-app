@@ -1,18 +1,19 @@
 # Architektura aplikacji
 
-El Radio to aplikacja Expo/React Native z jednym glownym ekranem i kilkoma modalami. Wiekszosc logiki mieszka w `App.tsx`; natywne roznice Android/iOS sa dopinane przez plugin Expo `plugins/withElRadioNativeConfig.js` podczas prebuilda.
+El Radio to aplikacja Expo/React Native z jednym glownym ekranem i kilkoma modalami. `App.tsx` odpowiada glownie za stan ekranu, efekty i render, a logika pomocnicza jest wydzielana do plikow w `src/`. Natywne roznice Android/iOS sa dopinane przez plugin Expo `plugins/withElRadioNativeConfig.js` podczas prebuilda.
 
 ## Warstwy
 
 1. UI React Native: przyciski, suwaki, listy postow, modale ustawien i formularzy.
-2. Logika aplikacji w `App.tsx`: odtwarzanie, ustawienia, siec, Facebook, aktualizacje, diagnostyka.
-3. Integracje Expo: `expo-av`, `expo-file-system`, `expo-intent-launcher`, `expo-mail-composer`, `expo-notifications`, `expo-web-browser`, `expo-updates`.
-4. Plugin natywny: patchuje wygenerowane projekty Android/iOS i tworzy modul `ElRadioAudioRoutes`.
-5. GitHub Actions: buduje rolling release i odswieza cache Facebooka.
+2. Logika aplikacji w `App.tsx`: odtwarzanie, siec, przeplyw ekranow/modalow i diagnostyka.
+3. Moduly pomocnicze w `src/`: konfiguracja radia, ustawienia, Facebook, aktualizator, formularze i Icecast.
+4. Integracje Expo: `expo-av`, `expo-file-system`, `expo-intent-launcher`, `expo-mail-composer`, `expo-notifications`, `expo-web-browser`, `expo-updates`.
+5. Plugin natywny: patchuje wygenerowane projekty Android/iOS i tworzy modul `ElRadioAudioRoutes`.
+6. GitHub Actions: buduje rolling release i odswieza cache Facebooka.
 
 ## Odtwarzanie audio
 
-Stream jest zdefiniowany w `STREAM_URL`, a naglowki w `STREAM_HEADERS`. Aplikacja wysyla `Icy-MetaData: 1` i `User-Agent: El Radio app`.
+Stream jest zdefiniowany w `src/radioConfig.ts` jako `STREAM_URL`, a naglowki jako `STREAM_HEADERS`. Aplikacja wysyla `Icy-MetaData: 1` i `User-Agent: El Radio app`.
 
 Glowny obiekt audio to `Audio.Sound` z `expo-av`, trzymany w `soundRef`. Przeplyw jest nastepujacy:
 
@@ -40,11 +41,11 @@ Androidowy wariant nie jest pelnym Google Cast SDK. To lekki systemowy panel Cas
 
 ## Ustawienia
 
-Ustawienia sa w `AsyncStorage` pod kluczem `@elradio/settings/v1`. Typem zrodlowym jest `AppSettings`, a wartosci domyslne sa w `DEFAULT_SETTINGS`.
+Ustawienia sa w `AsyncStorage` pod kluczem `@elradio/settings/v1`. Typem zrodlowym jest `AppSettings`, a wartosci domyslne sa w `DEFAULT_SETTINGS`. Definicje sa w `src/settings.ts`.
 
 Kazdy odczyt i zapis przechodzi przez `normalizeStoredSettings`. To jest wazne, bo starsza instalacja moze miec tylko czesc pol. Gdy dodajesz nowe ustawienie:
 
-1. Dodaj pole w `AppSettings`.
+1. Dodaj pole w `AppSettings` w `src/settings.ts`.
 2. Dodaj wartosc w `DEFAULT_SETTINGS`.
 3. Upewnij sie, ze `normalizeStoredSettings` zwraca sensowna wartosc dla starych danych.
 4. Dodaj UI w ustawieniach.
@@ -64,19 +65,19 @@ Sa trzy mechanizmy, bo Facebook nie udostepnia stabilnego prostego feedu dla tej
 2. iOS najpierw pobiera JSON z GitHuba, a gdy to zawiedzie, probuje pobrac i sparsowac `mbasic.facebook.com`.
 3. Android dodatkowo ma ukryty `WebView` z Facebook Page Plugin i wstrzykniety `FACEBOOK_EXTRACT_SCRIPT`, ktory wyciaga zwarte posty.
 
-Posty przechodza przez normalizacje i czyszczenie linkow, reakcji, powtorzen i nadmiarowego tekstu. Limit w aplikacji to `MAX_FACEBOOK_POSTS`.
+Stale URL, typy, normalizacja, parser mbasic i `FACEBOOK_EXTRACT_SCRIPT` sa w `src/facebookFeed.ts`. Posty przechodza przez normalizacje i czyszczenie linkow, reakcji, powtorzen i nadmiarowego tekstu. Limit w aplikacji to `MAX_FACEBOOK_POSTS`.
 
 Najbardziej kruche elementy to selektory/regexy HTML Facebooka oraz publiczny dostep do mbasic. Przy awarii feedu najpierw sprawdz workflow `Update Facebook Feed`, potem `data/facebook-feed.json`, a dopiero potem parser w aplikacji.
 
 ## Kontakt i feedback
 
-Zwykle wiadomosci do radia oraz zgloszenia bledow/propozycji ida przez `expo-mail-composer`. Aplikacja nie wysyla ich na wlasny serwer.
+Zwykle wiadomosci do radia oraz zgloszenia bledow/propozycji ida przez `expo-mail-composer`. Tematy, etykiety i placeholdery formularzy sa w `src/contactForms.ts`. Aplikacja nie wysyla ich na wlasny serwer.
 
 Diagnostyka dla feedbacku jest tekstowa i dobrowolna. Zawiera m.in. platforme, stan odtwarzania, glosnosc, tryb sieci, wersje/build i fragment informacji o Facebooku. Nie nalezy dodawac do niej danych wrazliwych bez wyraznej potrzeby.
 
 ## Aktualizator aplikacji
 
-Aplikacja sprawdza rolling release `latest-build` przez GitHub API. Metadata sa w `EL-Radio-release.json` i zawieraja commit, czas builda, wersje oraz URL assetow.
+Aplikacja sprawdza rolling release `latest-build` przez GitHub API. Logika odczytu release, porownania wersji i powiadomien Androida jest w `src/appUpdates.ts`. Metadata sa w `EL-Radio-release.json` i zawieraja commit, czas builda, wersje oraz URL assetow.
 
 Porownanie nowosci opiera sie glownie na `EXPO_PUBLIC_ELRADIO_BUILD_SHA` i `EXPO_PUBLIC_ELRADIO_BUILD_TIME`, ktore workflow wpisuje do srodowiska podczas builda.
 

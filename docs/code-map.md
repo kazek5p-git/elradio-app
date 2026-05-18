@@ -6,7 +6,12 @@ Ten dokument opisuje, gdzie w repozytorium znajduje sie najwazniejsza logika. Je
 
 | Sciezka | Rola |
 | --- | --- |
-| `App.tsx` | Glowna aplikacja: stan odtwarzacza, ustawienia, Facebook, formularze, aktualizator, UI i style. |
+| `App.tsx` | Glowna aplikacja: stan odtwarzacza, efekty, modale, render glownego ekranu i style. |
+| `src/radioConfig.ts` | Nazwa aplikacji, kontakt, URL streamu, naglowki streamu i tekst prywatnosci. |
+| `src/settings.ts` | Typ ustawien, wartosci domyslne, klucz AsyncStorage i normalizacja starych danych. |
+| `src/appUpdates.ts` | Odczyt rolling release z GitHuba, porownanie wersji oraz lokalne powiadomienia Androida. |
+| `src/facebookFeed.ts` | URL-e Facebooka, WebView extract script, typy postow, normalizacja i parser mbasic. |
+| `src/contactForms.ts` | Tematy, etykiety i placeholdery formularza kontaktu oraz feedbacku. |
 | `src/icecastNowPlaying.ts` | Pobieranie i czyszczenie metadanych Icecast dla sekcji `Teraz gramy`. |
 | `src/nameDays.ts` | Lokalna baza imienin i funkcja `getNameDaysForDate`. |
 | `assets/` | Ikony, splash i logo radia. |
@@ -22,13 +27,14 @@ Katalogi `android/` i `ios/` sa generowane przez Expo prebuild. Nie traktuj ich 
 
 ## `App.tsx` w praktyce
 
-`App.tsx` jest duzy, ale ma kilka wyraznych obszarow:
+`App.tsx` nadal jest najwiekszym plikiem UI, ale czesc logiki pomocniczej jest juz wydzielona:
 
-- Stale konfiguracyjne na gorze pliku: nazwa aplikacji, URL streamu, URL Facebooka, nazwy assetow release, klucze AsyncStorage, wartosci domyslne.
-- Typy i ustawienia: `PlaybackState`, `AppSettings`, `DEFAULT_SETTINGS`, opcje formularza i wylacznika czasowego.
-- Funkcje pomocnicze aktualizatora: porownanie commitow/czasow builda, formatowanie statusu, metadata release.
+- Stale konfiguracyjne radia sa w `src/radioConfig.ts`.
+- Ustawienia i migracja danych sa w `src/settings.ts`.
+- Aktualizator, metadata release i powiadomienia Androida sa w `src/appUpdates.ts`.
 - Metadane `Teraz gramy`: polling w `App.tsx`, pobieranie/parsing w `src/icecastNowPlaying.ts`.
-- Funkcje pomocnicze Facebooka: normalizacja postow, czyszczenie linkow, dekodowanie HTML/JSON, parser mbasic.
+- Funkcje pomocnicze Facebooka: normalizacja postow, czyszczenie linkow, dekodowanie HTML/JSON, parser mbasic i skrypt WebView sa w `src/facebookFeed.ts`.
+- Teksty formularzy kontaktowych i feedbacku sa w `src/contactForms.ts`.
 - Komponent `App`: stan Reacta, refy, efekty, logika odtwarzania, formularze, ustawienia i render glownego ekranu.
 - Male komponenty UI pod koniec pliku: `Section`, `SelectButton`, `SelectionModal`, `SettingsSwitchRow`, `Icon`.
 - `StyleSheet.create`: pelne style aplikacji.
@@ -37,18 +43,18 @@ Katalogi `android/` i `ios/` sa generowane przez Expo prebuild. Nie traktuj ich 
 
 | Zadanie | Gdzie szukac |
 | --- | --- |
-| Zmiana URL streamu albo User-Agent | `STREAM_URL`, `STREAM_HEADERS`, `plugins/withElRadioNativeConfig.js` |
+| Zmiana URL streamu albo User-Agent | `src/radioConfig.ts`, `plugins/withElRadioNativeConfig.js` |
 | Zmiana metadanych `Teraz gramy` | `ICECAST_STATUS_JSON_URL`, `fetchNowPlayingTitle`, UI `nowPlayingRow` |
 | Zmiana wygladu glownego odtwarzacza | JSX w `App`, sekcja `playerBand`, style `playButton`, `volumePanel`, `audioRouteButton` |
 | Zmiana glosnosci i TalkBack/VoiceOver | `volume`, `handleVolumeAccessibilityAction`, style `volume*` |
-| Zmiana ustawien | typ `AppSettings`, `DEFAULT_SETTINGS`, `normalizeStoredSettings`, ekran ustawien w JSX |
-| Zmiana formularza kontaktowego | `MESSAGE_TYPE_OPTIONS`, `sendCurrentMessage`, modal kontaktu |
-| Zmiana zgloszen bledow/propozycji | `FEEDBACK_COPY`, `openFeedbackForm`, `submitFeedback`, `buildDiagnosticsText` |
-| Zmiana aktualnosci Facebooka | `FACEBOOK_*`, parsery w `App.tsx`, `scripts/update-facebook-feed.mjs`, `data/facebook-feed.json` |
-| Zmiana aktualizatora | `checkForDirectAppUpdate`, `openAppUpdateDownload`, workflow `Android APK` i `iOS Unsigned IPA` |
+| Zmiana ustawien | `src/settings.ts`, ekran ustawien w JSX |
+| Zmiana formularza kontaktowego | `src/contactForms.ts`, `sendCurrentMessage`, modal kontaktu |
+| Zmiana zgloszen bledow/propozycji | `src/contactForms.ts`, `openFeedbackForm`, `submitFeedback`, `buildDiagnosticsText` |
+| Zmiana aktualnosci Facebooka | `src/facebookFeed.ts`, `scripts/update-facebook-feed.mjs`, `data/facebook-feed.json` |
+| Zmiana aktualizatora | `src/appUpdates.ts`, `checkForDirectAppUpdate`, `openAppUpdateDownload`, workflow `Android APK` i `iOS Unsigned IPA` |
 | Zmiana AirPlay/Cast | `openAudioRoutePicker`, przycisk w `playerBand`, plugin `withElRadioNativeConfig.js` |
 | Zmiana imienin | `src/nameDays.ts` |
-| Zmiana nazwy aplikacji | `APP_DISPLAY_NAME`, `app.json`, ewentualnie teksty w release/buildach |
+| Zmiana nazwy aplikacji | `src/radioConfig.ts`, `app.json`, ewentualnie teksty w release/buildach |
 
 ## Zasady bezpiecznej edycji
 
