@@ -1,29 +1,29 @@
 {
-  "updatedAt": "2026-06-24T04:18:42.521Z",
+  "updatedAt": "2026-06-24T07:59:00.434Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/?locale=pl_PL",
   "status": 200,
   "posts": [
     {
-      "id": "1-12619650778",
+      "id": "1-16340454039",
+      "text": "Dzień z książką w EL Radiu będzie jak zawsze w czwartek, czyli jutro, ale... dzisiaj będziemy nagrywać materiały do tego programu. Gdzie? Oczywiście na Księżym Młynie, w Fit Cake Łódź Księży Młyn. ☀️ O której? 11:30 ☀️ Chcecie być obecni przy tym? Przybywajcie! 😎 ☀️ Gośćmi będą Panie Bibliotekarki z Biblioteka Gdańska w Łodzi ☀️ Program powstaje przy współpracy z Olejvita - oleje tłoczone na zimno i Fit Cake Łódź Księży Młyn Biblioteka Miejska w Łodzi Biblioteka Wolność Biblioteka Gdańska w Łodzi Olejvita - oleje tłoczone na zimno Fit Cake Łódź Księży Młyn",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122133413073145514"
+    },
+    {
+      "id": "2-12619650778",
       "text": "Garść wspaniałych zdjęć z niedzielnego Biegamy na Malince Ktoś z Was był? Biegał? 😏 Kibicował? 😎",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100064564336494"
     },
     {
-      "id": "2-5476183517",
+      "id": "3-5476183517",
       "text": "Reminiscencje weekendowe. Malinka. XI Bieg Terenowy Zgierz Malinka",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122133323859145514"
     },
     {
-      "id": "3-18566346526",
+      "id": "4-18566346526",
       "text": "Zawodniczek i zawodników coraz więcej, tych małych i większych. 👉 Jest też zwycięzca z zeszłego roku. Zdjęcie pierwsze, pierwszy z prawej.Poznajcie - Ignacy. 🙂 Krople deszczu umilają odpoczynek. 👉 11:00 . Bieg najmłodszych zawodników 👉 12:00 Startuje starszyzna. Dystans 4, 8 lub 12 kilometrów. Biegamy na Malince",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122133110553145514"
-    },
-    {
-      "id": "4-1634011631",
-      "text": "Malinka, trochę kropi deszcz. Prawdziwym biegaczom to nie przeszkadza. 🤨 Biegamy na Malince",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122133108927145514"
     }
   ]
 }
