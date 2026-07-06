@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-06T22:14:27.240Z",
+  "updatedAt": "2026-07-06T23:37:51.872Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -8,7 +8,7 @@
     {
       "id": "1-11872896405",
       "text": "Piątek, niby zwykły dzień, chociaż w Radiu KAŻDY dzień jest wyzwaniem, przychodzi słuchaczka po nagrodę. 🙂 I zostawia prezent... ❤️❤️❤️ Sylwio, dziękujemy Pani za serdeczny gest. 🌻🌻🌻 #Sylwia",
-      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwHZt820&_nc_oc=Adp8q41x4BYwyeO610jobz_EifdRbjQcsE4Wlr7bssiEDpV1PDM9PHCKUlwQFFR4PhE&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=NxDNwu2e2bxnkkIEFziyww&_nc_ss=7f289&oh=00_AQBZMoywW1wBbw030iNeTpyLBzcdsXEa6o3Jbkbszx_apQ&oe=6A52113E"
+      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwHZt820&_nc_oc=Adp8q41x4BYwyeO610jobz_EifdRbjQcsE4Wlr7bssiEDpV1PDM9PHCKUlwQFFR4PhE&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=dJCrOUPwphBTvFRlsnE7SQ&_nc_ss=7f289&oh=00_AQB_n_KDBSoXy8m2kwRkzYQtmWwbJxuRJrWQPhqpxrRLIg&oe=6A52113E"
     },
     {
       "id": "2-9195926554",
@@ -25,5 +25,16 @@
       "text": "Ulga od upałów... 💦 #deszcz #lubięto #natura #przyroda #mojapasjafotografia #pogodawłodzi",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063702394241"
     }
-  ]
+  ],
+  "fetchStatus": {
+    "state": "ok",
+    "checkedAt": "2026-07-06T23:37:51.872Z",
+    "lastSuccessAt": "2026-07-06T23:37:51.872Z",
+    "lastErrorAt": "",
+    "lastErrorType": "",
+    "lastErrorMessage": "",
+    "backoffUntil": "",
+    "consecutiveFailures": 0,
+    "previousUpdatedAt": "2026-07-06T22:14:27.240Z"
+  }
 }
