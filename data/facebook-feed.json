@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-07T18:53:50.840Z",
+  "updatedAt": "2026-07-07T19:24:04.566Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-1498399867",
-      "text": "Policjanci 👮‍♀️👮 z VI Komisariatu Policji Komendy Miejskiej Policji w Łodzi poszukują 🧐 zaginionej Natalii Grabowskiej (urodzonej 15 czerwca 2009 roku, córki Jakuba). Kobieta w dniu 4 lipca 2026 roku o godzinie 16:00 opuściła swoje miejsce zamieszkania przy ulicy Ćwiklińskiej w Łodzi i do chwili obecnej nie powróciła. Rysopis: 👩 około 155 centymetrów wzrostu, szczupła budowa ciała, oczy koloru brązowego, włosy długie - czarne. W dniu zaginięcia ubrana była w szarą sukienkę na ramiączkach i czarne buty sportowe. Kobieta miała ze sobą jasną torebkę.",
+      "id": "1-1996523456",
+      "text": "Aktualizacja 7 lipca 21:00 ⌚- ODNALEZIONA ⚠️🤝 Policjanci 👮‍♀️👮 z VI Komisariatu Policji Komendy Miejskiej Policji w Łodzi poszukują 🧐 zaginionej Natalii Grabowskiej (urodzonej 15 czerwca 2009 roku, córki Jakuba). Kobieta w dniu 4 lipca 2026 roku o godzinie 16:00 opuściła swoje miejsce zamieszkania przy ulicy Ćwiklińskiej w Łodzi i do chwili obecnej nie powróciła. Rysopis: 👩 około 155 centymetrów wzrostu, szczupła budowa ciała, oczy koloru brązowego, włosy długie - czarne. W dniu zaginięcia ubrana była w szarą sukienkę na ramiączkach i czarne buty sportowe. Kobieta miała ze sobą jasną torebkę.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1323438223288893"
     },
     {
@@ -23,18 +23,18 @@
     {
       "id": "4-11872896405",
       "text": "Piątek, niby zwykły dzień, chociaż w Radiu KAŻDY dzień jest wyzwaniem, przychodzi słuchaczka po nagrodę. 🙂 I zostawia prezent... ❤️❤️❤️ Sylwio, dziękujemy Pani za serdeczny gest. 🌻🌻🌻 #Sylwia",
-      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwFhZOS7&_nc_oc=AdpMYCwNzpJPn8kMTkseswpJ9Utmqm3Sk6talZtTOjn0-k4TgYfpXnzcZNTiyF2Babg&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=mecZfDqtsU0dpU5A4PfV6g&_nc_ss=7c289&oh=00_AQAKy1MzAv7Jn3wNOrS0GZxjjYZ1mWhWV5X2KvjAta9mPQ&oe=6A532A7E"
+      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwFhZOS7&_nc_oc=AdpMYCwNzpJPn8kMTkseswpJ9Utmqm3Sk6talZtTOjn0-k4TgYfpXnzcZNTiyF2Babg&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=nTj3iTFYiseZdU7dK9NB1g&_nc_ss=7c289&oh=00_AQD8GhjREh-qf1nWMg13LC0_HivJO4a9kxdcmcRlhSwzHw&oe=6A532A7E"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-07T18:53:50.840Z",
-    "lastSuccessAt": "2026-07-07T18:53:50.840Z",
+    "checkedAt": "2026-07-07T19:24:04.566Z",
+    "lastSuccessAt": "2026-07-07T19:24:04.566Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-07T18:23:33.166Z"
+    "previousUpdatedAt": "2026-07-07T18:53:50.840Z"
   }
 }
