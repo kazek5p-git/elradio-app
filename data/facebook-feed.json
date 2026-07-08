@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-08T03:30:23.950Z",
+  "updatedAt": "2026-07-08T04:00:44.248Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -18,7 +18,7 @@
     {
       "id": "3-11872896405",
       "text": "Piątek, niby zwykły dzień, chociaż w Radiu KAŻDY dzień jest wyzwaniem, przychodzi słuchaczka po nagrodę. 🙂 I zostawia prezent... ❤️❤️❤️ Sylwio, dziękujemy Pani za serdeczny gest. 🌻🌻🌻 #Sylwia",
-      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwFhZOS7&_nc_oc=AdpMYCwNzpJPn8kMTkseswpJ9Utmqm3Sk6talZtTOjn0-k4TgYfpXnzcZNTiyF2Babg&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=Yc0DaoZ7-DnHkpyZd-CFjw&_nc_ss=7c289&oh=00_AQDyCLhFYWddpdZpbTNUzbZbxl9kzlDceWPqfhcc4wDbOQ&oe=6A539AFE"
+      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=tgh7lBbTOfsQ7kNvwFhZOS7&_nc_oc=AdpMYCwNzpJPn8kMTkseswpJ9Utmqm3Sk6talZtTOjn0-k4TgYfpXnzcZNTiyF2Babg&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=UepukdFgVBQSbAEXU8IcLw&_nc_ss=7c289&oh=00_AQCt4Fw1ZGUjwlXx1D4MEkf8exRuU7imq6gbTTnXob6q8g&oe=6A539AFE"
     },
     {
       "id": "4-9195926554",
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-08T03:30:23.950Z",
-    "lastSuccessAt": "2026-07-08T03:30:23.950Z",
+    "checkedAt": "2026-07-08T04:00:44.248Z",
+    "lastSuccessAt": "2026-07-08T04:00:44.248Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-08T02:59:53.286Z"
+    "previousUpdatedAt": "2026-07-08T03:30:23.950Z"
   }
 }
