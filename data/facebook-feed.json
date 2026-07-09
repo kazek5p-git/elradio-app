@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-09T10:50:53.709Z",
+  "updatedAt": "2026-07-09T11:20:57.209Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -8,7 +8,7 @@
     {
       "id": "1-23663985671",
       "text": "Nagrywamy nową serię - zapowiedzi książkowe. Chcesz zobaczyć jak to się robi? Zapraszamy: najbliższy piątek, 9.07.2026. godzina 10:00 - Fit Cake Łódź Księży Młyn Biblioteka Wolność Biblioteka Miejska w Łodzi Biblioteka Gdańska w Łodzi Fit Cake Łódź Księży Młyn Olejvita - oleje tłoczone na zimno",
-      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/741906579_2096080181346831_1367594806169417934_n.jpg?stp=dst-jpg_tt6&cstp=mx1920x1080&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=rIGVecYqhZUQ7kNvwESIqGW&_nc_oc=AdpU2VMXluI4SZRV4f-PuD99pXT1AowdRHjcsiiVaahwuHvDeDOUeZgxwQSi_rkAcwM&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=M_ika1mnf-VBuk9HOQ0KYA&_nc_ss=7c289&oh=00_AQDURLhEGXnWegHk3NPIlbWhSksc0uj7bTPtBn9TDDUO2Q&oe=6A5548BE"
+      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/741906579_2096080181346831_1367594806169417934_n.jpg?stp=dst-jpg_tt6&cstp=mx1920x1080&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=rIGVecYqhZUQ7kNvwESIqGW&_nc_oc=AdpU2VMXluI4SZRV4f-PuD99pXT1AowdRHjcsiiVaahwuHvDeDOUeZgxwQSi_rkAcwM&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=agRgimwlmxpkxSR763Cy0A&_nc_ss=7c289&oh=00_AQBsnXs5Ur6Q41TJ1xoXg7WEmsr5fb7JiKkJGf0Sb7IFxQ&oe=6A5548BE"
     },
     {
       "id": "2-12813754448",
@@ -23,18 +23,18 @@
     {
       "id": "4-11872896405",
       "text": "Piątek, niby zwykły dzień, chociaż w Radiu KAŻDY dzień jest wyzwaniem, przychodzi słuchaczka po nagrodę. 🙂 I zostawia prezent... ❤️❤️❤️ Sylwio, dziękujemy Pani za serdeczny gest. 🌻🌻🌻 #Sylwia",
-      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=v8YbUE5SR8AQ7kNvwGWjci3&_nc_oc=AdoJxl24lnsrWYovGKDxsqIk8q6ac-PlnIkRyeGKQsxq8xb-EB7iw20qORMrdpbDQnI&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=M_ika1mnf-VBuk9HOQ0KYA&_nc_ss=7c289&oh=00_AQDq4xVN5hnFWL_LAXMZVnQt_AnAtAQn1H9FOKe9fsEAxA&oe=6A555CFE"
+      "imageUrl": "https://scontent-waw2-2.xx.fbcdn.net/v/t15.5256-10/739377940_1550047576526688_83072307546233521_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x630&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=50ce42&_nc_ohc=v8YbUE5SR8AQ7kNvwGWjci3&_nc_oc=AdoJxl24lnsrWYovGKDxsqIk8q6ac-PlnIkRyeGKQsxq8xb-EB7iw20qORMrdpbDQnI&_nc_zt=23&_nc_ht=scontent-waw2-2.xx&_nc_gid=agRgimwlmxpkxSR763Cy0A&_nc_ss=7c289&oh=00_AQBtyAlW3_gYZ3sgn5vOPyI3Hq3c3UBUda-wvXK1uOPDsA&oe=6A555CFE"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-09T10:50:53.709Z",
-    "lastSuccessAt": "2026-07-09T10:50:53.709Z",
+    "checkedAt": "2026-07-09T11:20:57.209Z",
+    "lastSuccessAt": "2026-07-09T11:20:57.209Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-09T10:20:38.182Z"
+    "previousUpdatedAt": "2026-07-09T10:50:53.709Z"
   }
 }
