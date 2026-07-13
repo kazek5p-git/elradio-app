@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-13T14:03:42.756Z",
+  "updatedAt": "2026-07-13T14:33:52.010Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -13,7 +13,7 @@
     {
       "id": "2-23663985671",
       "text": "Nagrywamy nową serię - zapowiedzi książkowe. Chcesz zobaczyć jak to się robi? Zapraszamy: najbliższy piątek, 9.07.2026. godzina 10:00 - Fit Cake Łódź Księży Młyn Biblioteka Wolność Biblioteka Miejska w Łodzi Biblioteka Gdańska w Łodzi Fit Cake Łódź Księży Młyn Olejvita - oleje tłoczone na zimno",
-      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/741906579_2096080181346831_1367594806169417934_n.jpg?stp=dst-jpg_tt6&cstp=mx1920x1080&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=dgIQpwjooUAQ7kNvwEhkSi3&_nc_oc=AdpR89DDfcPl-T0Ccpo4vcGXjMr7KwKk8Tyda5HFbTgtAC5a4EmNDy_Viifp4cD3rLI&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=7xdfpHZie43DXZeyZ2p_mQ&_nc_ss=7f289&oh=00_AQAGZlIh7NzcX0nZQRd22HPLxD7_sMSFjKo9Z3baksZphA&oe=6A5AC6FE"
+      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/741906579_2096080181346831_1367594806169417934_n.jpg?stp=dst-jpg_tt6&cstp=mx1920x1080&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=dgIQpwjooUAQ7kNvwEhkSi3&_nc_oc=AdpR89DDfcPl-T0Ccpo4vcGXjMr7KwKk8Tyda5HFbTgtAC5a4EmNDy_Viifp4cD3rLI&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=51DKozG6i7TmH6LtsaF6tQ&_nc_ss=7f289&oh=00_AQAjlHBJFTdrm3hNf5RIw2l1xMSh8eUkJmitl_J4uld1Zw&oe=6A5AC6FE"
     },
     {
       "id": "3-12813754448",
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-13T14:03:42.756Z",
-    "lastSuccessAt": "2026-07-13T14:03:42.756Z",
+    "checkedAt": "2026-07-13T14:33:52.010Z",
+    "lastSuccessAt": "2026-07-13T14:33:52.010Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-13T14:02:01.929Z"
+    "previousUpdatedAt": "2026-07-13T14:03:42.756Z"
   }
 }
