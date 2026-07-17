@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-07-17T11:16:01.264Z",
+  "updatedAt": "2026-07-17T11:46:09.507Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-12426189129",
+      "id": "1-8034939592",
+      "text": "Takie samochody na Piotrkowskiej. A za chwilę na Księżym Młynie.",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122135843823145514"
+    },
+    {
+      "id": "2-12426189129",
       "text": "ZRÓB SOBIE PREZENT i wygraj przejazd zabytkowym Citroënem 🤓 👉Słuchaj nas jutro od samego rana 👉Weź udział w antenowej zabawie 👉Postępuj zgodnie ze wskazaniami prowadzącego Z jakiej okazji w Łodzi pojawią się zabytkowe Citroëny? Wszystko dzięki Citroen Oldtimer Club Polska Samochody zaparkują w piątek na Księżym Młynie, w sobotę staną na Rynku Manufaktury. O co walczymy? O przejazd jednym z pięciu pojazdów znajdujących się na zdjęciach. Przejazd w piątek 17 lipca. Czekamy na zwycięzców w przedziale czasowym 17-19. Trasa przejażdżki: Księży Młyn - Piotrkowska i z powrotem. Modele: SM, XM, 2CV, Traction Avant, CX. Do każdego pojazdu mogą wsiąść max 2 osoby, oprócz kierowcy oczywiście. Dodatkowa nagroda: koszulka zlotowa i gadżety. 🙂 🫡 Bardzo będzie nam miło, jeśli zrobisz z przejażdżki zdjęcia i wrzucisz je na Facebooka oznaczając nas jednocześnie w poście.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122135627511145514"
     },
     {
-      "id": "2-14068412395",
+      "id": "3-14068412395",
       "text": "W ubiegły czwartek nasz gość, czyli Iga - bibliotekarka Biblioteka Gdańska w Łodzi, zachęcała słuchaczy do sięgnięcia po książkę południowokoreańskiej pisarki Han Kang. 👉 Co ciekawe, pisarka część książki napisała w trakcie pobyt w Warszawie. 👉 Jeśli zachęciła Cię ta pozycja i autorka, to zapraszam do kliknięcia poniższego linka - tam można znaleźć znacznie więcej informacji o Han Kang i Jej twórczości. POLECAMY! A teraz kilka słów zostawionych dla Was przez Igę: „Biała Elegia” autorstwa noblistki Han Kang, w której proza przeplata się z poezją już od pierwszych stron wciąga czytelnika w niezwykle osobisty świat autorki. Tematem przewodnim jest „biel”, która reprezentuje w krótkich, często kilkuzdaniowych rozdziałach wszystko to, co białe – sól, ubranko dla nowonarodzonego dziecka, śnieg…To książka o przemijaniu, żałobie, traumie, ale i pięknie jaką niesie ze sobą kruchość życia. Przejmująca, niosąca w swoim przekazie refleksje na temat wartości ludzkiego życia książka, która potrafi wciągnąć już od pierwszych stron. Zdecydowanie jedna z najważniejszych pozycji w dorobku autorki. Serdecznie polecam!. Dziękujemy Igo! Dziękujemy tez za współpracę: Biblioteka Miejska w Łodzi Biblioteka Gdańska w Łodzi Biblioteka Wolność Iga Polniak Nagrania odbyły się w przemiłym Fit Cake Łódź Księży Młyn, tam też wykonaliśmy zdjęcia zamieszczone powyżej. Dziękujemy za gościnę - jesteście niesamowici! Partnerem akcji jest Olejvita - oleje tłoczone na zimno, o której wspominamy nie tylko z faktu partnerstwa, ale też nadchodzącej pory obiadowej 😊",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122135508087145514"
     },
     {
-      "id": "3-9291205911",
+      "id": "4-9291205911",
       "text": "17 lipca, 13:30 — Piotrkowska zamieni się na godzinę w trasę przejazdu kilkudziesięciu zabytkowych Citroënów. Jeśli akurat będziecie w centrum Łodzi między 13:30 a 14:30 — wyjdźcie na ulicę. DS-y, 2CV, Tractiony, SM-y — wszystko, co zawita na tegoroczny zlot, przejedzie najsłynniejszą ulicą w mieście. Bez biletu, bez zaproszenia, wystarczy stać po chodniku. Aparaty gotowe? #CitroenOldtimer #CitroenClub #zlot #zlotsamochodow #klasyki Citroën Automobilista Francuskie.pl NOVOL for Classic Cars",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100066558373690"
-    },
-    {
-      "id": "4-1118777764",
-      "text": "🚗🚙 Takie cuda zagoszczą w Łodzi już tym tygodniu! W piątek zabytkowe Citroeny przejadą ulicą Piotrkowską, a potem zaparkują na Księżym Młynie, tuż pod naszą redakcją 🙂 ⏳ Więcej w poniższej wiadomości organizatora. XVIII Ogólnopolski Zlot Zabytkowych Citroënów - COCP",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-17T11:16:01.264Z",
-    "lastSuccessAt": "2026-07-17T11:16:01.264Z",
+    "checkedAt": "2026-07-17T11:46:09.507Z",
+    "lastSuccessAt": "2026-07-17T11:46:09.507Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-17T10:45:20.949Z"
+    "previousUpdatedAt": "2026-07-17T11:16:01.264Z"
   }
 }
