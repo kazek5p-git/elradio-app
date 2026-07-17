@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-17T13:17:19.817Z",
+  "updatedAt": "2026-07-17T13:47:49.311Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-8034939592",
-      "text": "Takie samochody na Piotrkowskiej. A za chwilę na Księżym Młynie.",
+      "id": "1-10585852824",
+      "text": "Takie samochody na Piotrkowskiej. A za chwilę na Księżym Młynie. Citroen Oldtimer Club Polska",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122135843823145514"
     },
     {
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-17T13:17:19.817Z",
-    "lastSuccessAt": "2026-07-17T13:17:19.817Z",
+    "checkedAt": "2026-07-17T13:47:49.311Z",
+    "lastSuccessAt": "2026-07-17T13:47:49.311Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-17T12:46:39.735Z"
+    "previousUpdatedAt": "2026-07-17T13:17:19.817Z"
   }
 }
