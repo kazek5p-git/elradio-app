@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-22T11:46:29.418Z",
+  "updatedAt": "2026-07-22T13:17:27.691Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -27,13 +27,14 @@
     }
   ],
   "fetchStatus": {
-    "state": "backoff",
-    "checkedAt": "2026-07-22T12:19:14.316Z",
-    "lastSuccessAt": "2026-07-22T11:46:29.418Z",
-    "lastErrorAt": "2026-07-22T12:19:14.316Z",
-    "lastErrorType": "timeout",
-    "lastErrorMessage": "This operation was aborted. Attempts: error This operation was aborted https://mbasic.facebook.com/943822595472447 | 503 2853 chars 0 posts https://mbasic.facebook.com/943822595472447 | error This operation was aborted https://mbasic.facebook.com/943822595472447 | error This operation was aborted https://mbasic.facebook.com/943822595472447?locale=pl_PL | error This operation was aborted https://mbasic.facebook.com/943822595472447?locale=pl_PL | error This operation was aborted https://mbasic.fac",
-    "backoffUntil": "2026-07-22T12:49:14.316Z",
-    "consecutiveFailures": 1
+    "state": "ok",
+    "checkedAt": "2026-07-22T13:17:27.691Z",
+    "lastSuccessAt": "2026-07-22T13:17:27.691Z",
+    "lastErrorAt": "",
+    "lastErrorType": "",
+    "lastErrorMessage": "",
+    "backoffUntil": "",
+    "consecutiveFailures": 0,
+    "previousUpdatedAt": "2026-07-22T11:46:29.418Z"
   }
 }
