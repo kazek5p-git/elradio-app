@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-25T20:46:59.449Z",
+  "updatedAt": "2026-07-25T21:17:29.595Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-904418907",
-      "text": "Proszę zobaczyć, jak wygląda nasz udział w obchodach 603. lecia",
+      "id": "1-2305227868",
+      "text": "Proszę zobaczyć, jak wygląda nasz udział w Łódzkie Targi Książki Jesteśmy! 🙂 Dumnie spoglądamy na wystawców. No i oczywiście opowiadamy o wydarzeniu na antenie radia. Słuchajcie nas codziennie na 90,8 FM. Mojapasja_fotografia - dziękujemy ❤️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1745677877565609"
     },
     {
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-25T20:46:59.449Z",
-    "lastSuccessAt": "2026-07-25T20:46:59.449Z",
+    "checkedAt": "2026-07-25T21:17:29.595Z",
+    "lastSuccessAt": "2026-07-25T21:17:29.595Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-25T20:16:29.395Z"
+    "previousUpdatedAt": "2026-07-25T20:46:59.449Z"
   }
 }
