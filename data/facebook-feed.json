@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-07-25T20:16:29.395Z",
+  "updatedAt": "2026-07-25T20:46:59.449Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-4777624108",
+      "id": "1-904418907",
+      "text": "Proszę zobaczyć, jak wygląda nasz udział w obchodach 603. lecia",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1745677877565609"
+    },
+    {
+      "id": "2-4777624108",
       "text": "Zostały ostatnie ostatnie szlify i i 11:00 zaczynamy Letni Festiwal Książki! ☀️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61557031225100"
     },
     {
-      "id": "2-17473133960",
+      "id": "3-17473133960",
       "text": "20 stopni. Koci szlak zapełnia się gośćmi, bo przecież dzisiaj są Targi Stacja Księży Młyn .",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122136690753145514"
     },
     {
-      "id": "3-8691467224",
+      "id": "4-8691467224",
       "text": "Już w weekend 25 i 26 lipca zapraszamy Was do jednej z najbardziej klimatycznych przestrzeni miasta – na Księży Młyn. To doskonała okazja, by połączyć świętowanie Urodzin Łodzi z odkrywaniem wyjątkowego rzemiosła. Na Targach Stacja Księży Młyn spotkacie twórców z całej Polski i stoiska pełne wyjątkowych produktów: ✨ ceramika, biżuteria i autorski design, 👗 moda autorska i vintage, 🎨 plakaty, ilustracje, grafiki i sztuka, 🌿 naturalne kosmetyki, świece oraz produkty eko, autorskiego designu i lokalnej twórczości. 📅 25–26 lipca ⏰ 11:00–18:00 📍 Koci Szlak, Księży Młyn, Łódź 🎟 Wstęp bezpłatny Do zobaczenia😃 #Łódź #rękodzieło #vintage",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100064016081584"
-    },
-    {
-      "id": "4-20158929543",
-      "text": "TAK! Tak dla takich wydarzeń 😊 Zawsze są to spotkania pełne smakołyków, wspaniałych rzemieślniczych pomysłów - ubrania, torebki, maskotki. A wszystko ORYGINALNE, niepowtarzalne. A przy okazji można podelektować się klimatem Księżego Młyna. Organizatorem Targów Stacja Księży Młyn jest Fundacja Przędzalnia Sztuki",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-25T20:16:29.395Z",
-    "lastSuccessAt": "2026-07-25T20:16:29.395Z",
+    "checkedAt": "2026-07-25T20:46:59.449Z",
+    "lastSuccessAt": "2026-07-25T20:46:59.449Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-25T19:45:58.636Z"
+    "previousUpdatedAt": "2026-07-25T20:16:29.395Z"
   }
 }
