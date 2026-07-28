@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-07-28T05:59:27.184Z",
+  "updatedAt": "2026-07-28T06:29:59.787Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-2305227868",
+      "id": "1-18529230968",
+      "text": "Letni Festiwal Książki 2026 dobiegł końca. Trzeba obiektywnie przyznać, że były to dwa niesamowite dni. 😀 Wielu wystawców, tłumy ludzi i typowo lipcowa pogoda. My oczywiście też byliśmy, 📷 zdjęcia zrobiliśmy. Warto, a nawet TRZEBA pogratulować i podziękować organizatorom - to był bardzo udany Festiwal, pełny różnorodności, miłych i życzliwych ludzi. Na szczęście już za cztery miesiące odbędą się Łódzkie Targi Książki 2026 i Łódzkie Targi Sztuki 2026. 😊 Medale dla ORGANIZATORÓW: Ewa Żochowska Piotr Trybuchowski zostaną wręczone 😉przy okazji spotkania radiowego. Dziękujemy też jak zawsze wspaniałej Biblioteka Miejska w Łodzi i wielu osobom zaangażowanym w przedsięwzięcie, przede wszystkim Pani Monice Barriga 🌻🌻🌻 z Biblioteka Wolność Łódzkie Targi Książki Za zdjęcie naszego balonu.... 🤭, za zdjęcie z naszym balonem dziękujemy Mojapasja_fotografia 🌷🌷🌷",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122136927615145514"
+    },
+    {
+      "id": "2-2305227868",
       "text": "Proszę zobaczyć, jak wygląda nasz udział w Łódzkie Targi Książki Jesteśmy! 🙂 Dumnie spoglądamy na wystawców. No i oczywiście opowiadamy o wydarzeniu na antenie radia. Słuchajcie nas codziennie na 90,8 FM. Mojapasja_fotografia - dziękujemy ❤️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1745677877565609"
     },
     {
-      "id": "2-4777624108",
+      "id": "3-4777624108",
       "text": "Zostały ostatnie ostatnie szlify i i 11:00 zaczynamy Letni Festiwal Książki! ☀️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61557031225100"
     },
     {
-      "id": "3-17473133960",
+      "id": "4-17473133960",
       "text": "20 stopni. Koci szlak zapełnia się gośćmi, bo przecież dzisiaj są Targi Stacja Księży Młyn .",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122136690753145514"
-    },
-    {
-      "id": "4-8691467224",
-      "text": "Już w weekend 25 i 26 lipca zapraszamy Was do jednej z najbardziej klimatycznych przestrzeni miasta – na Księży Młyn. To doskonała okazja, by połączyć świętowanie Urodzin Łodzi z odkrywaniem wyjątkowego rzemiosła. Na Targach Stacja Księży Młyn spotkacie twórców z całej Polski i stoiska pełne wyjątkowych produktów: ✨ ceramika, biżuteria i autorski design, 👗 moda autorska i vintage, 🎨 plakaty, ilustracje, grafiki i sztuka, 🌿 naturalne kosmetyki, świece oraz produkty eko, autorskiego designu i lokalnej twórczości. 📅 25–26 lipca ⏰ 11:00–18:00 📍 Koci Szlak, Księży Młyn, Łódź 🎟 Wstęp bezpłatny Do zobaczenia😃 #Łódź #rękodzieło #vintage",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100064016081584"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-28T05:59:27.184Z",
-    "lastSuccessAt": "2026-07-28T05:59:27.184Z",
+    "checkedAt": "2026-07-28T06:29:59.787Z",
+    "lastSuccessAt": "2026-07-28T06:29:59.787Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-28T05:28:59.785Z"
+    "previousUpdatedAt": "2026-07-28T05:59:27.184Z"
   }
 }
