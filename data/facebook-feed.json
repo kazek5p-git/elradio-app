@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-07-31T10:59:08.765Z",
+  "updatedAt": "2026-07-31T11:29:39.454Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-17886687165",
+      "id": "1-27040582719",
+      "text": "Zły. O tej książce w czwartkowe popołudnie opowiadał Andrzej - bibliotekarz Biblioteka Gdańska w Łodzi Dało się odczuć, że to ważna pozycja w Jego repertuarze. Tak oto w skrócie napisał o tej pozycji: Są książki, które się czyta. Są też takie, które się przeżywa. „Zły” Leopolda Tyrmanda należy właśnie do tych drugich. To fascynująca podróż przez powojenną Warszawę – miasto pełne kontrastów, tajemnic i niezapomnianych bohaterów. Kim naprawdę jest Zły? Bohaterem, mścicielem, a może legendą? Odpowiedź czeka na kartach powieści, od której trudno się oderwać. Mimo upływu lat książka wciąż zachwyca klimatem, świetnymi dialogami i trzyma w napięciu do ostatniej strony. Jeśli jeszcze jej nie znacie, najwyższy czas to zmienić – to klasyka, która nie tylko przetrwała próbę czasu, ale nadal potrafi oczarować kolejne pokolenia moli książkowych 😊. Pięknie, prawda? Andrzeju, dziękujemy. Dziękujemy też Biblioteka Gdańska w Łodzi Za tydzień zagoszczą u nas bibliotekarze z Biblioteka Secesja 🥰 i z tego co wiemy, będzie nowe spojrzenie na książki. Ale o tym już w następny czwartek. Dziękujemy naszym partnerom: Olejvita - oleje tłoczone na zimno 🥰 Fit Cake Łódź Księży Młyn 👏 Biblioteka Miejska w Łodzi 🤗 Biblioteka Wolność ❤️❤️❤️",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137270551145514"
+    },
+    {
+      "id": "2-17886687165",
       "text": "Co było grane? 🤔 Zdarza się to często, że słyszycie w EL Radiu piękny utwór, ale nie wiadomo kto to gra... Specjalnie powołana komisja radiowa 🤭 wprowadza właśnie swoje nowe dyrektywy. 1️⃣ Słuchacz musi mieć dostęp do muzycznych nowości... Racja ❗️ Od dzisiaj będziemy Wam prezentować nasze radiowe NOWOŚCI.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137268199145514"
     },
     {
-      "id": "2-3843988483",
+      "id": "3-3843988483",
       "text": "„Zły” (?) 😡 Leopolda Tyrmanda - kultowa powieść kryminalna z czasów PRL. Wielopłaszczyznowa, dynamiczna... Ups, więcej już nie piszemy, bo o tej książce opowie Andrzej - bibliotekarz Biblioteka Gdańska w Łodzi I to opowie niesamowicie ciekawie. Obiecujemy razem z naszym gościem 😊 Dzisiaj, po 16:30 A swoją drogą, czy wypożyczając książki korzystacie z wiedzy BIBLIOTEKARZY? Pomyślał ktoś z Was, że to takie chodzące AI? Odważy się ktoś napisać? 🤔 Ten program powstaje cyklicznie dzięki bezinteresownej pracy wielu osób. Dziękujemy Biblioteka Miejska w Łodzi Biblioteka Wolność Biblioteka Gdańska w Łodzi Fit Cake Łódź Księży Młyn Olejvita - oleje tłoczone na zimno 👏👏👏",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137161615145514"
     },
     {
-      "id": "3-3561668086",
+      "id": "4-3561668086",
       "text": "Odjechały już z Łodzi, ale można jeszcze na nie spojrzeć 🥲 Do zobaczenia.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1422671706628095"
-    },
-    {
-      "id": "4-18529230968",
-      "text": "Letni Festiwal Książki 2026 dobiegł końca. Trzeba obiektywnie przyznać, że były to dwa niesamowite dni. 😀 Wielu wystawców, tłumy ludzi i typowo lipcowa pogoda. My oczywiście też byliśmy, 📷 zdjęcia zrobiliśmy. Warto, a nawet TRZEBA pogratulować i podziękować organizatorom - to był bardzo udany Festiwal, pełny różnorodności, miłych i życzliwych ludzi. Na szczęście już za cztery miesiące odbędą się Łódzkie Targi Książki 2026 i Łódzkie Targi Sztuki 2026. 😊 Medale dla ORGANIZATORÓW: Ewa Żochowska Piotr Trybuchowski zostaną wręczone 😉przy okazji spotkania radiowego. Dziękujemy też jak zawsze wspaniałej Biblioteka Miejska w Łodzi i wielu osobom zaangażowanym w przedsięwzięcie, przede wszystkim Pani Monice Barriga 🌻🌻🌻 z Biblioteka Wolność Łódzkie Targi Książki Za zdjęcie naszego balonu.... 🤭, za zdjęcie z naszym balonem dziękujemy Mojapasja_fotografia 🌷🌷🌷",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122136927615145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-07-31T10:59:08.765Z",
-    "lastSuccessAt": "2026-07-31T10:59:08.765Z",
+    "checkedAt": "2026-07-31T11:29:39.454Z",
+    "lastSuccessAt": "2026-07-31T11:29:39.454Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-07-31T10:28:59.522Z"
+    "previousUpdatedAt": "2026-07-31T10:59:08.765Z"
   }
 }
