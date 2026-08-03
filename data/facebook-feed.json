@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-03T12:55:32.371Z",
+  "updatedAt": "2026-08-03T13:25:57.758Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-18031955387",
+      "id": "1-15529358831",
+      "text": "Zobaczcie jak upływał czas w Fuzja Łódź Relaks, odpoczynek, cisza 😇 A to wszystko w centrum Łodzi na Księżym Młynie.",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100057253247575"
+    },
+    {
+      "id": "2-18031955387",
       "text": "Jak zareagowaliby Państwo, gdyby to Państwu ktoś zwrócił uwagę, że Państwa wideorozmowa osobie siedzącej obok przeszkadza? • ąĘ komunikacja język Polski Polszczyzna edu tips edukacja education rozmowy wideotalk •",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063367351281"
     },
     {
-      "id": "2-22947488502",
+      "id": "3-22947488502",
       "text": "Musieliśmy to udostępnić. Nie dodamy i nie odejmiemy nawet jednego słowa. Kamila Kalińczak to dla Pani, za mądrość, rozwagę i piękny głos 🌻🌻🌻 (kwiaty pochodzą z naszego internetowego ogrodu.)",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
-      "id": "3-5442627383",
+      "id": "4-5442627383",
       "text": "Weekend wreszcie się skończył i można iść do pracy! 🫣 👉 Już teraz możecie nas słuchać na platformie Spotify. 😀 a tutaj link: @ ący",
       "imageUrl": ""
-    },
-    {
-      "id": "4-27040582719",
-      "text": "Zły. O tej książce w czwartkowe popołudnie opowiadał Andrzej - bibliotekarz Biblioteka Gdańska w Łodzi Dało się odczuć, że to ważna pozycja w Jego repertuarze. Tak oto w skrócie napisał o tej pozycji: Są książki, które się czyta. Są też takie, które się przeżywa. „Zły” Leopolda Tyrmanda należy właśnie do tych drugich. To fascynująca podróż przez powojenną Warszawę – miasto pełne kontrastów, tajemnic i niezapomnianych bohaterów. Kim naprawdę jest Zły? Bohaterem, mścicielem, a może legendą? Odpowiedź czeka na kartach powieści, od której trudno się oderwać. Mimo upływu lat książka wciąż zachwyca klimatem, świetnymi dialogami i trzyma w napięciu do ostatniej strony. Jeśli jeszcze jej nie znacie, najwyższy czas to zmienić – to klasyka, która nie tylko przetrwała próbę czasu, ale nadal potrafi oczarować kolejne pokolenia moli książkowych 😊. Pięknie, prawda? Andrzeju, dziękujemy. Dziękujemy też Biblioteka Gdańska w Łodzi Za tydzień zagoszczą u nas bibliotekarze z Biblioteka Secesja 🥰 i z tego co wiemy, będzie nowe spojrzenie na książki. Ale o tym już w następny czwartek. Dziękujemy naszym partnerom: Olejvita - oleje tłoczone na zimno 🥰 Fit Cake Łódź Księży Młyn 👏 Biblioteka Miejska w Łodzi 🤗 Biblioteka Wolność ❤️❤️❤️",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137270551145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-03T12:55:32.371Z",
-    "lastSuccessAt": "2026-08-03T12:55:32.371Z",
+    "checkedAt": "2026-08-03T13:25:57.758Z",
+    "lastSuccessAt": "2026-08-03T13:25:57.758Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-03T12:25:10.132Z"
+    "previousUpdatedAt": "2026-08-03T12:55:32.371Z"
   }
 }
