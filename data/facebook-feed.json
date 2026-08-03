@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-03T11:54:48.545Z",
+  "updatedAt": "2026-08-03T12:25:10.132Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-5442627383",
+      "id": "1-18031955387",
+      "text": "Jak zareagowaliby Państwo, gdyby to Państwu ktoś zwrócił uwagę, że Państwa wideorozmowa osobie siedzącej obok przeszkadza? • ąĘ komunikacja język Polski Polszczyzna edu tips edukacja education rozmowy wideotalk •",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063367351281"
+    },
+    {
+      "id": "2-22947488502",
+      "text": "Musieliśmy to udostępnić. Nie dodamy i nie odejmiemy nawet jednego słowa. Kamila Kalińczak to dla Pani, za mądrość, rozwagę i piękny głos 🌻🌻🌻 (kwiaty pochodzą z naszego internetowego ogrodu.)",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
+    },
+    {
+      "id": "3-5442627383",
       "text": "Weekend wreszcie się skończył i można iść do pracy! 🫣 👉 Już teraz możecie nas słuchać na platformie Spotify. 😀 a tutaj link: @ ący",
       "imageUrl": ""
     },
     {
-      "id": "2-27040582719",
+      "id": "4-27040582719",
       "text": "Zły. O tej książce w czwartkowe popołudnie opowiadał Andrzej - bibliotekarz Biblioteka Gdańska w Łodzi Dało się odczuć, że to ważna pozycja w Jego repertuarze. Tak oto w skrócie napisał o tej pozycji: Są książki, które się czyta. Są też takie, które się przeżywa. „Zły” Leopolda Tyrmanda należy właśnie do tych drugich. To fascynująca podróż przez powojenną Warszawę – miasto pełne kontrastów, tajemnic i niezapomnianych bohaterów. Kim naprawdę jest Zły? Bohaterem, mścicielem, a może legendą? Odpowiedź czeka na kartach powieści, od której trudno się oderwać. Mimo upływu lat książka wciąż zachwyca klimatem, świetnymi dialogami i trzyma w napięciu do ostatniej strony. Jeśli jeszcze jej nie znacie, najwyższy czas to zmienić – to klasyka, która nie tylko przetrwała próbę czasu, ale nadal potrafi oczarować kolejne pokolenia moli książkowych 😊. Pięknie, prawda? Andrzeju, dziękujemy. Dziękujemy też Biblioteka Gdańska w Łodzi Za tydzień zagoszczą u nas bibliotekarze z Biblioteka Secesja 🥰 i z tego co wiemy, będzie nowe spojrzenie na książki. Ale o tym już w następny czwartek. Dziękujemy naszym partnerom: Olejvita - oleje tłoczone na zimno 🥰 Fit Cake Łódź Księży Młyn 👏 Biblioteka Miejska w Łodzi 🤗 Biblioteka Wolność ❤️❤️❤️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137270551145514"
-    },
-    {
-      "id": "3-17886687165",
-      "text": "Co było grane? 🤔 Zdarza się to często, że słyszycie w EL Radiu piękny utwór, ale nie wiadomo kto to gra... Specjalnie powołana komisja radiowa 🤭 wprowadza właśnie swoje nowe dyrektywy. 1️⃣ Słuchacz musi mieć dostęp do muzycznych nowości... Racja ❗️ Od dzisiaj będziemy Wam prezentować nasze radiowe NOWOŚCI.",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137268199145514"
-    },
-    {
-      "id": "4-3843988483",
-      "text": "„Zły” (?) 😡 Leopolda Tyrmanda - kultowa powieść kryminalna z czasów PRL. Wielopłaszczyznowa, dynamiczna... Ups, więcej już nie piszemy, bo o tej książce opowie Andrzej - bibliotekarz Biblioteka Gdańska w Łodzi I to opowie niesamowicie ciekawie. Obiecujemy razem z naszym gościem 😊 Dzisiaj, po 16:30 A swoją drogą, czy wypożyczając książki korzystacie z wiedzy BIBLIOTEKARZY? Pomyślał ktoś z Was, że to takie chodzące AI? Odważy się ktoś napisać? 🤔 Ten program powstaje cyklicznie dzięki bezinteresownej pracy wielu osób. Dziękujemy Biblioteka Miejska w Łodzi Biblioteka Wolność Biblioteka Gdańska w Łodzi Fit Cake Łódź Księży Młyn Olejvita - oleje tłoczone na zimno 👏👏👏",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122137161615145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-03T11:54:48.545Z",
-    "lastSuccessAt": "2026-08-03T11:54:48.545Z",
+    "checkedAt": "2026-08-03T12:25:10.132Z",
+    "lastSuccessAt": "2026-08-03T12:25:10.132Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-03T11:24:28.818Z"
+    "previousUpdatedAt": "2026-08-03T11:54:48.545Z"
   }
 }
