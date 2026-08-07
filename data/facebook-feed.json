@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-07T11:26:29.108Z",
+  "updatedAt": "2026-08-07T11:56:48.000Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -11,8 +11,8 @@
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100057253247575"
     },
     {
-      "id": "2-5888234025",
-      "text": "Na Księżym Młynie, w Fuzji. Baaardzo podoba nam się wykorzystywanie starych, pofabrycznych obiektów na cele handlowe i kulturalne.",
+      "id": "2-13697981251",
+      "text": "Na Księżym Młynie, w Fuzji. Baaardzo podoba nam się wykorzystywanie starych, pofabrycznych obiektów na cele handlowe i kulturalne. Fuzja Łódź",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-07T11:26:29.108Z",
-    "lastSuccessAt": "2026-08-07T11:26:29.108Z",
+    "checkedAt": "2026-08-07T11:56:48.000Z",
+    "lastSuccessAt": "2026-08-07T11:56:48.000Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-07T10:56:12.154Z"
+    "previousUpdatedAt": "2026-08-07T11:26:29.108Z"
   }
 }
