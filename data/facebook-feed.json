@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-11T10:08:46.268Z",
+  "updatedAt": "2026-08-11T10:39:10.792Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-4824332642",
+      "id": "1-10407955253",
+      "text": "🌊🔥 DZISIAJ KIERUNEK — ŚWIECIE NAD WISŁĄ! Jacek Pałubicki znów rusza dalej. Kolejne kilometry Wisły przed nim, kolejne godziny w wodzie i kolejny ważny punkt na trasie coraz bliżej. 📣 ŚWIECIE NAD WISŁĄ — ZRÓBCIE HAŁAS! JACEK NAPŁYWA! ❤️🌊 Przywitajcie go, kibicujcie, udostępniajcie i pokażcie, że razem potrafimy nieść przez Polskę przesłanie kampanii #NiePijZaMnie oraz mówić głośno o FAS i FASD. Jacku, mocno trzymamy kciuki. Serduchem jesteśmy z Tobą przez każdy kolejny kilometr! 💪❤️ 📍 GPS: ❤️ Zbiórka: ŚWIECIE NAD WISŁĄ — SZYKUJCIE SIĘ! JACEK PŁYNIE DO WAS! 🔥🌊 #NiePijZaMnie #JacekPałubicki #ŚwiecieNadWisłą #FAS #FASD",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063535596526"
+    },
+    {
+      "id": "2-6897565207",
+      "text": "Około 11:00. Dzień 24 (!) Kierunek Świecie nad Wisłą - do końca trasy pozostało jeszcze wiele kilometrów, a my z każdym dniem podziwiamy Jacka coraz bardziej. Zajrzyjcie na stronę Fundacja Mały Książę, tam znajdziecie więcej informacji o akcji. Zobaczycie też kto dołączył do akcji 🤨, jak można wesprzeć akcję finansowo. Mamy też nadzieję, że uda nam się jutro wyemitować rozmowę z Jackiem.",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
+    },
+    {
+      "id": "3-4824332642",
       "text": "WAŻNE‼️ 🤨 dziś przez kilka godzin EL Radio może być pozazasięgiem. Na maszcie, z którego nadaje między innymi EL Radio, prowadzone będą zaplanowane wcześniej prace techniczne. Przerwa może potrwać około trzech, czterech godzin. Prace rozpoczną się około godziny 10:00. Wracamy do Was tak szybko, jak tylko będzie to możliwe. Dziękujemy za cierpliwość i wyrozumiałość. Poniżej widok z naszych masztów 🙂",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138306739145514"
     },
     {
-      "id": "2-13563622415",
+      "id": "4-13563622415",
       "text": "🌊🔥 JACEK PŁYNIE I ZACZYNA WIELKIE ODLICZANIE DO BAŁTYKU! Każdy kolejny kilometr przybliża go do celu. Wisła niesie Jacka coraz dalej na północ, a my razem z nim odliczamy kilometry do Bałtyku. ❤️ Za nim setki kilometrów walki z nurtem, zmęczeniem, pogodą i własnymi słabościami. Przed nim jeszcze droga, ale meta jest coraz bliżej. I niezmiennie każdy metr tej wyprawy niesie ważne przesłanie kampanii #NiePijZaMnie — dla świadomości o FAS i FASD, dla dzieci i dla przyszłych pokoleń. Jacku, płyniemy sercem razem z Tobą! 💪🌊 Kilometr po kilometrze. Coraz bliżej Bałtyku. Coraz bliżej wielkiego finału. 📍 GPS Jacka: ❤️ Wesprzyj kampanię: BAŁTYK JUŻ CZEKA! 🌊🔥 #NiePijZaMnie #JacekPałubicki #FAS #FASD #Wisła #Bałtyk",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063535596526"
-    },
-    {
-      "id": "3-5130647668",
-      "text": "Blisko, coraz bliżej. Jacek naprawdę tego dokonał!!! Bałtyk na horyzoncie 💪 Fundacja Mały Książę",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
-    },
-    {
-      "id": "4-6420654673",
-      "text": "Mamy to! Auchan w Fuzji oficjalne otwarty ❣️✨ Piękna, industrialna przestrzeń. Bogaty, niecodzienny asortyment. Duża przestrzeń, wygodne szerokie alejki. To sklep, który warto odwiedzić nawet dla samej estetyki i uciechy dla oka:) i pamiętajcie - to nasze codzienne wybory kreują rzeczywistość. Wybierajcie przestrzenie, w których czujecie się po prostu dobrze! To co, kiedy pierwsze zakupy? ❣️ #fuzjalodz #auchan #oficjalneotwarcie #dyskont",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100057253247575"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-11T10:08:46.268Z",
-    "lastSuccessAt": "2026-08-11T10:08:46.268Z",
+    "checkedAt": "2026-08-11T10:39:10.792Z",
+    "lastSuccessAt": "2026-08-11T10:39:10.792Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-11T09:38:19.387Z"
+    "previousUpdatedAt": "2026-08-11T10:08:46.268Z"
   }
 }
