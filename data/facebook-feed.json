@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-11T06:35:46.885Z",
+  "updatedAt": "2026-08-11T07:06:08.575Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-13563622415",
+      "id": "1-4824332642",
+      "text": "WAŻNE‼️ 🤨 dziś przez kilka godzin EL Radio może być pozazasięgiem. Na maszcie, z którego nadaje między innymi EL Radio, prowadzone będą zaplanowane wcześniej prace techniczne. Przerwa może potrwać około trzech, czterech godzin. Prace rozpoczną się około godziny 10:00. Wracamy do Was tak szybko, jak tylko będzie to możliwe. Dziękujemy za cierpliwość i wyrozumiałość. Poniżej widok z naszych masztów 🙂",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138306739145514"
+    },
+    {
+      "id": "2-13563622415",
       "text": "🌊🔥 JACEK PŁYNIE I ZACZYNA WIELKIE ODLICZANIE DO BAŁTYKU! Każdy kolejny kilometr przybliża go do celu. Wisła niesie Jacka coraz dalej na północ, a my razem z nim odliczamy kilometry do Bałtyku. ❤️ Za nim setki kilometrów walki z nurtem, zmęczeniem, pogodą i własnymi słabościami. Przed nim jeszcze droga, ale meta jest coraz bliżej. I niezmiennie każdy metr tej wyprawy niesie ważne przesłanie kampanii #NiePijZaMnie — dla świadomości o FAS i FASD, dla dzieci i dla przyszłych pokoleń. Jacku, płyniemy sercem razem z Tobą! 💪🌊 Kilometr po kilometrze. Coraz bliżej Bałtyku. Coraz bliżej wielkiego finału. 📍 GPS Jacka: ❤️ Wesprzyj kampanię: BAŁTYK JUŻ CZEKA! 🌊🔥 #NiePijZaMnie #JacekPałubicki #FAS #FASD #Wisła #Bałtyk",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063535596526"
     },
     {
-      "id": "2-5130647668",
+      "id": "3-5130647668",
       "text": "Blisko, coraz bliżej. Jacek naprawdę tego dokonał!!! Bałtyk na horyzoncie 💪 Fundacja Mały Książę",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
-      "id": "3-6420654673",
+      "id": "4-6420654673",
       "text": "Mamy to! Auchan w Fuzji oficjalne otwarty ❣️✨ Piękna, industrialna przestrzeń. Bogaty, niecodzienny asortyment. Duża przestrzeń, wygodne szerokie alejki. To sklep, który warto odwiedzić nawet dla samej estetyki i uciechy dla oka:) i pamiętajcie - to nasze codzienne wybory kreują rzeczywistość. Wybierajcie przestrzenie, w których czujecie się po prostu dobrze! To co, kiedy pierwsze zakupy? ❣️ #fuzjalodz #auchan #oficjalneotwarcie #dyskont",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100057253247575"
-    },
-    {
-      "id": "4-13697981251",
-      "text": "Na Księżym Młynie, w Fuzji. Baaardzo podoba nam się wykorzystywanie starych, pofabrycznych obiektów na cele handlowe i kulturalne. Fuzja Łódź",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-11T06:35:46.885Z",
-    "lastSuccessAt": "2026-08-11T06:35:46.885Z",
+    "checkedAt": "2026-08-11T07:06:08.575Z",
+    "lastSuccessAt": "2026-08-11T07:06:08.575Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-11T06:05:19.528Z"
+    "previousUpdatedAt": "2026-08-11T06:35:46.885Z"
   }
 }
