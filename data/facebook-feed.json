@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-12T10:53:49.332Z",
+  "updatedAt": "2026-08-12T11:24:17.732Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-2238828521",
+      "id": "1-6209429849",
+      "text": "Piątek z horrorem pod gwiazdami. Ostatnie dwa tygodnie wakacji... To naprawdę ostatnie chwile letnich, leniwych wieczorów. 😉 A może kino pod niebem? 👉 Weekend w Fuzja Łódźi rozpocznie TME Polówka. ⏳ W piątek, 14 sierpnia, o godz. 21:00 przed zabytkową Elektrownią w Fuzji zostanie wyświetlony film „Coś” Johna Carpentera. Kultowa produkcja z 1982 roku to klasyka kina science fiction i horroru. Opowiada historię grupy amerykańskich badaczy na Antarktydzie, którzy odkrywają pozaziemską istotę. Szybko okazuje się, że tajemniczy organizm nie ma pokojowych zamiarów. W roli głównej Kurt Russell. Seans odbędzie się w ramach sekcji „I co teraz?”, skupiającej filmy o przełomowych momentach, trudnych wyborach i sytuacjach, w których bohaterowie muszą zmierzyć się z nieznanym. „Coś” doskonale wpisuje się w ten motyw - podobnie jak sama Fuzja, która łączy przemysłową historię miejsca z jego nowym, pełnym energii obliczem. Film przeznaczony jest dla widzów od 15. roku życia. Wstęp wolny.",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138414613145514"
+    },
+    {
+      "id": "2-2238828521",
       "text": "✈️ Pomysł na zaliczenie, który przerodził się w prawdziwy startup! Studenci Politechnika Łódzka stworzyli „TriPlace”- platformę łączącą podróżnych z „architektami podróży”, czyli osobami, które doskonale znają wybrane kierunki 🌍 Wystarczy określić budżet, termin, zainteresowania i styl podróżowania, a ekspert przygotuje spersonalizowany plan wyjazdu – z nieoczywistymi atrakcjami, sprawdzonymi restauracjami i gotową trasą zwiedzania 🗺️ Twórcy TriPlace opracowali również autorski plan odkrywania „Łodzi poza utartym szlakiem”– pełen klimatycznych podwórek, murali, industrialnych przestrzeni i miejsc związanych z wielokulturową historią miasta 🏭✨ To świetny przykład, jak studencki projekt może zmienić się w rozwijający się biznes 🚀 Więcej: TriPlace.pl #MłodziWŁodzi #PolitechnikaŁódzka #TriPlace #Startup #Studenci #Podróże #Łódź #Innowacje",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100069780416112"
     },
     {
-      "id": "2-5236987413",
+      "id": "3-5236987413",
       "text": "Mamy w Łodzi prawdziwą perełkę... Obejrzyjcie poniższą rolkę, a dowiecie się jak można spełniać swoje marzenia 👉 tworząc aplikację ułatwiającą podróżowanie 👉 korzystając z niej - podróżować prościej i bezpieczniej A to wszystko dzięki studentom łódzkiej Politechniki. Wkrótce posłuchacie o projekcie na naszej antenie. BRAWO! TriPlace",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
-      "id": "3-13670136021",
+      "id": "4-13670136021",
       "text": "Pozdrowienia z nad Lamusa! 😂🌊 sami chcieliście… pozdrawiam! 😜 Tylko że najwyraźniej wybrałam się trochę za daleko w przyszłość… 🚀📸 📍 Łódź, rok 2126 🌊 Marina nad Lamusem 📻 nadaje na fali 📸 Fota która przetrwała 100 lat Pozdrawiam wszystkich z przyszłości! I spokojnie — Łódź nadal ma swój klimat. Tylko trochę więcej wody i drapaczy chmur 😜 😉💛 # Łódź #PozdrowieniaZNadMorza #Łódź2126 #MojapasjaFotografia #Łódź #NadLamusem #ZPrzyszłości 😜",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1762639902536073"
-    },
-    {
-      "id": "4-2920760662",
-      "text": "Co nowego na naszej antenie? Przedstawiamy SZÓSTKĘ wyróżnionych nowości antenowych. Chcesz ich posłuchać? Skorzystaj z poniższego skrótu:",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138337063145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-12T10:53:49.332Z",
-    "lastSuccessAt": "2026-08-12T10:53:49.332Z",
+    "checkedAt": "2026-08-12T11:24:17.732Z",
+    "lastSuccessAt": "2026-08-12T11:24:17.732Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-12T10:23:00.620Z"
+    "previousUpdatedAt": "2026-08-12T10:53:49.332Z"
   }
 }
