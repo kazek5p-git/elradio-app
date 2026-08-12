@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-12T08:51:48.668Z",
+  "updatedAt": "2026-08-12T09:22:09.681Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-13670136021",
+      "id": "1-2238828521",
+      "text": "✈️ Pomysł na zaliczenie, który przerodził się w prawdziwy startup! Studenci Politechnika Łódzka stworzyli „TriPlace”- platformę łączącą podróżnych z „architektami podróży”, czyli osobami, które doskonale znają wybrane kierunki 🌍 Wystarczy określić budżet, termin, zainteresowania i styl podróżowania, a ekspert przygotuje spersonalizowany plan wyjazdu – z nieoczywistymi atrakcjami, sprawdzonymi restauracjami i gotową trasą zwiedzania 🗺️ Twórcy TriPlace opracowali również autorski plan odkrywania „Łodzi poza utartym szlakiem”– pełen klimatycznych podwórek, murali, industrialnych przestrzeni i miejsc związanych z wielokulturową historią miasta 🏭✨ To świetny przykład, jak studencki projekt może zmienić się w rozwijający się biznes 🚀 Więcej: TriPlace.pl #MłodziWŁodzi #PolitechnikaŁódzka #TriPlace #Startup #Studenci #Podróże #Łódź #Innowacje",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100069780416112"
+    },
+    {
+      "id": "2-5236987413",
+      "text": "Mamy w Łodzi prawdziwą perełkę... Obejrzyjcie poniższą rolkę, a dowiecie się jak można spełniać swoje marzenia 👉 tworząc aplikację ułatwiającą podróżowanie 👉 korzystając z niej - podróżować prościej i bezpieczniej A to wszystko dzięki studentom łódzkiej Politechniki. Wkrótce posłuchacie o projekcie na naszej antenie. BRAWO! TriPlace",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
+    },
+    {
+      "id": "3-13670136021",
       "text": "Pozdrowienia z nad Lamusa! 😂🌊 sami chcieliście… pozdrawiam! 😜 Tylko że najwyraźniej wybrałam się trochę za daleko w przyszłość… 🚀📸 📍 Łódź, rok 2126 🌊 Marina nad Lamusem 📻 nadaje na fali 📸 Fota która przetrwała 100 lat Pozdrawiam wszystkich z przyszłości! I spokojnie — Łódź nadal ma swój klimat. Tylko trochę więcej wody i drapaczy chmur 😜 😉💛 # Łódź #PozdrowieniaZNadMorza #Łódź2126 #MojapasjaFotografia #Łódź #NadLamusem #ZPrzyszłości 😜",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1762639902536073"
     },
     {
-      "id": "2-2920760662",
+      "id": "4-2920760662",
       "text": "Co nowego na naszej antenie? Przedstawiamy SZÓSTKĘ wyróżnionych nowości antenowych. Chcesz ich posłuchać? Skorzystaj z poniższego skrótu:",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138337063145514"
-    },
-    {
-      "id": "3-6416474962",
-      "text": "PRZERWA ZAKOŃCZONA. Gramy na 90,8 FM ☺️ Poniższe zdjęcie pochodzi z naszego masztu. Uwierzcie nam na słowo i absolutnie tego nie sprawdzajcie 😇",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122138329425145514"
-    },
-    {
-      "id": "4-10407955253",
-      "text": "🌊🔥 DZISIAJ KIERUNEK — ŚWIECIE NAD WISŁĄ! Jacek Pałubicki znów rusza dalej. Kolejne kilometry Wisły przed nim, kolejne godziny w wodzie i kolejny ważny punkt na trasie coraz bliżej. 📣 ŚWIECIE NAD WISŁĄ — ZRÓBCIE HAŁAS! JACEK NAPŁYWA! ❤️🌊 Przywitajcie go, kibicujcie, udostępniajcie i pokażcie, że razem potrafimy nieść przez Polskę przesłanie kampanii #NiePijZaMnie oraz mówić głośno o FAS i FASD. Jacku, mocno trzymamy kciuki. Serduchem jesteśmy z Tobą przez każdy kolejny kilometr! 💪❤️ 📍 GPS: ❤️ Zbiórka: ŚWIECIE NAD WISŁĄ — SZYKUJCIE SIĘ! JACEK PŁYNIE DO WAS! 🔥🌊 #NiePijZaMnie #JacekPałubicki #ŚwiecieNadWisłą #FAS #FASD",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100063535596526"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-12T08:51:48.668Z",
-    "lastSuccessAt": "2026-08-12T08:51:48.668Z",
+    "checkedAt": "2026-08-12T09:22:09.681Z",
+    "lastSuccessAt": "2026-08-12T09:22:09.681Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-12T08:21:35.281Z"
+    "previousUpdatedAt": "2026-08-12T08:51:48.668Z"
   }
 }
