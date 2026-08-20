@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-20T14:59:44.615Z",
+  "updatedAt": "2026-08-20T15:30:05.034Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-20T14:59:44.615Z",
-    "lastSuccessAt": "2026-08-20T14:59:44.615Z",
+    "checkedAt": "2026-08-20T15:30:05.034Z",
+    "lastSuccessAt": "2026-08-20T15:30:05.034Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-20T14:29:20.021Z"
+    "previousUpdatedAt": "2026-08-20T14:59:44.615Z"
   }
 }
