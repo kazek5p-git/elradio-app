@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-27T09:11:38.554Z",
+  "updatedAt": "2026-08-27T09:42:08.524Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-20106346352",
+      "id": "1-10788809438",
+      "text": "📢 Dziś w naszej audycji recenzujemy jeden z najbardziej niezwykłych albumów architektonicznych ostatnich lat! „Entryways of Milan” Karla Kolbitza to wizualna podróż po 144 mediolańskich wejściach do kamienic — kolorowych, geometrycznych, modernistycznych przestrzeniach, które zwykle mijamy, nie wiedząc, że kryją w sobie małe dzieła sztuki. To album, który pokazuje Mediolan od strony, której nie widać na pocztówkach. To także książka, którą w Łodzi znajdziecie wyłącznie w Biblioteka Secesja ‼️ 🎙️ Recenzję usłyszycie dziś na antenie EL Radia o godzinie 16:50 📚 Jeśli kochacie architekturę, design, modernizm albo po prostu piękne książki — nie możecie tego przegapić. Przed mikrofonem zasiądzie Paulina Płuciennik - kierowniczka Biblioteka Secesja Biblioteka Miejska w Łodzi Biblioteka Wolność",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122140068291145514"
+    },
+    {
+      "id": "2-20106346352",
       "text": "Czy wiesz, że... W najbliższą sobotę wystartuje 15 Bieg Fabrykanta. O godzinie 17:00 wystartują zawodniczki i zawodnicy, aby pokonać dziesięciokilometrową trasę wijącą się wśród zabytków przemysłowej Łodzi. Start i meta znajdują się przy ulicy Tymienieckiego 22/24, a po drodze uczestniczki i uczestnicy zawitają koło Beczek Grohmana, Centralnego Muzeum Włókiennictwa, Łódzkiego Parku Kultury Miejskiej, Fuzja Łódź i oczywiście na Księżym Młynie. Więcej informacji na Bieg Fabrykanta",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122139854217145514"
     },
     {
-      "id": "2-15987105252",
+      "id": "3-15987105252",
       "text": "Zeszłoczwartkowe podsumowanie zapowiedzi książkowych: przed mikrofonem pojawiła się Aleksandra z Biblioteka Secesja opowiadając nam o fascynującej książce Iona Krakauera. 👉Pierwsze wydanie książki Iona Krakauera “Wszystko za życie” miało miejsce w roku 1996, w roku moich urodzin. Autor jest amerykańskim dziennikarzem i alpinistą, jednym słowem podróżnikiem. Ma to znaczenie dla wyboru tematu, który poruszył. Są to losy młodego dwudziestokilkuletniego człowieka, który chociaż pochodził z rodziny u wysokim, stabilnym statusie materialnym, odrzucił świat konsumpcyjny i wiele zdobyczy cywilizacyjnych. Książka jest reportażem o ciekawej konstrukcji. Zaczyna się od opisu okoliczności śmierci wędrowca-wagabundy, by z czasem przybliżać wielowarstwowość jego postaci i losów. Podróż samej książki do polskiego czytelnika zajęła dwanaście lat, a losy jej bohatera zostały w międzyczasie zekranizowane przez Seanna Penna. 👈 Aleksandro - dziękujemy! 😊 Pozdrawiamy tez naszych partnerów: Biblioteka Miejska w Łodzi Biblioteka Secesja Biblioteka Wolność",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122139850167145514"
     },
     {
-      "id": "3-3214660225",
+      "id": "4-3214660225",
       "text": "⚽️ BILETY DO WYGRANIA‼️ Za tydzień w sobotę odbędzie się mecz gwiazd polskiej 🇵🇱 i 🇫🇷francuskiej piłki nożnej. 👉 Stadion Widzewa, sobota 29 sierpnia , godzina 16:30 Chcesz zdobyć bilety? Słuchaj nas uważnie już teraz, a szczególnie uważnie po godzinie 15:00. Przygotuj koniecznie pocztę mailową i bądź gotowy do wysłania odpowiedzi. Jeśli zabraknie Ci szczęścia dzisiaj, to nie martw się, tylko włącz radio na 90,8 FM i w przyszłym tygodniu poluj na kolejną pulę wejściówek. Nasze Radio jest patronem medialnym wydarzenia 😇",
       "imageUrl": ""
-    },
-    {
-      "id": "4-22854759532",
-      "text": "Piątek. 🙂 Jak spędzicie weekend? Spacer, wycieczka, teatr... a może kino. Zresztą jedno i drugie nie wykluczają się. Popołudniu rozdajemy bilety do Multikino Polska - jest więc szansa na zdobycie wejściówki na dowolny seans! #ELRadiorozdaje",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122139380091145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-27T09:11:38.554Z",
-    "lastSuccessAt": "2026-08-27T09:11:38.554Z",
+    "checkedAt": "2026-08-27T09:42:08.524Z",
+    "lastSuccessAt": "2026-08-27T09:42:08.524Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-27T08:41:18.053Z"
+    "previousUpdatedAt": "2026-08-27T09:11:38.554Z"
   }
 }
