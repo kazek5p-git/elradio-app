@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-08-31T12:10:28.811Z",
+  "updatedAt": "2026-08-31T12:40:58.814Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-2276428298",
+      "id": "1-1449822327",
+      "text": "Przeczytajcie koniecznie! Tak z pasją o niebywałym albumie „Entryways of Milan” Karla Kolbitza mówiła w naszym radiu Paulina Płuciennik - kierowniczka Biblioteka Secesja --------------------- Entryway - hol, przedsionek, lobby, recepcja, foyer, wejście, sień. Przestrzeń liminalna - puste korytarze mediolańskich kamienic, którymi autor albumu Karl Kolbitz zafascynowany był już od lat nastoletnich i efekt tej pasji i zachwytu możemy oglądać na ponad 370 kartach albumu „Ingressi di Milano” która prezentuje unikalne, modernistyczne i eleganckie klatki schodowe oraz hole budynków mieszkalnych w Mediolanie z lat 1920–1970. Wejście po mediolańsku. Na bogato, tu nie ma półśrodków, marmury każdego gatunku od bianco carrary po luksusowy marmur calacatta, kryształowe szandeliery lub z luksusowego murano, jak klamki to złote, z wysokogatunkowego drewna lub szklane, jak lampy to najczęściej art deco par excellence. Te przestrzenie projektowali wybitni włoscy projektanci i architekci Gio Ponti, Giovanni Muzio, Gino Sarfatti. Ze zdjęć aż bije chłód marmuru, aż chcemy tam zostać, gdy na zewnątrz bezlitosny żar sięga prawie 40° w cieniu. Książka dostępna jest tylko w Czytelni Secesji na miejscu, to nie jest kieszonkowy przewodniczek, ale jeśli planujecie city break do Mediolanu i nie wiecie jakim szlakiem zwiedzać stolicę włoskiej mody, to na końcu publikacji jest mapa z adresami. Można zrobić sobie zdjęcie i już macie trasę gotową. Trasa szlakiem najpiękniejszych wejść Mediolanu, trasa ukrytych skarbów, trasa dyskretnego uroku. Wpadniecie w zachwyt. Gwarantuję. -------------------- Biblioteka Miejska w Łodzi Biblioteka Secesja Biblioteka Wolność",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122140545699145514"
+    },
+    {
+      "id": "2-2276428298",
       "text": "🌧️ Gdy zbliża się deszcz, pszczoły już o tym wiedzą. Masowo wracają do ula. 🐝🏠 #pszczoły #pasieka #miód #podkarpackie #naturelovers",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61577413138217"
     },
     {
-      "id": "2-1762150173",
+      "id": "3-1762150173",
       "text": "Czy wiesz że... o zbliżającym się deszczu powiadomić mogą pszczoły 😊 ? Wystarczy własny ul i problem z niespodziewanym deszczem znika. Teraz wystarczy mieć podobny przepis na śnieżycę, mróz, burzę i upał. 🥹 Polecamy poniższą stronę - można dowiedzieć się wielu ciekawych faktów z pszczelarskiego podwórka 🪰",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
-      "id": "3-10788809438",
+      "id": "4-10788809438",
       "text": "📢 Dziś w naszej audycji recenzujemy jeden z najbardziej niezwykłych albumów architektonicznych ostatnich lat! „Entryways of Milan” Karla Kolbitza to wizualna podróż po 144 mediolańskich wejściach do kamienic — kolorowych, geometrycznych, modernistycznych przestrzeniach, które zwykle mijamy, nie wiedząc, że kryją w sobie małe dzieła sztuki. To album, który pokazuje Mediolan od strony, której nie widać na pocztówkach. To także książka, którą w Łodzi znajdziecie wyłącznie w Biblioteka Secesja ‼️ 🎙️ Recenzję usłyszycie dziś na antenie EL Radia o godzinie 16:50 📚 Jeśli kochacie architekturę, design, modernizm albo po prostu piękne książki — nie możecie tego przegapić. Przed mikrofonem zasiądzie Paulina Płuciennik - kierowniczka Biblioteka Secesja Biblioteka Miejska w Łodzi Biblioteka Wolność",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122140068291145514"
-    },
-    {
-      "id": "4-20106346352",
-      "text": "Czy wiesz, że... W najbliższą sobotę wystartuje 15 Bieg Fabrykanta. O godzinie 17:00 wystartują zawodniczki i zawodnicy, aby pokonać dziesięciokilometrową trasę wijącą się wśród zabytków przemysłowej Łodzi. Start i meta znajdują się przy ulicy Tymienieckiego 22/24, a po drodze uczestniczki i uczestnicy zawitają koło Beczek Grohmana, Centralnego Muzeum Włókiennictwa, Łódzkiego Parku Kultury Miejskiej, Fuzja Łódź i oczywiście na Księżym Młynie. Więcej informacji na Bieg Fabrykanta",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122139854217145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-08-31T12:10:28.811Z",
-    "lastSuccessAt": "2026-08-31T12:10:28.811Z",
+    "checkedAt": "2026-08-31T12:40:58.814Z",
+    "lastSuccessAt": "2026-08-31T12:40:58.814Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-08-31T11:40:08.140Z"
+    "previousUpdatedAt": "2026-08-31T12:10:28.811Z"
   }
 }
