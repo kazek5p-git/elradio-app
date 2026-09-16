@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T13:31:34.057Z",
+  "updatedAt": "2026-09-16T14:01:50.818Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -7,7 +7,7 @@
   "posts": [
     {
       "id": "1-252720476",
-      "text": "BIEGAMY! 🏃🏃‍♀️🏃‍♂️ ...i to w ważnej sprawie! 27 września na Stawach Stefańskiego odbędzie się już IV edycja charytatywnego BIEGU PO MARZENIA. Organizatorem wydarzenia jest Stowarzyszenie \"Przystań Marzeń\" 👉 Będą biegi dziecięce, będzie też bieg na 5 km. My STARTUJEMY. A Ty drogi słuchaczu, jeśli chcesz i możesz zapisać się i pobiec, to w rubryce \"drużyna\" wpisz EL Radio. Dopisz się też koniecznie w u (musimy mieć z Tobą kontakt) - będziemy mieli dla Ciebie niespodziankę. Ale co to będzie, dowiesz się po biegu 😊 Więcej informacji znajdziecie pod poniższym linkiem. a link do zapisu znajdziecie tutuaj:",
+      "text": "BIEGAMY! 🏃🏃‍♀️🏃‍♂️ ...i to w ważnej sprawie! 27 września na Stawach Stefańskiego odbędzie się już IV edycja charytatywnego BIEGU PO MARZENIA. Organizatorem wydarzenia jest Stowarzyszenie \"Przystań Marzeń\" 👉 Będą biegi dziecięce, będzie też bieg na 5 km. My STARTUJEMY. A Ty drogi słuchaczu, jeśli chcesz i możesz zapisać się i pobiec, to w rubryce \"drużyna\" wpisz EL Radio. Dopisz się też koniecznie w u (musimy mieć z Tobą kontakt) - będziemy mieli dla Ciebie niespodziankę. Ale co to będzie, dowiesz się po biegu 😊 Więcej informacji znajdziecie pod poniższym linkiem. a link do zapisu znajdziecie tutaj:",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1475985157897107"
     },
     {
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-09-16T13:31:34.057Z",
-    "lastSuccessAt": "2026-09-16T13:31:34.057Z",
+    "checkedAt": "2026-09-16T14:01:50.818Z",
+    "lastSuccessAt": "2026-09-16T14:01:50.818Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-09-16T13:01:23.852Z"
+    "previousUpdatedAt": "2026-09-16T13:31:34.057Z"
   }
 }
