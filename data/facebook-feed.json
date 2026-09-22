@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-09-22T10:25:57.201Z",
+  "updatedAt": "2026-09-22T10:56:13.715Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-6249798252",
+      "id": "1-16074592764",
+      "text": "🚗 DZIEŃ BEZ SAMOCHODU (?)🚗 Niektórzy potraktowali to trochę zbyt dosłownie i świętują już od dawna… 😅 i chyba powinni dostać medal za wytrwałość 😂 My dziś też bez auta (przynajmniej niektórzy) — za to z muzyką, humorem i dobrym klimatem na 90,8 FM!",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143064175145514"
+    },
+    {
+      "id": "2-6249798252",
       "text": "Czy ktoś to widział? 🫡 Prawdziwy festiwal MALUCHÓW 🤪",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122142912729145514"
     },
     {
-      "id": "2-6657726183",
+      "id": "3-6657726183",
       "text": "👉 Dziś w EL Radiu zanurzymy się w rodzinną historię, która potrafi poruszyć bardziej niż niejeden film 👈 🕠 O 16:50 zapraszamy na recenzję książki Julii Samuel „Każda rodzina ma swoją historię. Jak dziedziczymy miłość i stratę” — opowieści o tym, jak emocje, sekrety i doświadczenia przechodzą z pokolenia na pokolenie… czasem jak rodzinny przepis, a czasem jak niechciana pamiątka. Jeśli lubicie książki, które zostają w głowie na dłużej niż do końca audycji, to ta recenzja jest dla Was. Słyszymy się o 16:50 — włączcie EL Radio i dajcie się wciągnąć w tę historię. Przed mikrofonem: Karolina z Biblioteka Tatarak Współorganizatorzy: Biblioteka Miejska w Łodzi Biblioteka Wolność Biblioteka Tatarak SPONSOR AUDYCJI: Olejvita - oleje tłoczone na zimno ---",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122142376941145514"
     },
     {
-      "id": "3-252720476",
+      "id": "4-252720476",
       "text": "BIEGAMY! 🏃🏃‍♀️🏃‍♂️ ...i to w ważnej sprawie! 27 września na Stawach Stefańskiego odbędzie się już IV edycja charytatywnego BIEGU PO MARZENIA. Organizatorem wydarzenia jest Stowarzyszenie \"Przystań Marzeń\" 👉 Będą biegi dziecięce, będzie też bieg na 5 km. My STARTUJEMY. A Ty drogi słuchaczu, jeśli chcesz i możesz zapisać się i pobiec, to w rubryce \"drużyna\" wpisz EL Radio. Dopisz się też koniecznie w u (musimy mieć z Tobą kontakt) - będziemy mieli dla Ciebie niespodziankę. Ale co to będzie, dowiesz się po biegu 😊 Więcej informacji znajdziecie pod poniższym linkiem. a link do zapisu znajdziecie tutaj:",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1475985157897107"
-    },
-    {
-      "id": "4-20162365520",
-      "text": "👉 Targ Kolacyjny w Fuzji! 🍽️ 👈 W ramach trwającego Festiwalu „Jemy w Łodzi Food Fest”, w przestrzeni dawnej elektrowni Scheiblera, zorganizowana zostanie impreza towarzysząca - Targ Kolacyjny. ⏱️ Kiedy? Sobota 19 września w godzinach 17:00-22:00 📌 Gdzie? Zabytkowa Kotłownia przy ul. Milionowej 6a W programie znalazła się oferta gastronomiczna przygotowana przez wystawców reprezentujących różne style i kierunki kulinarne, a także muzyczna oprawa przygotowana przez DJ-a Jerema. Targowi towarzyszyć będzie również pokaz amerykańskich samochodów 🚗🚕🚙🛻, nawiązujący do tegorocznego motywu przewodniego Jemy w Łodzi Food Fest. 👉Wydarzenie będzie otwarte i bezpłatne. 👈 Fuzja Łódź",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122142263157145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-09-22T10:25:57.201Z",
-    "lastSuccessAt": "2026-09-22T10:25:57.201Z",
+    "checkedAt": "2026-09-22T10:56:13.715Z",
+    "lastSuccessAt": "2026-09-22T10:56:13.715Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-09-22T09:55:43.230Z"
+    "previousUpdatedAt": "2026-09-22T10:25:57.201Z"
   }
 }
