@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-09-24T10:23:37.074Z",
+  "updatedAt": "2026-09-24T10:54:05.078Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-11709381264",
+      "id": "1-24238112277",
+      "text": "🎙️ **Dziś o 16:50 w EL Radiu** Dominika Lichańska z Biblioteka Wolność opowie o książce Karen Hao 📖 **„Imperium Sztucznej Inteligencji. Sny i koszmary w OpenAI Sama Altmana”** 📖 — mocne i aktualne spojrzenie na świat AI, pełnego realnych zagrożeń, wielkich interesów i technologicznych marzeń. Temat na czasie! Włącz 90,8 FM i sprawdź, czy sztuczna inteligencja to spełnienie marzeń… czy początek koszmaru. 🤖✨ Program powstaje dzięki Olejvita - oleje tłoczone na zimno Biblioteka Miejska w Łodzi Biblioteka Wolność ❤️",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143524303145514"
+    },
+    {
+      "id": "2-11709381264",
       "text": "🌕 A czy wiesz, że… …w czasach kredy rok miał 372 dni, a doba trwała tylko 23,5 godziny? 😅 Czyli kiedy dinozaury chodziły po Ziemi, wszyscy mieli mniej czasu, a i tak jakoś dawali radę. 👩‍🔬 Tak wynika z badań przeprowadzonych przez amerykańskich naukowców 😅, a dokładniej przez tych z NASA. 👩‍🔬 Dziś Księżyc oddala się od nas o 3,8 cm rocznie, dzień się wydłuża… Na szczęście nadaje niezależnie od długości doby. Księżyc może sobie uciekać — my zostajemy. 😛",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143105761145514"
     },
     {
-      "id": "2-16074592764",
+      "id": "3-16074592764",
       "text": "🚗 DZIEŃ BEZ SAMOCHODU (?)🚗 Niektórzy potraktowali to trochę zbyt dosłownie i świętują już od dawna… 😅 i chyba powinni dostać medal za wytrwałość 😂 My dziś też bez auta (przynajmniej niektórzy) — za to z muzyką, humorem i dobrym klimatem na 90,8 FM!",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143064175145514"
     },
     {
-      "id": "3-6249798252",
+      "id": "4-6249798252",
       "text": "Czy ktoś to widział? 🫡 Prawdziwy festiwal MALUCHÓW 🤪",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122142912729145514"
-    },
-    {
-      "id": "4-6657726183",
-      "text": "👉 Dziś w EL Radiu zanurzymy się w rodzinną historię, która potrafi poruszyć bardziej niż niejeden film 👈 🕠 O 16:50 zapraszamy na recenzję książki Julii Samuel „Każda rodzina ma swoją historię. Jak dziedziczymy miłość i stratę” — opowieści o tym, jak emocje, sekrety i doświadczenia przechodzą z pokolenia na pokolenie… czasem jak rodzinny przepis, a czasem jak niechciana pamiątka. Jeśli lubicie książki, które zostają w głowie na dłużej niż do końca audycji, to ta recenzja jest dla Was. Słyszymy się o 16:50 — włączcie EL Radio i dajcie się wciągnąć w tę historię. Przed mikrofonem: Karolina z Biblioteka Tatarak Współorganizatorzy: Biblioteka Miejska w Łodzi Biblioteka Wolność Biblioteka Tatarak SPONSOR AUDYCJI: Olejvita - oleje tłoczone na zimno ---",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122142376941145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-09-24T10:23:37.074Z",
-    "lastSuccessAt": "2026-09-24T10:23:37.074Z",
+    "checkedAt": "2026-09-24T10:54:05.078Z",
+    "lastSuccessAt": "2026-09-24T10:54:05.078Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-09-24T09:53:24.366Z"
+    "previousUpdatedAt": "2026-09-24T10:23:37.074Z"
   }
 }
