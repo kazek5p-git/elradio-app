@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-09-28T07:47:42.747Z",
+  "updatedAt": "2026-09-28T08:17:51.489Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-4815595419",
+      "id": "1-21555708038",
+      "text": "Niedziela, październik - centrum Łodzi ❤️ Nasze miasto rozbłysło wszystkimi możliwymi kolorami. Pięknie to za mało powiedziane 😊",
+      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=4wG2ALQSoN8Q7kNvwEFZQ4g&_nc_oc=AdqJMpzCp38G_DPLBMzjMIklXVbs1WKwN0zatWdTGYxd29-X97XxtfpdoALOfUWJc6U&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=RuWqXPlVXnoK7drXHM8e9A&_nc_ss=7c289&oh=00_AQOUTYkgkcbWm2MbBehLTn3puiKkXU1sTVejO-SBEP9jPw&oe=6ABFE3E5"
+    },
+    {
+      "id": "2-4815595419",
       "text": "Przypominamy! 🏃‍➡️ 🏃‍♀️‍➡️ Wspaniały cel - niedziela - Stawy Stefańskiego - medal dla każdego uczestnika. Pogoda ma być 🌞 słoneczna - 20 stopni. Przybywajcie!",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1475985157897107"
     },
     {
-      "id": "2-24238112277",
+      "id": "3-24238112277",
       "text": "🎙️ **Dziś o 16:50 w EL Radiu** Dominika Lichańska z Biblioteka Wolność opowie o książce Karen Hao 📖 **„Imperium Sztucznej Inteligencji. Sny i koszmary w OpenAI Sama Altmana”** 📖 — mocne i aktualne spojrzenie na świat AI, pełnego realnych zagrożeń, wielkich interesów i technologicznych marzeń. Temat na czasie! Włącz 90,8 FM i sprawdź, czy sztuczna inteligencja to spełnienie marzeń… czy początek koszmaru. 🤖✨ Program powstaje dzięki Olejvita - oleje tłoczone na zimno Biblioteka Miejska w Łodzi Biblioteka Wolność ❤️",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143524303145514"
     },
     {
-      "id": "3-11709381264",
+      "id": "4-11709381264",
       "text": "🌕 A czy wiesz, że… …w czasach kredy rok miał 372 dni, a doba trwała tylko 23,5 godziny? 😅 Czyli kiedy dinozaury chodziły po Ziemi, wszyscy mieli mniej czasu, a i tak jakoś dawali radę. 👩‍🔬 Tak wynika z badań przeprowadzonych przez amerykańskich naukowców 😅, a dokładniej przez tych z NASA. 👩‍🔬 Dziś Księżyc oddala się od nas o 3,8 cm rocznie, dzień się wydłuża… Na szczęście nadaje niezależnie od długości doby. Księżyc może sobie uciekać — my zostajemy. 😛",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143105761145514"
-    },
-    {
-      "id": "4-16074592764",
-      "text": "🚗 DZIEŃ BEZ SAMOCHODU (?)🚗 Niektórzy potraktowali to trochę zbyt dosłownie i świętują już od dawna… 😅 i chyba powinni dostać medal za wytrwałość 😂 My dziś też bez auta (przynajmniej niektórzy) — za to z muzyką, humorem i dobrym klimatem na 90,8 FM!",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122143064175145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-09-28T07:47:42.747Z",
-    "lastSuccessAt": "2026-09-28T07:47:42.747Z",
+    "checkedAt": "2026-09-28T08:17:51.489Z",
+    "lastSuccessAt": "2026-09-28T08:17:51.489Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-09-28T07:17:36.925Z"
+    "previousUpdatedAt": "2026-09-28T07:47:42.747Z"
   }
 }
