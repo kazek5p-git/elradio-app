@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-29T00:56:57.369Z",
+  "updatedAt": "2026-09-29T01:27:07.408Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
@@ -8,7 +8,7 @@
     {
       "id": "1-8128087814",
       "text": "Niedziela, wrzesień - centrum Łodzi ❤️ Nasze miasto rozbłysło wszystkimi możliwymi kolorami. Pięknie to za mało powiedziane 😊",
-      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=4wG2ALQSoN8Q7kNvwEFZQ4g&_nc_oc=AdqJMpzCp38G_DPLBMzjMIklXVbs1WKwN0zatWdTGYxd29-X97XxtfpdoALOfUWJc6U&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=DfxEMqlDIYDIW0LPlRsPeQ&_nc_ss=7c289&oh=00_AQPV-__m6jdYy9A5tGGlXuRxpM2NcTScxnzINTCau3WHPw&oe=6AC0C4E5"
+      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=4wG2ALQSoN8Q7kNvwEFZQ4g&_nc_oc=AdqJMpzCp38G_DPLBMzjMIklXVbs1WKwN0zatWdTGYxd29-X97XxtfpdoALOfUWJc6U&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=UUWEHvG_3Th5iOXLaCJlqA&_nc_ss=7c289&oh=00_AQOWPpB5B0B4wQfisJ3NO37S5ZDncSBpqrJiYXjVqB8WLg&oe=6AC0FD25"
     },
     {
       "id": "2-4815595419",
@@ -28,13 +28,13 @@
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-09-29T00:56:57.369Z",
-    "lastSuccessAt": "2026-09-29T00:56:57.369Z",
+    "checkedAt": "2026-09-29T01:27:07.408Z",
+    "lastSuccessAt": "2026-09-29T01:27:07.408Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-09-29T00:26:23.855Z"
+    "previousUpdatedAt": "2026-09-29T00:56:57.369Z"
   }
 }
