@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-10-05T10:22:06.146Z",
+  "updatedAt": "2026-10-05T10:52:25.630Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-3071601066",
+      "id": "1-7110858981",
+      "text": "Poniedziałek zaczynamy konkursowo! W niedzielę odbędzie się HIT I LIGI PIŁKARSKIEJ ‼️ ŁKS - RUCH 👉 Dzień 1️⃣ Wspólnie z gospodarzami zapraszamy do udziału w konkursie - pytania zadają piłkarze ŁKS ⚽️, a Waszym zadaniem jest wysłanie prawidłowej odpowiedzi na adres konkurs@ .pl Wygrywa osoba, która jako pierwsza odpowie prawidłowo na pytanie zadanie na antenie radiowej. UWAGA - słuchajcie nas cały dzień, ale szczególnie po godzinie 15:00 🙂 ŁKS Łódź",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122145298419145514"
+    },
+    {
+      "id": "2-3071601066",
       "text": "Czy można opisać chorobę, która przez wieki była owiana tajemnicą, lękiem i niezrozumieniem? Jerome A. Lieberman w swojej książce „Rozpad umysłu. Biografia schizofrenii” pokazuje, że schizofrenia to nie tylko medyczne pojęcie, ale dramat człowieka — i całej nauki, która próbowała ją zrozumieć. Niełatwa lektura, ale niezwykle potrzebna — bo mówi o tym, co w człowieku najtrudniejsze do uchwycenia. Przed mikrofonem Karolina z Biblioteka Tatarak 📻 Recenzja dziś o 16:50 w . Zajrzyj z nami w głąb umysłu — tam, gdzie nauka spotyka się z tajemnicą. Biblioteka Miejska w Łodzi Biblioteka Wolność Sponsor naszego cyklu: Olejvita - oleje tłoczone na zimno",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122144530215145514"
     },
     {
-      "id": "2-14971211245",
+      "id": "3-14971211245",
       "text": "Miało być jak w 1605 roku. Wówczas nasi zrobili Szwedom taki „pressing”, że do dziś mają to w podręcznikach. Trzy razy większa armia przeciwnika... Ale \"nasi\" zapamiętali tylko proporcję 3:1. Najgorsze, że kolejność pomylili 🥹",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122144517081145514"
     },
     {
-      "id": "3-8128087814",
+      "id": "4-8128087814",
       "text": "Niedziela, wrzesień - centrum Łodzi ❤️ Nasze miasto rozbłysło wszystkimi możliwymi kolorami. Pięknie to za mało powiedziane 😊",
-      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=66BJ_TsLay4Q7kNvwEtCrnv&_nc_oc=Adod5TIQvAqEO-WyV_mwUdVSV9EA2vGxLoyI3CXVgYbK0rz5XENViMhzN4jM_UdmBNE&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=fAAzmqw24Bop2jaV2_cj2w&_nc_ss=7d289&oh=00_AQOZIJ_D6EtefyyrMs5-Pm9LMJGeNwMK7A_4CZzX9qycGw&oe=6AC956A5"
-    },
-    {
-      "id": "4-4815595419",
-      "text": "Przypominamy! 🏃‍➡️ 🏃‍♀️‍➡️ Wspaniały cel - niedziela - Stawy Stefańskiego - medal dla każdego uczestnika. Pogoda ma być 🌞 słoneczna - 20 stopni. Przybywajcie!",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1475985157897107"
+      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=66BJ_TsLay4Q7kNvwEtCrnv&_nc_oc=Adod5TIQvAqEO-WyV_mwUdVSV9EA2vGxLoyI3CXVgYbK0rz5XENViMhzN4jM_UdmBNE&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=5Wa4xfBhrDRmXJi4wX2HPw&_nc_ss=7d289&oh=00_AQOAhhhrJaetcMyxQOyaTyRjxMwnkAAfqnL2jgtnX25K1A&oe=6AC956A5"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-10-05T10:22:06.146Z",
-    "lastSuccessAt": "2026-10-05T10:22:06.146Z",
+    "checkedAt": "2026-10-05T10:52:25.630Z",
+    "lastSuccessAt": "2026-10-05T10:52:25.630Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-10-05T09:51:35.601Z"
+    "previousUpdatedAt": "2026-10-05T10:22:06.146Z"
   }
 }
