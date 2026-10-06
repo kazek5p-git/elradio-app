@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-10-06T08:34:42.387Z",
+  "updatedAt": "2026-10-06T09:04:56.290Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-7110858981",
+      "id": "1-16470298170",
+      "text": "💙 Radio, które ma serce! 💙 Są takie miejsca, które nie tylko grają muzykę i przekazują informacje, ale przede wszystkim łączą ludzi i pomagają czynić dobro. Takim radiem jest El Radio – radio z ogromnym sercem, które chętnie wspiera wartościowe inicjatywy i pomaga nagłaśniać akcje niosące pomoc innym. ❤️ Stowarzyszenie \"Przystań Marzeń\" serdecznie dziękuje za promocję naszego IV bieg charytatywny \"Biegnij z nami po marzenia\" ! 🏃‍♀️🏃‍♂️💙 Dzięki takim mediom jak El Radio możemy docierać do większej liczby osób, wspólnie budować zaangażowanie i pokazywać, że razem naprawdę możemy więcej. Dziękujemy za wsparcie, dobre serce i za to, że jesteście z nami! 💙",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1539739924854963"
+    },
+    {
+      "id": "2-244624106",
+      "text": "Pochwalimy się 😊 Miłymi słowami opisało nas Stowarzyszenie \"Przystań Marzeń\" A my życzymy Wam samych sukcesów i trzymamy kciuki za powodzenie Waszych poczynań edukacyjnych i eventowych ❤️",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1539739924854963"
+    },
+    {
+      "id": "3-7110858981",
       "text": "Poniedziałek zaczynamy konkursowo! W niedzielę odbędzie się HIT I LIGI PIŁKARSKIEJ ‼️ ŁKS - RUCH 👉 Dzień 1️⃣ Wspólnie z gospodarzami zapraszamy do udziału w konkursie - pytania zadają piłkarze ŁKS ⚽️, a Waszym zadaniem jest wysłanie prawidłowej odpowiedzi na adres konkurs@ .pl Wygrywa osoba, która jako pierwsza odpowie prawidłowo na pytanie zadanie na antenie radiowej. UWAGA - słuchajcie nas cały dzień, ale szczególnie po godzinie 15:00 🙂 ŁKS Łódź",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122145350079145514"
     },
     {
-      "id": "2-3071601066",
+      "id": "4-3071601066",
       "text": "Czy można opisać chorobę, która przez wieki była owiana tajemnicą, lękiem i niezrozumieniem? Jerome A. Lieberman w swojej książce „Rozpad umysłu. Biografia schizofrenii” pokazuje, że schizofrenia to nie tylko medyczne pojęcie, ale dramat człowieka — i całej nauki, która próbowała ją zrozumieć. Niełatwa lektura, ale niezwykle potrzebna — bo mówi o tym, co w człowieku najtrudniejsze do uchwycenia. Przed mikrofonem Karolina z Biblioteka Tatarak 📻 Recenzja dziś o 16:50 w . Zajrzyj z nami w głąb umysłu — tam, gdzie nauka spotyka się z tajemnicą. Biblioteka Miejska w Łodzi Biblioteka Wolność Sponsor naszego cyklu: Olejvita - oleje tłoczone na zimno",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122144530215145514"
-    },
-    {
-      "id": "3-14971211245",
-      "text": "Miało być jak w 1605 roku. Wówczas nasi zrobili Szwedom taki „pressing”, że do dziś mają to w podręcznikach. Trzy razy większa armia przeciwnika... Ale \"nasi\" zapamiętali tylko proporcję 3:1. Najgorsze, że kolejność pomylili 🥹",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122144517081145514"
-    },
-    {
-      "id": "4-8128087814",
-      "text": "Niedziela, wrzesień - centrum Łodzi ❤️ Nasze miasto rozbłysło wszystkimi możliwymi kolorami. Pięknie to za mało powiedziane 😊",
-      "imageUrl": "https://scontent-waw2-1.xx.fbcdn.net/v/t15.5256-10/828418588_1638122908017391_6614153605816446726_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1920&ctp=s960x960&_nc_cat=109&ccb=1-7&_nc_sid=50ce42&_nc_ohc=h1qV65JxUvUQ7kNvwGeeY7p&_nc_oc=Adqrsn4D2zlI4uyd-Tiwvk-LTrwvGzGTRtam9i-zHbZ3XBzh5GmiSZpmCBuYrCblpBM&_nc_zt=23&_nc_ht=scontent-waw2-1.xx&_nc_gid=uSNJFREY-5J0-dGSbsN9lw&_nc_ss=7d289&oh=00_AQP8tct6gAjS-dJmqvjVHRkDBZx1dScjVUlyPq8jNuOr0Q&oe=6ACA6FE5"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-10-06T08:34:42.387Z",
-    "lastSuccessAt": "2026-10-06T08:34:42.387Z",
+    "checkedAt": "2026-10-06T09:04:56.290Z",
+    "lastSuccessAt": "2026-10-06T09:04:56.290Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-10-06T08:04:21.201Z"
+    "previousUpdatedAt": "2026-10-06T08:34:42.387Z"
   }
 }
