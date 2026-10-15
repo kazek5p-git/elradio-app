@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-10-15T09:31:42.555Z",
+  "updatedAt": "2026-10-15T10:02:06.822Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-4282826780",
+      "id": "1-18613343845",
+      "text": "Dzisiaj odwiedzamy Tajlandię! Serio! Zaglądając do książki polecanej przez Paulinę Kowalczyk z Biblioteka Odyseja 😉 Będzie oczywiście o wyprawach, ale też o kulturze i kulinariach. Co można znaleźć w przewodniku dowiecie się o 16:50, albo szybciej - zaglądając do Biblioteka Odyseja przy Wschodniej 42. Klimat Tajlandii możecie też poczuć odwiedzając lokal sponsora naszego październikowego cyklu książkowego - Thai Relax Center. Zajrzyjcie koniecznie na jego stronę - relaks, masaż, odpoczynek. I wspaniały wystrój! Biblioteka Miejska w Łodzi Biblioteka Wolność",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122146738791145514"
+    },
+    {
+      "id": "2-4282826780",
       "text": "Goście zwiedzający zbiorniki na Stokach często pytają, jak wyglądają one, gdy są pełne wody. Można było to zobaczyć tylko podczas ćwiczeń strażaków płetwonurków.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100072251760923"
     },
     {
-      "id": "2-5792807667",
+      "id": "3-5792807667",
       "text": "Czy wiedzieliście, że... 🤔",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
     },
     {
-      "id": "3-1031617926",
+      "id": "4-1031617926",
       "text": "Przedostatnia okazja na bilety! Mecz ŁKS - Ruch Chorzów. Dzisiaj pytanie zada Karol Podliński. Kto chętny?",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122145867561145514"
-    },
-    {
-      "id": "4-14098440848",
-      "text": "Dzień 4️⃣ Chcesz wygrać podwójny bilety na mecz ŁKS - Ruch Chorzów? 👉 Słuchaj nas po godzinie 15:00 ⚽️⚽️⚽️ 👉 Przygotuj się na wysłanie odpowiedzi mailowej na adres: konkurs@ .pl Pytanie zada dzisiaj... Kacper Terlecki. ŁKS Łódź",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122145724659145514"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-10-15T09:31:42.555Z",
-    "lastSuccessAt": "2026-10-15T09:31:42.555Z",
+    "checkedAt": "2026-10-15T10:02:06.822Z",
+    "lastSuccessAt": "2026-10-15T10:02:06.822Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-10-15T09:01:40.254Z"
+    "previousUpdatedAt": "2026-10-15T09:31:42.555Z"
   }
 }
