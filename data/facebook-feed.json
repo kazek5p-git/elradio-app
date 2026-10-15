@@ -1,40 +1,40 @@
 {
-  "updatedAt": "2026-10-15T20:37:38.541Z",
+  "updatedAt": "2026-10-15T21:07:53.189Z",
   "source": "facebook",
   "sourceUrl": "https://www.facebook.com/people/ELRadio-908-FM/61584365428208/",
   "crawlerUrl": "https://mbasic.facebook.com/943822595472447",
   "status": 200,
   "posts": [
     {
-      "id": "1-18613343845",
+      "id": "1-19548171776",
+      "text": "Czym jest czwartek? Dniem planowania weekendu oczywiście 😋 My oczywiście zapraszamy do spędzania czasu z EL Radiem 9️⃣0️⃣,8️⃣FM w tle - obiecujemy dużą dawkę najlepszej muzyki na świecie. A co jeszcze? Spacer - TAK Mecz Widzewa - ciężka misja - biletów nie ma już od jakiegoś czasu. Może wieczór bilardowy w Strefa Billiards&Darts ⁉️ Do wyboru: bilard / dart / piłkarzyki / ping pong / snooker. Zakupy w plenerze zapewni w niedzielne przedpołudnie i wczesne popołudnie Fundacja Przędzalnia Sztuki - organizator Targów Stacja Księży Młyn 🍀🌞 🍁 W Fuzja Łódź lato minęło już na dobre - teraz króluje jesień. Już w ten weekend odbędą się wyjątkowe jesienne, dwudniowe targi twórców rzeczy przepięknych - Twórczy Kocioł",
+      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122146743741145514"
+    },
+    {
+      "id": "2-18613343845",
       "text": "Dzisiaj odwiedzamy Tajlandię! Serio! Zaglądając do książki polecanej przez Paulinę Kowalczyk z Biblioteka Odyseja 😉 Będzie oczywiście o wyprawach, ale też o kulturze i kulinariach. Co można znaleźć w przewodniku dowiecie się o 16:50, albo szybciej - zaglądając do Biblioteka Odyseja przy Wschodniej 42. Klimat Tajlandii możecie też poczuć odwiedzając lokal sponsora naszego październikowego cyklu książkowego - Thai Relax Center. Zajrzyjcie koniecznie na jego stronę - relaks, masaż, odpoczynek. I wspaniały wystrój! Biblioteka Miejska w Łodzi Biblioteka Wolność",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=122146738791145514"
     },
     {
-      "id": "2-4282826780",
+      "id": "3-4282826780",
       "text": "Goście zwiedzający zbiorniki na Stokach często pytają, jak wyglądają one, gdy są pełne wody. Można było to zobaczyć tylko podczas ćwiczeń strażaków płetwonurków.",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100072251760923"
     },
     {
-      "id": "3-5792807667",
+      "id": "4-5792807667",
       "text": "Czy wiedzieliście, że... 🤔",
       "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=61584365428208"
-    },
-    {
-      "id": "4-972432138",
-      "text": "🍁 Jesień w Fuzji – PAŹDZIERNIK pełen klimatu, designu i rękodzieła! 🎃✨ W Fuzji rozpoczynamy przytulny, jesienny sezon pełen wyjątkowych wydarzeń, warsztatów i klimatycznych atrakcji. Sprawdźcie, co przygotowaliśmy dla Was na ten miesiąc i wpadajcie spędzić październikowe dni razem z nami! Co w programie? 👇 🧶 Łódź Design Festival | Wystawa „Wełna. Lokalne źródła i potencjał” Inspirująca ekspozycja w ramach Łódź Design Festival, przybliżająca potencjał i rolę wełny we współczesnym designie. 📅 5 – 15.10 ⏰ 12:00 – 18:00 📍 Kotłownia 🎟️ Wstęp wolny 🧵 Łódź Design Festival | Warsztaty tkackie z Tartaruga Praktyczne warsztaty ze sztuki tkania pod okiem ekspertów z Tartaruga. 📅 Poniedziałek, 5.10 ⏰ 16:00 📍 Sartoria Ristorante e Pizzeria 🎟️ Obowiązują zapisy: lodzdesign.com/warsztaty-tkackie-tartaruga [zapisy zakończone] 🧶 TARG RĘKODZIEŁA | Twórczy Kocioł (Edycja Jesienna) Jesienna odsłona uwielbijanego targu rękodzieła! Idealne miejsce, by znaleźć unikatowe wyroby, lokalny design i rozgrzewające inspiracje. 📅 Sobota – Niedziela, 17 – 18.10 ⏰ 11:00 – 18:00 📍 Kotłownia 🎟️ Wstęp wolny 🎃 FARMA DYNIA | Farma Dyń w Fuzji Prawdziwe królestwo jesiennych barw, klimatycznych dekoracji i potraw z dynią w roli głównej! Idealne miejsce na jesienny spacer i pamiątkowe zdjęcia. 📅 21.10 – 3.11 ⏰ Poniedziałek – Wtorek: 10:00 – 19:00 | Sobota – Niedziela: 10:00 – 20:00 📍 Kotłownia Do zobaczenia w Fuzji! 📸👇 📍 ul. Milionowa 6a, Łódź Fuzja. Miejsce, które łączy ✨ Echo Investment | Archicom | @ ący",
-      "imageUrl": "https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=1633623635222729"
     }
   ],
   "fetchStatus": {
     "state": "ok",
-    "checkedAt": "2026-10-15T20:37:38.541Z",
-    "lastSuccessAt": "2026-10-15T20:37:38.541Z",
+    "checkedAt": "2026-10-15T21:07:53.189Z",
+    "lastSuccessAt": "2026-10-15T21:07:53.189Z",
     "lastErrorAt": "",
     "lastErrorType": "",
     "lastErrorMessage": "",
     "backoffUntil": "",
     "consecutiveFailures": 0,
-    "previousUpdatedAt": "2026-10-15T20:07:33.155Z"
+    "previousUpdatedAt": "2026-10-15T20:37:38.541Z"
   }
 }
